@@ -1,0 +1,9 @@
+.unit_card {
+  width: 250px;
+}
+.profile_img_lg {
+  width: 200px;
+  height: 200px;
+  border-radius: 2px;
+  margin-right: 8px;
+}
