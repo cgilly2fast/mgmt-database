@@ -10,14 +10,22 @@ const { v4: uuidv4 } = require("uuid");
 const { db } = require("./admin");
 const { google } = require("googleapis");
 const { log } = require("console");
-const oauth2Client = new google.auth.OAuth2(
-  credentials.web.client_id,
-  credentials.web.client_secret,
-  credentials.web.redirect_uris[2]
-);
-oauth2Client.setCredentials({
-  refresh_token: credentials.refresh_token,
-});
+const SCOPES = [
+  "https://www.googleapis.com/auth/drive",
+  "https://www.googleapis.com/auth/spreadsheets",
+  "https://www.googleapis.com/auth/calendar",
+  "https://www.googleapis.com/auth/documents",
+  "https://mail.google.com/",
+];
+
+// const oauth2Client = new google.auth.OAuth2(
+//   credentials.web.client_id,
+//   credentials.web.client_secret,
+//   credentials.web.redirect_uris[2]
+// );
+// oauth2Client.setCredentials({
+//   refresh_token: credentials.refresh_token,
+// });
 
 mgmt.use(bodyParser.json());
 mgmt.use(bodyParser.urlencoded({ extended: false }));
@@ -62,16 +70,9 @@ mgmt.post("/updateUnit", async (req, res) => {
 });
 
 mgmt.get("/createOauth", async (req, res) => {
-  const scopes = [
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/calendar",
-    "https://www.googleapis.com/auth/documents",
-    "https://mail.google.com/",
-  ];
   const url = await oauth2Client.generateAuthUrl({
     access_type: "offline",
-    scope: scopes,
+    scope: SCOPES,
   });
 
   res.send({ url: url });
@@ -263,7 +264,13 @@ mgmt.post("/checkSignup", async (req, res) => {
 
 function setUnitFolder(data, offices) {
   return new Promise(function (resolve, reject) {
-    const drive = google.drive({ version: "v3", auth: oauth2Client });
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      SCOPES
+    );
+    const drive = google.drive({ version: "v3" });
 
     drive.files.create(
       {
@@ -273,6 +280,8 @@ function setUnitFolder(data, offices) {
           parents: [offices[data.office]],
         },
         fields: "id",
+        auth: jwt,
+        key: credentials.api_key,
       },
       (err, file) => {
         if (err) {
@@ -287,7 +296,14 @@ function setUnitFolder(data, offices) {
 }
 function setPhotosFolder(data) {
   return new Promise(function (resolve, reject) {
-    const drive = google.drive({ version: "v3", auth: oauth2Client });
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      SCOPES
+    );
+
+    const drive = google.drive({ version: "v3" });
 
     drive.files.create(
       {
@@ -297,6 +313,8 @@ function setPhotosFolder(data) {
           parents: data.unit_folder.match(/([^\/]+$)/g),
         },
         fields: "id",
+        auth: jwt,
+        key: credentials.api_key,
       },
       (err, file) => {
         if (err) {
@@ -312,7 +330,13 @@ function setPhotosFolder(data) {
 
 function setFile(data, file) {
   return new Promise(function (resolve, reject) {
-    const drive = google.drive({ version: "v3", auth: oauth2Client });
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      SCOPES
+    );
+    const drive = google.drive({ version: "v3" });
 
     const request = {
       fileId: file.fileId,
@@ -320,6 +344,8 @@ function setFile(data, file) {
         name: file.fileName + data.name,
         parents: data.unit_folder.match(/([^\/]+$)/g),
       },
+      auth: jwt,
+      key: credentials.api_key,
     };
 
     drive.files.copy(request, (err, res) => {
@@ -368,11 +394,7 @@ function getNextUnitId() {
 
 function test(data, auth) {
   return new Promise(function (resolve, reject) {
-    console.log(credentials.refresh_token);
-    oauth2Client.setCredentials({
-      refresh_token: credentials.refresh_token,
-    });
-    const drive = google.drive({ version: "v3", auth: oauth2Client });
+    const drive = google.drive({ version: "v3" });
 
     drive.files.create(
       {
@@ -382,6 +404,8 @@ function test(data, auth) {
           parents: ["1ea_YNLcyqQ0aDTDEcodfyeB76em0l4Vz"],
         },
         fields: "id",
+        auth: jwt,
+        key: credentials.api_key,
       },
       (err, file) => {
         if (err) {
