@@ -41,6 +41,9 @@ export default function Menu() {
           <Nav.Link as={Link} to="/team">
             Team
           </Nav.Link>
+          <Nav.Link as={Link} to="/calendar">
+            Calendar
+          </Nav.Link>
           {currentUser ? (
             <Nav.Link>
               <Button variant="link" onClick={handleLogout}>

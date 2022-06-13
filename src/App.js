@@ -19,6 +19,8 @@ import Signup from "./components/signup/Signup";
 import Menu from "./components/menu/Menu";
 import ForgotPassword from "./components/forgotPassword/ForgotPassword";
 import { AuthProvider } from "./context/AuthContext";
+import Calendar from "./components/calendar/Calendar";
+import SelectUnit from "./components/selectUnit/SelectUnit";
 
 class App extends Component {
   render() {
@@ -30,6 +32,8 @@ class App extends Component {
             <Switch>
               <PrivateRoute exact path="/" component={Units} />
               <PrivateRoute exact path="/units" component={Units} />
+              <PrivateRoute exact path="/calendar" component={SelectUnit} />
+              <PrivateRoute exact path="/calendar/:id" component={Calendar} />
               <PrivateRoute exact path="/unit/create" component={UnitForm} />
               <PrivateRoute exact path="/unit/:unitId" component={Unit} />
               <PrivateRoute

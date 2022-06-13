@@ -127,6 +127,11 @@ export class Unit extends Component {
                   Photos
                 </Nav.Link>
               </Nav.Item>
+              <Nav.Item>
+                <Nav.Link as={Link} to={`/calendar/${unit?.id}`}>
+                  Calendar
+                </Nav.Link>
+              </Nav.Item>
             </Nav>
           </Row>
         </Container>

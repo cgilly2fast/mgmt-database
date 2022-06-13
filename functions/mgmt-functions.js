@@ -262,6 +262,47 @@ mgmt.post("/checkSignup", async (req, res) => {
   }
 });
 
+mgmt.get("/getCalendar/:unitId", async (req, res) => {
+  let snapshot = {};
+  const unitId = req.params.unitId;
+  snapshot = await db
+    .collection("calendar")
+    .where("unitId", "==", unitId)
+    .get();
+  let data = [];
+  snapshot.forEach((doc) => {
+    data.push(doc.data());
+  });
+  if (snapshot.size) {
+    res.send(data[0]);
+    return;
+  } else {
+    res.send("No record found");
+    return;
+  }
+});
+
+mgmt.get("/getReservations/:unitId", async (req, res) => {
+  let snapshot = {};
+  const unitId = req.params.unitId;
+  snapshot = await db
+    .collection("reservations")
+    .where("explore.unitId", "==", unitId)
+    .get();
+  let data = [];
+  snapshot.forEach((doc) => {
+    data.push(doc.data());
+  });
+  console.log("snapshot.size", snapshot.size);
+  if (snapshot.size) {
+    res.send(data);
+    return;
+  } else {
+    res.send("No record found");
+    return;
+  }
+});
+
 function setUnitFolder(data, offices) {
   return new Promise(function (resolve, reject) {
     const jwt = new google.auth.JWT(

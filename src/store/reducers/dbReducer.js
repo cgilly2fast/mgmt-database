@@ -6,6 +6,8 @@ const initState = {
   teammate: {},
   owners: [],
   owner: {},
+  calendar: { loading: true, data: null },
+  reservations: { loading: true, data: null },
 };
 
 const dbReducer = (state = initState, action) => {
@@ -64,6 +66,32 @@ const dbReducer = (state = initState, action) => {
         teammate: action.res_data,
       };
     case "GET_TEAMMATE_ERROR":
+      return state;
+
+    case "GET_CALENDAR_SUCCESS":
+      return {
+        ...state,
+        calendar: action.res_data,
+      };
+    case "GET_CALENDAR_LOADING":
+      return {
+        ...state,
+        calendar: action.res_data,
+      };
+    case "GET_CALENDAR_ERROR":
+      return state;
+
+    case "GET_RESERVATIONS_SUCCESS":
+      return {
+        ...state,
+        reservations: action.res_data,
+      };
+    case "GET_RESERVATIONS_LOADING":
+      return {
+        ...state,
+        reservations: action.res_data,
+      };
+    case "GET_RESERVATIONS_ERROR":
       return state;
 
     //   case "SET_TOTAL_GUESTS":

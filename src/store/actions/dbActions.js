@@ -56,6 +56,46 @@ export const getOwners = () => {
   };
 };
 
+export const getCalendar = (unitId) => {
+  return (dispatch) => {
+    dispatch({
+      type: "GET_CALENDAR_LOADING",
+      res_data: { loading: true, data: null },
+    });
+    return axios
+      .get(ApiUrl + "/getCalendar/" + unitId)
+      .then((response) => {
+        dispatch({
+          type: "GET_CALENDAR_SUCCESS",
+          res_data: { loading: false, data: response.data },
+        });
+      })
+      .catch((err) => {
+        dispatch({ type: "GET_CALENDAR_ERROR", err });
+      });
+  };
+};
+
+export const getReservations = (unitId) => {
+  return (dispatch) => {
+    dispatch({
+      type: "GET_RESERVATIONS_LOADING",
+      res_data: { loading: true, data: null },
+    });
+    return axios
+      .get(ApiUrl + "/getReservations/" + unitId)
+      .then((response) => {
+        dispatch({
+          type: "GET_RESERVATIONS_SUCCESS",
+          res_data: { loading: false, data: response.data },
+        });
+      })
+      .catch((err) => {
+        dispatch({ type: "GET_RESERVATIONS_ERROR", err });
+      });
+  };
+};
+
 export const getOwnerById = (ownerId) => {
   return (dispatch) => {
     return axios
