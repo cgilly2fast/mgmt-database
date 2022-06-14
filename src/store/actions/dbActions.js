@@ -151,6 +151,20 @@ export const updateTeammate = (data) => {
   };
 };
 
+export const updateCalendar = (data, reloadCalendar) => {
+  return (dispatch) => {
+    return axios
+      .post(ApiUrl + "/updateCalendar", data)
+      .then((response) => {
+        reloadCalendar();
+        dispatch({ type: "UPDATE_CALENDAR_SUCCESS", res_data: response.data });
+      })
+      .catch((err) => {
+        dispatch({ type: "UPDATE_CALENDAR_ERROR", err });
+      });
+  };
+};
+
 export const updateOwner = (data) => {
   return (dispatch) => {
     return axios

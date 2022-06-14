@@ -271,7 +271,7 @@ mgmt.get("/getCalendar/:unitId", async (req, res) => {
     .get();
   let data = [];
   snapshot.forEach((doc) => {
-    data.push(doc.data());
+    data.push({ ...doc.data(), id: doc.id });
   });
   if (snapshot.size) {
     res.send(data[0]);
@@ -279,6 +279,33 @@ mgmt.get("/getCalendar/:unitId", async (req, res) => {
   } else {
     res.send("No record found");
     return;
+  }
+});
+
+mgmt.post("/updateCalendar", async (req, res) => {
+  const { date, day, min_stay, currency, price, reason, calendarId } = req.body;
+  const data = {
+    days: {
+      [date && date]: {
+        date: date,
+        day: day,
+        min_stay: min_stay,
+        price: {
+          currency: currency,
+          price: price * 10,
+        },
+        status: {
+          reason: reason,
+        },
+      },
+    },
+  };
+  try {
+    const calendarData = await db.collection("calendar").doc(calendarId);
+    const result = await calendarData.set(data, { merge: true });
+    res.send({ uuid: calendarId, result: result });
+  } catch (error) {
+    res.send(error);
   }
 });
 
@@ -293,7 +320,6 @@ mgmt.get("/getReservations/:unitId", async (req, res) => {
   snapshot.forEach((doc) => {
     data.push(doc.data());
   });
-  console.log("snapshot.size", snapshot.size);
   if (snapshot.size) {
     res.send(data);
     return;
