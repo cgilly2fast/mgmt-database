@@ -283,7 +283,8 @@ mgmt.get("/getCalendar/:unitId", async (req, res) => {
 });
 
 mgmt.post("/updateCalendar", async (req, res) => {
-  const { date, day, min_stay, currency, price, reason, calendarId } = req.body;
+  const { id, date, min_stay, price, currency, calendarId, day, reason } =
+    req.body;
   const data = {
     days: {
       [date && date]: {
@@ -301,9 +302,48 @@ mgmt.post("/updateCalendar", async (req, res) => {
     },
   };
   try {
-    const calendarData = await db.collection("calendar").doc(calendarId);
-    const result = await calendarData.set(data, { merge: true });
-    res.send({ uuid: calendarId, result: result });
+    const adData = {
+      days: {
+        [date && date]: {
+          date: date,
+          min_stay: min_stay,
+          price: {
+            amount: price * 10, 
+            currency: currency,
+          },
+        },
+      },
+    };
+    const adCalendar = await db
+      .collection("ad-calendar")
+      .where("unit_id", "==", id)
+      .get();
+    let adCalendarData = [];
+    let daysData = [];
+    adCalendar.forEach((docs) =>
+      adCalendarData.push({ ...docs.data(), id: docs.id })
+    );
+    adCalendarData.map((item) => {
+      if (item?.days) {
+        daysData = Object.values(item.days);
+        daysData.map((ele) => {
+          if (ele.date === date) {
+            db.collection("calendar")
+              .doc(calendarId)
+              .set(data, { merge: true });
+            db.collection("ad-calendar")
+              .doc(item?.id)
+              .set(adData, { merge: true });
+            res.send("Update record");
+            return;
+          } else {
+            res.send("No record found");
+            return;
+          }
+        });
+        return;
+      }
+    });
   } catch (error) {
     res.send(error);
   }

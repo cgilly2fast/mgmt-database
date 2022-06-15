@@ -45,6 +45,8 @@ const Calendar = () => {
   const history = useHistory();
   const [show, setShow] = useState(false);
   const [eventsList, setEventsList] = useState([]);
+  const [postsItems, setPostsItems] = useState([]);
+  const [reservationItems, setReservationItems] = useState([]);
   const [reservationList, setReservationList] = useState([]);
   const [data, setData] = useState();
   const { id } = useParams();
@@ -95,39 +97,79 @@ const Calendar = () => {
     ) {
       if (calendardata?.data?.days) {
         setEventsList(Object?.values(calendardata?.data?.days));
+      }
+      if (reservations?.data) {
         setReservationList(Object?.values(reservations?.data));
       }
     }
   }, [calendardata.data]);
 
-  let postsItems = [];
-  for (const [key, value] of eventsList.entries()) {
-    postsItems.push({
-      type: "price",
-      title: "$" + value?.price.price / 10,
-      extendedProps: {
-        date: value?.date,
-        value: value,
-      },
-      date: value?.date,
-    });
-  }
+  useEffect(() => {
+    if (reservationList?.length) {
+      const data = reservationList.map((value) => {
+        return {
+          type: "reservations",
+          title: value?.guest?.firstName,
+          start: value?.checkInDate,
+          end: value?.checkOutDate,
+          extendedProps: {
+            picture: value?.guest?.picture,
+            value: value,
+          },
+          borderColor: "black",
+          backgroundColor: "#fffadf",
+          textColor: "black",
+        };
+      });
+      setReservationItems(data);
+    }
+  }, [reservationList]);
 
-  let reservationItems = [];
-  for (const [key, value] of reservationList.entries()) {
-    reservationItems.push({
-      type: "reservations",
-      title: value?.guest?.firstName,
-      start: value?.checkInDate,
-      end: value?.checkOutDate,
-      extendedProps: {
-        picture: value?.guest?.picture,
-      },
-      borderColor: "black",
-      backgroundColor: "#fffadf",
-      textColor: "black",
-    });
-  }
+  useEffect(() => {
+    if (eventsList?.length) {
+      const data = eventsList
+        ?.map((values) => {
+          const filter = reservationList.find(
+            (reserveDate) =>
+              new Date(reserveDate.checkOutDate).getTime() >
+              new Date(values.date).getTime()
+          );
+          if (!Boolean(filter)) {
+            return {
+              type: "price",
+              title: "$" + values?.price.price / 10,
+              extendedProps: {
+                date: values?.date,
+                value: values,
+              },
+              date: values?.date,
+            };
+          }
+          return null;
+        })
+        .filter((res) => res);
+      setPostsItems(data);
+    }
+  }, [eventsList, reservationList]);
+
+  // let reservationItems = [];
+  // for (const [key, value] of reservationList.entries()) {
+  //   reservationItems.push({
+  //     type: "reservations",
+  //     title: value?.guest?.firstName,
+  //     start: value?.checkInDate,
+  //     end: value?.checkOutDate,
+  //     extendedProps: {
+  //       picture: value?.guest?.picture,
+  //       value: value,
+  //     },
+  //     borderColor: "black",
+  //     backgroundColor: "#fffadf",
+  //     textColor: "black",
+  //   });
+  // }
+
+  // let postsItems = [];
 
   const validationSchema = Yup.object().shape({
     day: Yup.number()
@@ -142,6 +184,13 @@ const Calendar = () => {
     currency: Yup.string().required("currency is required"),
     reason: Yup.string().required("reason is required"),
   });
+
+  // const visibleEvents = postsItems.getEvents().filter((event) => {
+
+  //   // const s = calendar.view.activeStart, e = calendar.view.activeEnd
+  //   // if (event.start > e || event.end < s) return false
+  //   // return true
+  // });
 
   return (
     <>
@@ -202,7 +251,11 @@ const Calendar = () => {
                   right: "dayGridMonth",
                 }}
                 // events={postsItems}
-                eventSources={[postsItems, reservationItems]}
+                defaultView={reservationItems}
+                eventSources={[
+                  reservationItems.length && reservationItems,
+                  postsItems,
+                ]}
                 selectable={true}
                 // dateClick={handleClick}
                 eventContent={renderEventContent}
@@ -231,7 +284,7 @@ const Calendar = () => {
                   dispatch(getCalendar(id));
                   dispatch(getReservations(id));
                 };
-                const data = await { ...values, calendarId };
+                const data = await { ...values, calendarId, id };
                 dispatch(updateCalendar(data, reloadCalendar));
                 setShow(false);
                 setSubmitting(false);
