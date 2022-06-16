@@ -73,7 +73,7 @@ const Calendar = () => {
   const handleClick = (arg) => {
     if (
       arg?.event?._def?.extendedProps?.type &&
-      arg?.event?._def?.extendedProps?.type == "price"
+      arg?.event?._def?.extendedProps?.type === "price"
     ) {
       setData(arg?.event?._def?.extendedProps);
       setShow(true);
@@ -92,8 +92,8 @@ const Calendar = () => {
 
   useEffect(() => {
     if (
-      (calendardata?.loading == false && calendardata?.data) ||
-      (reservations?.loading == false && reservations?.data)
+      (calendardata?.loading === false && calendardata?.data) ||
+      (reservations?.loading === false && reservations?.data)
     ) {
       if (calendardata?.data?.days) {
         setEventsList(Object?.values(calendardata?.data?.days));
@@ -152,25 +152,6 @@ const Calendar = () => {
     }
   }, [eventsList, reservationList]);
 
-  // let reservationItems = [];
-  // for (const [key, value] of reservationList.entries()) {
-  //   reservationItems.push({
-  //     type: "reservations",
-  //     title: value?.guest?.firstName,
-  //     start: value?.checkInDate,
-  //     end: value?.checkOutDate,
-  //     extendedProps: {
-  //       picture: value?.guest?.picture,
-  //       value: value,
-  //     },
-  //     borderColor: "black",
-  //     backgroundColor: "#fffadf",
-  //     textColor: "black",
-  //   });
-  // }
-
-  // let postsItems = [];
-
   const validationSchema = Yup.object().shape({
     day: Yup.number()
       .typeError("only number allowed")
@@ -185,40 +166,9 @@ const Calendar = () => {
     reason: Yup.string().required("reason is required"),
   });
 
-  // const visibleEvents = postsItems.getEvents().filter((event) => {
-
-  //   // const s = calendar.view.activeStart, e = calendar.view.activeEnd
-  //   // if (event.start > e || event.end < s) return false
-  //   // return true
-  // });
-
   return (
     <>
       <>
-        {/* {id === undefined ? (
-          <>
-            <h2 className="text-center mt-5 mb-3" style={{ color: "#007bff" }}>
-              Select Unit
-            </h2>
-            <div className="d-flex justify-content-center">
-              <Form.Control
-                as="select"
-                className="select-unit"
-                onChange={handleSelect}
-                style={{ width: "30%" }}
-              >
-                <option selected disabled>
-                  Select Units
-                </option>
-                {unitsdata?.map((item) => (
-                  <option value={item?.id} key={item?.id}>
-                    {item?.name} {item?.address?.city}
-                  </option>
-                ))}
-              </Form.Control>
-            </div>
-          </>
-        ) : ( */}
         <div className="main-div">
           {calendardata.loading ? (
             <h1 className="loader">Loading...</h1>
@@ -250,21 +200,18 @@ const Calendar = () => {
                   center: "title",
                   right: "dayGridMonth",
                 }}
-                // events={postsItems}
                 defaultView={reservationItems}
                 eventSources={[
                   reservationItems.length && reservationItems,
                   postsItems,
                 ]}
                 selectable={true}
-                // dateClick={handleClick}
                 eventContent={renderEventContent}
                 eventClick={handleClick}
               />
             </>
           )}
         </div>
-        {/* )} */}
         {show && (
           <Modal show={show} onHide={handleClose}>
             <Formik
