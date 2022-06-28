@@ -44,3 +44,65 @@
   border-radius: 50%;
   margin-right: 10px;
 }
+
+.owner-name {
+  padding-left: 10px;
+  text-transform: capitalize;
+  font-size: 20px;
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.property-image {
+  border-radius: 15px;
+  width: 100%;
+}
+
+.model-owner-title {
+  text-transform: capitalize;
+  color: #007bff;
+  font-size: 20px;
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.head-image {
+  position: relative;
+}
+
+.occupancy {
+  margin-left: 0px;
+}
+
+.detail-div {
+  border: 1px solid black;
+  border-radius: 15px;
+}
+
+.button {
+  width: 100%;
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.detail-tag {
+  font-size: 18px;
+  font-weight: 400;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  align-self: center;
+}
+
+.checkInandOut-div {
+  border: 1px solid black;
+  width: 50%;
+  border-radius: 15px;
+  padding-top: 10px;
+  justify-content: center;
+}

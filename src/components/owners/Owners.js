@@ -11,7 +11,6 @@ export class Owners extends Component {
   }
   render() {
     const { owners } = this.props;
-    console.log(this.props);
     return (
       <div>
         <Container>

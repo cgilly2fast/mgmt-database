@@ -8,6 +8,7 @@ const initState = {
   owner: {},
   calendar: { loading: true, data: null },
   reservations: { loading: true, data: null },
+  reservationDetail: {},
 };
 
 const dbReducer = (state = initState, action) => {
@@ -93,6 +94,18 @@ const dbReducer = (state = initState, action) => {
       };
     case "GET_RESERVATIONS_ERROR":
       return state;
+    case "GET_RESERVATION_DETAIL_SUCCESS":
+      return {
+        ...state,
+        reservationDetail: action.res_data,
+      };
+    case "GET_RESERVATION_DETAIL_ERROR":
+      return state;
+    case "GET_RESERVATION_DETAIL_LOADING":
+      return {
+        ...state,
+        reservationDetail: action.res_data,
+      };
 
     //   case "SET_TOTAL_GUESTS":
     //     return {

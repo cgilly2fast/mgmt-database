@@ -34,34 +34,34 @@ mgmt.use(cors({ origin: true }));
 
 mgmt.post("/updateUnit", async (req, res) => {
   let data = req.body;
+  // try {
+  //   if (data.id === "") {
+  //     data.id = await getNextUnitId();
+  //     fileVars = await (
+  //       await db.collection("variables").doc("onboardingFiles").get()
+  //     ).data();
+  //     data = await setUnitFolder(data, fileVars.offices);
+  //     const files = fileVars.files;
+  //     const length = Object.keys(files).length;
+  //     for (let i = 0; i < length; i++) {
+  //       data = await setFile(data, files[i]);
+  //     }
+  //     data = await setPhotosFolder(data);
+  //     //data = await setPhotosFolder(data);
+  //   }
+  // } catch (err) {
+  //   console.log(err);
+  // }
+
+  // if (data.owner[0] !== undefined) {
+  //   data.owner = data.owner[0];
+  // }
+
+  // data.address.display = createDisplayAddress(data);
 
   try {
-    if (data.id === "") {
-      data.id = await getNextUnitId();
-      fileVars = await (
-        await db.collection("variables").doc("onboardingFiles").get()
-      ).data();
-      data = await setUnitFolder(data, fileVars.offices);
-      const files = fileVars.files;
-      const length = Object.keys(files).length;
-      for (let i = 0; i < length; i++) {
-        data = await setFile(data, files[i]);
-      }
-      data = await setPhotosFolder(data);
-      //data = await setPhotosFolder(data);
-    }
-  } catch (err) {
-    console.log(err);
-  }
-
-  if (data.owner[0] !== undefined) {
-    data.owner = data.owner[0];
-  }
-
-  data.address.display = createDisplayAddress(data);
-
-  try {
-    await db.collection("units").doc(data.id).set(data, { merge: true });
+    // await db.collection("mgmt-units").doc(data.id).set(data, { merge: true });
+    await db.collection("mgmt-units").doc(data.id).set(data);
 
     res.send({ id: data.id });
   } catch (err) {
@@ -80,11 +80,9 @@ mgmt.get("/createOauth", async (req, res) => {
 
 mgmt.get("/oauth2callback", async (req, res) => {
   const code = req.query.code;
-  console.log(code);
   try {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
-    console.log(tokens);
 
     res.send({ tokens });
   } catch (err) {
@@ -92,13 +90,15 @@ mgmt.get("/oauth2callback", async (req, res) => {
   }
 });
 mgmt.get("/getUnits", async (req, res) => {
-  console.log("sdsadsddsadsadasddsdsdd")
   let snapshot = {};
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
-    snapshot = await db.collection("units").where("active", "==", active).get();
+    snapshot = await db
+      .collection("mgmt-units")
+      .where("active", "==", active)
+      .get();
   } else {
-    snapshot = await db.collection("units").get();
+    snapshot = await db.collection("mgmt-units").get();
   }
 
   let data = [];
@@ -125,7 +125,7 @@ mgmt.get("/getOwnerByUnitId", async (req, res) => {
 
 mgmt.get("/getUnits/:unit_id", async (req, res) => {
   const id = req.params.unit_id;
-  const doc = await db.collection("units").doc(id).get();
+  const doc = await db.collection("mgmt-units").doc(id).get();
 
   res.send(doc.data());
 });
@@ -372,10 +372,23 @@ mgmt.get("/getReservations/:unitId", async (req, res) => {
     .get();
   let data = [];
   snapshot.forEach((doc) => {
-    data.push(doc.data());
+    data.push({ ...doc.data(), id: doc.id });
   });
   if (snapshot.size) {
     res.send(data);
+    return;
+  } else {
+    res.send("No record found");
+    return;
+  }
+});
+
+mgmt.get("/getReservationsDetail/:id", async (req, res) => {
+  let snapshot = {};
+  const id = req.params.id;
+  snapshot = await db.collection("reservations").doc(id).get();
+  if (snapshot.exists) {
+    res.send(snapshot.data());
     return;
   } else {
     res.send("No record found");
@@ -471,7 +484,6 @@ function setFile(data, file) {
 
     drive.files.copy(request, (err, res) => {
       if (err) {
-        console.log("Rejecting because of error");
         reject(err);
       }
       if (file.url !== undefined) {
@@ -495,7 +507,7 @@ function createDisplayAddress(data) {
 
 function getNextUnitId() {
   return new Promise(function (resolve, reject) {
-    db.collection("units")
+    db.collection("mgmt-units")
       .orderBy("id", "desc")
       .limit(1)
       .get()
@@ -530,10 +542,8 @@ function test(data, auth) {
       },
       (err, file) => {
         if (err) {
-          console.log(err);
           reject(err);
         }
-        console.log(file);
         resolve(file);
       }
     );

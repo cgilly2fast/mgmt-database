@@ -13,7 +13,6 @@ export class Teammate extends Component {
   }
   componentDidMount() {
     const { teammateId } = this.props.match.params;
-    console.log(teammateId);
     if (
       this.props.location &&
       this.props.location.state &&

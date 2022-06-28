@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Button, Col } from "react-bootstrap";
+import { Form, Button, Col, Row } from "react-bootstrap";
 import { getUnitById, getOwners } from "../../store/actions/dbActions";
 import { connect } from "react-redux";
 import { Alert } from "bootstrap";
@@ -75,7 +75,6 @@ export class UnitForm extends Component {
       .post(ApiUrl + "/updateUnit", form)
       .then((res) => {
         this.setState({ loading: false });
-        console.log(res.data);
         this.props.history.push("/unit/" + res.data.id);
       })
       .catch((err) => {
@@ -285,7 +284,7 @@ export class UnitForm extends Component {
             />
           </Form.Group>
 
-          <Form.Row>
+          <Row>
             <Form.Group as={Col} controlId="city">
               <Form.Label>City</Form.Label>
               <Form.Control
@@ -309,8 +308,8 @@ export class UnitForm extends Component {
                 value={form.address.postcode}
               />
             </Form.Group>
-          </Form.Row>
-          <Form.Row>
+          </Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Office
@@ -328,8 +327,8 @@ export class UnitForm extends Component {
                 <option value="Waikiki">Waikiki</option>
               </Form.Control>
             </Col>
-          </Form.Row>
-          <Form.Row>
+          </Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Active
@@ -346,7 +345,7 @@ export class UnitForm extends Component {
                 <option value="1">false</option>
               </Form.Control>
             </Col>
-          </Form.Row>
+          </Row>
           <Form.Group controlId="rent">
             <Form.Label>Rent</Form.Label>
             <Form.Control
@@ -411,7 +410,7 @@ export class UnitForm extends Component {
               placeholder="example.com"
             />
           </Form.Group>
-          <Form.Row controlId="send_guest_info">
+          <Row controlId="send_guest_info">
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Send Guest Info
@@ -428,8 +427,8 @@ export class UnitForm extends Component {
                 <option value="true">true</option>
               </Form.Control>
             </Col>
-          </Form.Row>
-          <Form.Row controlId="guest_info_type">
+          </Row>
+          <Row controlId="guest_info_type">
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Guest Info Type
@@ -448,7 +447,7 @@ export class UnitForm extends Component {
                 <option value="pdf">pdf</option>
               </Form.Control>
             </Col>
-          </Form.Row>
+          </Row>
           <Form.Group controlId="currency">
             <Form.Label>Send Guest Info</Form.Label>
             <Form.Control
@@ -467,7 +466,7 @@ export class UnitForm extends Component {
               placeholder="google drive url"
             />
           </Form.Group>
-          <Form.Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Room Type
@@ -487,8 +486,8 @@ export class UnitForm extends Component {
                 <option value="Unknown">Unknown</option>
               </Form.Control>
             </Col>
-          </Form.Row>
-          <Form.Row>
+          </Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Property Type
@@ -512,7 +511,7 @@ export class UnitForm extends Component {
                 <option value="Hostel">Hostel</option>
               </Form.Control>
             </Col>
-          </Form.Row>
+          </Row>
           <Form.Group controlId="tax_rate">
             <Form.Label>Tax Rate</Form.Label>
             <Form.Control

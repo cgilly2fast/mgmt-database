@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Button, Col } from "react-bootstrap";
+import { Form, Button, Col, Row } from "react-bootstrap";
 import { getUnits, getOwnerById } from "../../store/actions/dbActions";
 import { connect } from "react-redux";
 import { Alert } from "bootstrap";
@@ -61,7 +61,6 @@ export class OwnerForm extends Component {
     axios
       .post(ApiUrl + "/updateOwner", form)
       .then((res) => {
-        console.log(res.data.uuid);
         this.setState({ loading: false });
         this.props.history.push("/owner/" + res.data.uuid);
       })
@@ -78,7 +77,6 @@ export class OwnerForm extends Component {
     });
   };
   handleMultiSelectChange = (event) => {
-    console.log("multi", this.getSelectedValues());
     let form = { ...this.state.form };
     form.units = this.getSelectedValues();
     this.setState({
@@ -238,7 +236,7 @@ export class OwnerForm extends Component {
             />
           </Form.Group>
 
-          <Form.Row>
+          <Row>
             <Form.Group as={Col} controlId="city">
               <Form.Label>City</Form.Label>
               <Form.Control
@@ -262,8 +260,8 @@ export class OwnerForm extends Component {
                 value={form.address.postcode}
               />
             </Form.Group>
-          </Form.Row>
-          <Form.Row>
+          </Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Active
@@ -280,7 +278,7 @@ export class OwnerForm extends Component {
                 <option value="false">false</option>
               </Form.Control>
             </Col>
-          </Form.Row>
+          </Row>
 
           <Form.Group controlId="business_number">
             <Form.Label>Business Number</Form.Label>
@@ -318,7 +316,7 @@ export class OwnerForm extends Component {
               placeholder="123456"
             />
           </Form.Group>
-          <Form.Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Owner Statements
@@ -336,8 +334,8 @@ export class OwnerForm extends Component {
                 <option value="true">true</option>
               </Form.Control>
             </Col>
-          </Form.Row>
-          <Form.Row>
+          </Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Owner Partnership
@@ -355,7 +353,7 @@ export class OwnerForm extends Component {
                 <option value="true">true</option>
               </Form.Control>
             </Col>
-          </Form.Row>
+          </Row>
           <Form.Group controlId="percentage">
             <Form.Label>Percentage</Form.Label>
             <Form.Control

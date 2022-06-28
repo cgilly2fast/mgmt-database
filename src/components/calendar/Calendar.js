@@ -2,7 +2,7 @@ import FullCalendar from "@fullcalendar/react";
 import React, { useEffect, useState } from "react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Button, Form, Modal, Spinner } from "react-bootstrap";
+import { Button, Form, Modal, Spinner, Offcanvas } from "react-bootstrap";
 import "./Calendar.css";
 import moment from "moment-timezone";
 import { useHistory } from "react-router-dom";
@@ -11,6 +11,7 @@ import {
   getCalendar,
   getReservations,
   updateCalendar,
+  getReservationsDetail,
 } from "../../store/actions/dbActions";
 import { connect, useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -49,11 +50,18 @@ const Calendar = () => {
   const [reservationItems, setReservationItems] = useState([]);
   const [reservationList, setReservationList] = useState([]);
   const [data, setData] = useState();
+  const [reservationId, setReservationId] = useState();
+  const [showCanvas, setShowCanvas] = useState(false);
+  const [showModel, setShowModel] = useState(false);
   const { id } = useParams();
 
   const unitsdata = useSelector(({ db }) => db?.units);
   const calendardata = useSelector(({ db }) => db?.calendar);
   const reservations = useSelector(({ db }) => db?.reservations);
+  const reservationDetail = useSelector(
+    ({ db }) => db?.reservationDetail?.data
+  );
+  const loading = useSelector(({ db }) => db?.reservationDetail?.loading);
 
   const calendarId = calendardata?.data?.id && calendardata?.data?.id;
 
@@ -78,11 +86,26 @@ const Calendar = () => {
       setData(arg?.event?._def?.extendedProps);
       setShow(true);
     }
+    if (
+      arg?.event?._def?.extendedProps?.type &&
+      arg?.event?._def?.extendedProps?.type === "reservations"
+    ) {
+      setReservationId(arg?.event?.id);
+      setShowCanvas(true);
+    }
   };
 
   const handleClose = () => {
     setData();
     setShow(false);
+  };
+
+  const handleCloseCanvas = () => {
+    setShowCanvas(false);
+  };
+
+  const handleCloseModel = () => {
+    setShowModel(false);
   };
 
   const handleSelect = (e) => {
@@ -109,6 +132,7 @@ const Calendar = () => {
       const data = reservationList.map((value) => {
         return {
           type: "reservations",
+          id: value?.id,
           title: value?.guest?.firstName,
           start: value?.checkInDate,
           end: value?.checkOutDate,
@@ -131,8 +155,10 @@ const Calendar = () => {
         ?.map((values) => {
           const filter = reservationList.find(
             (reserveDate) =>
+              new Date(reserveDate.checkInDate).getTime() <=
+                new Date(values.date).getTime() &&
               new Date(reserveDate.checkOutDate).getTime() >
-              new Date(values.date).getTime()
+                new Date(values.date).getTime()
           );
           if (!Boolean(filter)) {
             return {
@@ -152,6 +178,12 @@ const Calendar = () => {
     }
   }, [eventsList, reservationList]);
 
+  useEffect(() => {
+    if (reservationId) {
+      dispatch(getReservationsDetail(reservationId));
+    }
+  }, [reservationId]);
+
   const validationSchema = Yup.object().shape({
     day: Yup.number()
       .typeError("only number allowed")
@@ -169,6 +201,7 @@ const Calendar = () => {
   return (
     <>
       <>
+        {/* Full calendar */}
         <div className="main-div">
           {calendardata.loading ? (
             <h1 className="loader">Loading...</h1>
@@ -212,6 +245,8 @@ const Calendar = () => {
             </>
           )}
         </div>
+
+        {/* Price update Model  */}
         {show && (
           <Modal show={show} onHide={handleClose}>
             <Formik
@@ -386,6 +421,252 @@ const Calendar = () => {
             </Formik>
           </Modal>
         )}
+
+        {/* Show Reservation detail on offcanvas */}
+        {showCanvas && (
+          <>
+            <Offcanvas
+              show={showCanvas}
+              onHide={handleCloseCanvas}
+              placement="end"
+            >
+              {!loading ? (
+                <>
+                  <Offcanvas.Header closeButton>
+                    <Offcanvas.Title>
+                      <div className="d-flex">
+                        <i className="bi bi-person-circle" />
+                        &nbsp;&nbsp;
+                        <h3 className="model-owner-title">
+                          {reservationDetail?.guest?.firstName &&
+                            reservationDetail?.guest?.firstName}{" "}
+                          {reservationDetail?.guest?.lastName &&
+                            reservationDetail?.guest?.lastName}
+                        </h3>
+                      </div>
+                    </Offcanvas.Title>
+                  </Offcanvas.Header>
+                  <Offcanvas.Body>
+                    {reservationDetail?.explore?.pictures?.[0] !== "" ? (
+                      <img
+                        src={reservationDetail?.explore?.pictures?.[0]}
+                        alt="property image"
+                        className="property-image"
+                      />
+                    ) : null}
+
+                    <div className="d-flex mt-3">
+                      <h6 className="title">
+                        {reservationDetail?.explore?.title
+                          ? reservationDetail?.explore?.title
+                          : null}
+                      </h6>
+                    </div>
+
+                    <div className="d-flex">
+                      <i className="bi bi-box-arrow-in-left" />{" "}
+                      <h6 className="mx-3 detail-tag">
+                        {reservationDetail?.checkInDate &&
+                          moment(reservationDetail?.checkInDate).format(
+                            "ddd, MMMM-DD-YYYY"
+                          )}
+                      </h6>
+                    </div>
+                    <div className="d-flex">
+                      <i className="bi bi-box-arrow-in-right" />{" "}
+                      <h6 className="mx-3 detail-tag">
+                        {reservationDetail?.checkOutDate &&
+                          moment(reservationDetail?.checkOutDate).format(
+                            "ddd, MMMM-DD-YYYY"
+                          )}
+                      </h6>
+                    </div>
+
+                    <div className="d-flex">
+                      <div className="d-flex mt-2">
+                        <label className="detail-tag">Nights:</label>
+                        <h6 className="mx-3 detail-tag">
+                          {reservationDetail?.nights &&
+                            reservationDetail?.nights}
+                        </h6>
+                      </div>
+                      <div className="d-flex mt-2">
+                        <label className="detail-tag">Payment:</label>
+                        <h6 className="mx-3 detail-tag">
+                          {reservationDetail?.payment?.amount &&
+                            `$${reservationDetail?.payment?.amount}`}
+                        </h6>
+                      </div>
+                    </div>
+
+                    <div className="d-flex">
+                      <div className="d-flex">
+                        <label className="detail-tag">Adults:</label>{" "}
+                        <h6 className="mx-3 detail-tag">
+                          {reservationDetail?.occupancy?.adults &&
+                            reservationDetail?.occupancy?.adults}
+                        </h6>
+                      </div>
+                      <div className="d-flex">
+                        <label className="detail-tag">Children:</label>{" "}
+                        <h6 className="mx-3 detail-tag">
+                          {reservationDetail?.occupancy?.children &&
+                            reservationDetail?.occupancy?.children}
+                        </h6>
+                      </div>
+                      <div className="d-flex">
+                        <label className="detail-tag">Infants:</label>{" "}
+                        <h6 className="mx-3 detail-tag">
+                          {reservationDetail?.occupancy?.infants &&
+                            reservationDetail?.occupancy?.infants}
+                        </h6>
+                      </div>
+                    </div>
+
+                    <div className="d-flex justify-content-center ">
+                      <Button
+                        className="button"
+                        onClick={() => setShowModel(true)}
+                      >
+                        More Details
+                      </Button>
+                    </div>
+
+                    <div className="mt-3">
+                      <label>
+                        <b>Notes</b>
+                      </label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        placeholder="Add a note for this conversation"
+                      />
+                    </div>
+                  </Offcanvas.Body>
+                </>
+              ) : (
+                <div>
+                  <Spinner animation="border" variant="primary" size="sm" />
+                </div>
+              )}
+            </Offcanvas>
+          </>
+        )}
+
+        {/* Reservations Model */}
+        {showModel && (
+          <Modal show={showModel} onHide={handleCloseModel}>
+            <Modal.Header closeButton>
+              <Modal.Title>
+                <h3 className="model-owner-title">
+                  {reservationDetail?.guest?.firstName &&
+                    reservationDetail?.guest?.firstName}{" "}
+                  {reservationDetail?.guest?.lastName &&
+                    reservationDetail?.guest?.lastName}
+                </h3>
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <h5>Booking Details</h5>
+              <hr />
+              {reservationDetail?.reservationCode && (
+                <>
+                  <p>Reservation Code : {reservationDetail?.reservationCode}</p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.checkInDate && (
+                <>
+                  <p>Check In : {reservationDetail?.checkInDate}</p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.checkOutDate && (
+                <>
+                  <p>Check Out : {reservationDetail?.checkOutDate}</p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.explore?.capacity?.max && (
+                <>
+                  <p>Guests : {reservationDetail?.explore?.capacity?.max}</p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.nights && (
+                <>
+                  <p>Nights : {reservationDetail?.nights}</p>
+                  <hr />
+                </>
+              )}
+              <br />
+              <h5>Listing Details</h5>
+              <hr />
+              {reservationDetail?.explore?.title && (
+                <>
+                  <p>Listing Name : {reservationDetail?.explore?.title}</p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.explore?.address?.street && (
+                <>
+                  <p>
+                    Listing Address :{" "}
+                    {reservationDetail?.explore?.address?.street},{" "}
+                    {reservationDetail?.explore?.address?.city}
+                  </p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.explore?.capacity?.bedrooms && (
+                <>
+                  <p>
+                    Bedrooms : {reservationDetail?.explore?.capacity?.bedrooms}
+                  </p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.explore?.capacity?.beds && (
+                <>
+                  <p>Beds : {reservationDetail?.explore?.capacity?.beds}</p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.explore?.capacity?.bathrooms && (
+                <>
+                  <p>
+                    Bathrooms :{" "}
+                    {reservationDetail?.explore?.capacity?.bathrooms}
+                  </p>
+                  <hr />
+                </>
+              )}
+              <br />
+              <h5>Payment Details</h5>
+              <hr />
+              {reservationDetail?.prices?.totalPrice && (
+                <>
+                  <p>Amount : ${reservationDetail?.prices?.totalPrice}</p>
+                  <hr />
+                </>
+              )}
+              {reservationDetail?.prices?.total_cleaning_fee && (
+                <>
+                  <p>
+                    Cleaning Fee : $
+                    {reservationDetail?.prices?.total_cleaning_fee}
+                  </p>
+                  <hr />
+                </>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="primary" onClick={handleCloseModel}>
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        )}
       </>
     </>
   );
@@ -400,4 +681,5 @@ export default connect(mapStateToProps, {
   getActiveUnits,
   getCalendar,
   getReservations,
+  getReservationsDetail,
 })(Calendar);

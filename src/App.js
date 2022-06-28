@@ -10,9 +10,9 @@ import Team from "./components/team/Team";
 import Teammate from "./components/teammate/Teammate";
 import TeammateForm from "./components/teammateForm/TeammateForm";
 import OwnerForm from "./components/ownerForm/OwnerForm";
+import ListingForm from "./components/listingForm/ListingForm";
 
 import { Container } from "react-bootstrap";
-import { ListingForm } from "./components/listingForm/ListingForm";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import Login from "./components/login/Login";
 import Signup from "./components/signup/Signup";
@@ -22,7 +22,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Calendar from "./components/calendar/Calendar";
 import SelectUnit from "./components/selectUnit/SelectUnit";
 
-class App extends Component {
+export default class App extends Component {
   render() {
     return (
       <AuthProvider>
@@ -48,7 +48,7 @@ class App extends Component {
               />
               <PrivateRoute
                 exact
-                path="/unit/:unitId/listing/:listingId/edit"
+                path="/unit/:unitId/listing/:provider/edit"
                 component={ListingForm}
               />
               <PrivateRoute exact path="/owners" component={Owners} />
@@ -86,5 +86,3 @@ class App extends Component {
     );
   }
 }
-
-export default App;

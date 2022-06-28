@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Button, Col } from "react-bootstrap";
+import { Form, Button, Col, Row } from "react-bootstrap";
 import { connect } from "react-redux";
 import { Alert } from "bootstrap";
 import axios from "axios";
@@ -45,7 +45,6 @@ export class TeammateForm extends Component {
     axios
       .post(ApiUrl + "/updateTeammate", form)
       .then((res) => {
-        console.log(res.data.uuid);
         this.setState({ loading: false });
         this.props.history.push("/teammate/" + res.data.uuid);
       })
@@ -165,7 +164,7 @@ export class TeammateForm extends Component {
             />
           </Form.Group>
 
-          <Form.Row>
+          <Row>
             <Form.Group as={Col} controlId="city">
               <Form.Label>City</Form.Label>
               <Form.Control
@@ -189,8 +188,8 @@ export class TeammateForm extends Component {
                 value={form.address.postcode}
               />
             </Form.Group>
-          </Form.Row>
-          <Form.Row>
+          </Row>
+          <Row>
             <Col xs="auto" className="my-1">
               <Form.Label className="mr-sm-2" htmlFor="">
                 Choose Payment Type
@@ -209,7 +208,7 @@ export class TeammateForm extends Component {
                 <option value="PayPal">PayPal</option>
               </Form.Control>
             </Col>
-          </Form.Row>
+          </Row>
 
           <Form.Group controlId="hours_sheet">
             <Form.Label>Hours Sheet</Form.Label>
