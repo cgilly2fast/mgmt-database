@@ -13,7 +13,7 @@ export class Owners extends Component {
     const { owners } = this.props;
     return (
       <div>
-        <Container>
+        <Container fluid>
           <Button as={Link} to="/owner/create" variant="primary">
             + Add New Owner
           </Button>

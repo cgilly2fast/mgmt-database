@@ -60,8 +60,8 @@ mgmt.post("/updateUnit", async (req, res) => {
   // data.address.display = createDisplayAddress(data);
 
   try {
-    // await db.collection("mgmt-units").doc(data.id).set(data, { merge: true });
-    await db.collection("mgmt-units").doc(data.id).set(data);
+    // await db.collection("units").doc(data.id).set(data, { merge: true });
+    await db.collection("units").doc(data.id).set(data);
 
     res.send({ id: data.id });
   } catch (err) {
@@ -94,11 +94,11 @@ mgmt.get("/getUnits", async (req, res) => {
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
     snapshot = await db
-      .collection("mgmt-units")
+      .collection("units")
       .where("active", "==", active)
       .get();
   } else {
-    snapshot = await db.collection("mgmt-units").get();
+    snapshot = await db.collection("units").get();
   }
 
   let data = [];
@@ -125,7 +125,7 @@ mgmt.get("/getOwnerByUnitId", async (req, res) => {
 
 mgmt.get("/getUnits/:unit_id", async (req, res) => {
   const id = req.params.unit_id;
-  const doc = await db.collection("mgmt-units").doc(id).get();
+  const doc = await db.collection("units").doc(id).get();
 
   res.send(doc.data());
 });
@@ -507,7 +507,7 @@ function createDisplayAddress(data) {
 
 function getNextUnitId() {
   return new Promise(function (resolve, reject) {
-    db.collection("mgmt-units")
+    db.collection("units")
       .orderBy("id", "desc")
       .limit(1)
       .get()

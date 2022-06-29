@@ -20,6 +20,7 @@
     "firebase-functions": "^3.19.0",
     "formik": "^2.2.9",
     "fs": "^0.0.1-security",
+    "google-map-react": "^2.1.10",
     "jquery": "^3.6.0",
     "moment-timezone": "^0.5.33",
     "multiselect-react-dropdown": "^1.6.13",

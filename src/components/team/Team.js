@@ -14,7 +14,7 @@ export class Team extends Component {
 
     return (
       <div>
-        <Container>
+        <Container fluid>
           <Button as={Link} to="/teammate/create" variant="primary">
             + Add New Teammate
           </Button>

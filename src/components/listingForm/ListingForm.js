@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import axios from "axios";
 import ApiUrl from "../../globalVariables";
 import { getUnitById } from "../../store/actions/dbActions";
+import { withRouter } from "react-router-dom";
 
 export class ListingForm extends Component {
   constructor(props) {
@@ -149,110 +150,120 @@ export class ListingForm extends Component {
   render() {
     const { error, loading, form } = this.state;
     return (
-      <div>
-        {error && (
-          <Alert key="danger" variant="danger">
-            {error}
-          </Alert>
-        )}
-        <br />
-        <Form onSubmit={this.handleSubmit}>
-          <Form.Group controlId="url">
-            <Form.Label>Listing URL</Form.Label>
-            <Form.Control
-              type="url"
-              placeholder="Enter listing public ad url"
-              onChange={this.handleUrlChange}
-              value={form?.url ? form?.url : ""}
-              required
-            />
-          </Form.Group>
-          <Row>
-            <Col xs="auto" className="my-1">
-              <Form.Label className="mr-sm-2" htmlFor="">
-                Active
-              </Form.Label>
-              <Form.Control
-                name="active"
-                onChange={this.handleInputChange}
-                value={form?.active ? form?.active : ""}
-                as="select"
-                className="mr-sm-2"
-                id="active"
-                custom
-                required
-              >
-                <option value={true}>true</option>
-                <option value={false}>false</option>
-              </Form.Control>
-            </Col>
-          </Row>
-          <Row>
-            <Col xs="auto" className="my-1">
-              <Form.Label className="mr-sm-2" htmlFor="">
-                Platfrom Provider
-              </Form.Label>
-              <Form.Control
-                onChange={this.handleInputChange}
-                value={form?.provider ? form?.provider : ""}
-                as="select"
-                className="mr-sm-2"
-                id="provider"
-                custom
-                required
-              >
-                <option>Choose your provider</option>
-                <option value="airbnb">Airbnb</option>
-                <option value="homeaway">VRBO</option>
-                <option value="booking">Booking.com</option>
-                <option value="gilberthotels">Gilbert Hotels</option>
-              </Form.Control>
-            </Col>
-          </Row>
-          <Row>
-            <Col xs="auto" className="my-1">
-              <Form.Label className="mr-sm-2" htmlFor="">
-                Remit Taxes Collected
-              </Form.Label>
-              <Form.Control
-                onChange={this.handleInputChange}
-                value={form?.remit_taxes ? form?.remit_taxes : ""}
-                as="select"
-                className="mr-sm-2"
-                id="remit_taxes"
-                custom
-                required
-              >
-                <option value={true}>true</option>
-                <option value={false}>false</option>
-              </Form.Control>
-            </Col>
-          </Row>
-          <Form.Group controlId="picture">
-            <Form.Label>Picture Url</Form.Label>
-            <Form.Control
-              onChange={this.handleInputChange}
-              value={form?.picture ? form?.picture : ""}
-              type="url"
-              placeholder="Enter picture url"
-            />
-          </Form.Group>
-          <Form.Group controlId="public_name">
-            <Form.Label>Listing Title</Form.Label>
-            <Form.Control
-              onChange={this.handleInputChange}
-              value={form?.public_name ? form?.public_name : ""}
-              type="text"
-              placeholder="Enter listing title"
-              required
-            />
-          </Form.Group>
+      <>
+        <button
+          onClick={() => this.props.history.goBack()}
+          style={{ background: "none", border: "none", marginBottom: "10px" }}
+        >
+          &lt;- Back
+        </button>
 
-          <Button disabled={loading} variant="primary" type="submit">
-            Submit
-          </Button>
-        </Form>
-      </div>
+        <div>
+          {error && (
+            <Alert key="danger" variant="danger">
+              {error}
+            </Alert>
+          )}
+          <br />
+          <Form onSubmit={this.handleSubmit}>
+            <Form.Group controlId="url">
+              <Form.Label>Listing URL</Form.Label>
+              <Form.Control
+                type="url"
+                placeholder="Enter listing public ad url"
+                onChange={this.handleUrlChange}
+                value={form?.url}
+                required
+              />
+            </Form.Group>
+            <Row>
+              <Col xs="auto" className="my-1">
+                <Form.Label className="mr-sm-2" htmlFor="">
+                  Active
+                </Form.Label>
+                <Form.Control
+                  name="active"
+                  onChange={this.handleInputChange}
+                  value={form?.active}
+                  as="select"
+                  className="mr-sm-2"
+                  id="active"
+                  custom
+                  required
+                >
+                  <option value={true}>true</option>
+                  <option value={false}>false</option>
+                </Form.Control>
+              </Col>
+            </Row>
+            <Row>
+              <Col xs="auto" className="my-1">
+                <Form.Label className="mr-sm-2" htmlFor="">
+                  Platfrom Provider
+                </Form.Label>
+                <Form.Control
+                  onChange={this.handleInputChange}
+                  value={form?.provider}
+                  as="select"
+                  className="mr-sm-2"
+                  id="provider"
+                  custom
+                  required
+                >
+                  <option>Choose your provider</option>
+                  <option value="airbnb">Airbnb</option>
+                  <option value="homeaway">VRBO</option>
+                  <option value="booking">Booking.com</option>
+                  <option value="gilberthotels">Gilbert Hotels</option>
+                </Form.Control>
+              </Col>
+            </Row>
+            <Row>
+              <Col xs="auto" className="my-1">
+                <Form.Label className="mr-sm-2" htmlFor="">
+                  Remit Taxes Collected
+                </Form.Label>
+                <Form.Control
+                  name="remit_taxes"
+                  onChange={this.handleInputChange}
+                  value={form?.remit_taxes}
+                  as="select"
+                  className="mr-sm-2"
+                  id="remit_taxes"
+                  custom
+                  required
+                >
+                  <option value={true}>true</option>
+                  <option value={false}>false</option>
+                </Form.Control>
+              </Col>
+            </Row>
+            <Form.Group controlId="picture">
+              <Form.Label>Picture Url</Form.Label>
+              <Form.Control
+                onChange={this.handleInputChange}
+                value={form?.picture}
+                type="url"
+                placeholder="Enter picture url"
+              />
+            </Form.Group>
+            <Form.Group controlId="public_name">
+              <Form.Label>Listing Title</Form.Label>
+              <Form.Control
+                onChange={this.handleInputChange}
+                value={form?.public_name}
+                type="text"
+                placeholder="Enter listing title"
+                required
+              />
+            </Form.Group>
+
+            <Button disabled={loading} variant="primary" type="submit">
+              Submit
+            </Button>
+          </Form>
+        </div>
+      </>
     );
   }
 }
@@ -261,4 +272,6 @@ const mapStateToProps = (state) => {
     unit: state.db.unit,
   };
 };
-export default connect(mapStateToProps, { getUnitById })(ListingForm);
+export default withRouter(
+  connect(mapStateToProps, { getUnitById })(ListingForm)
+);

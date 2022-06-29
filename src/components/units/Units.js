@@ -13,7 +13,7 @@ export class Units extends Component {
     const { units } = this.props;
     return (
       <div>
-        <Container>
+        <Container fluid>
           <Button as={Link} to="/unit/create" variant="primary">
             + Add New Unit
           </Button>

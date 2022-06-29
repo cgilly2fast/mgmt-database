@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { getTeammateById } from "../../store/actions/dbActions";
 import { Container, Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 
 export class Teammate extends Component {
   constructor(props) {
@@ -31,41 +31,50 @@ export class Teammate extends Component {
     const address = teammate.address === undefined ? {} : teammate.address;
 
     return (
-      <Container>
-        {teammate.picture !== "" ? (
-          <img
-            className="profile_img_lg"
-            alt="team member profile"
-            src={teammate.picture}
-          />
-        ) : (
-          <i class="bi-chevron-person-circle" />
-        )}
-        <Button
-          as={Link}
-          to={{
-            pathname: "/teammate/" + teammate.uuid + "/edit",
-            state: { teammate: teammate },
-          }}
-          variant="primary"
+      <>
+        <button
+          onClick={() => this.props.history.goBack()}
+          style={{ background: "none", border: "none", marginBottom: "10px" }}
         >
-          + Edit Teammate Info
-        </Button>
+          &lt;- Back
+        </button>
 
-        <h3>{teammate.first_name + " " + teammate.last_name}</h3>
-        <p>
-          <i class="bi-telephone"> {teammate.phone} </i>
-          <i class="bi-envelope"> {teammate.email} </i>
-        </p>
-        <p>Position: {teammate.position}</p>
-        <a href={teammate.hours_sheet}>
-          <p>Hours Sheet</p>
-        </a>
-        <p>{address.display}</p>
+        <Container fluid>
+          {teammate.picture !== "" ? (
+            <img
+              className="profile_img_lg"
+              alt="team member profile"
+              src={teammate.picture}
+            />
+          ) : (
+            <i class="bi-chevron-person-circle" />
+          )}
+          <Button
+            as={Link}
+            to={{
+              pathname: "/teammate/" + teammate.uuid + "/edit",
+              state: { teammate: teammate },
+            }}
+            variant="primary"
+          >
+            + Edit Teammate Info
+          </Button>
 
-        <p>Payment Type: {teammate.payment_type}</p>
-        <p>Payment Nickname: {teammate.payment_nickname}</p>
-      </Container>
+          <h3>{teammate.first_name + " " + teammate.last_name}</h3>
+          <p>
+            <i class="bi-telephone"> {teammate.phone} </i>
+            <i class="bi-envelope"> {teammate.email} </i>
+          </p>
+          <p>Position: {teammate.position}</p>
+          <a href={teammate.hours_sheet}>
+            <p>Hours Sheet</p>
+          </a>
+          <p>{address.display}</p>
+
+          <p>Payment Type: {teammate.payment_type}</p>
+          <p>Payment Nickname: {teammate.payment_nickname}</p>
+        </Container>
+      </>
     );
   }
 }
@@ -76,4 +85,6 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, { getTeammateById })(Teammate);
+export default withRouter(
+  connect(mapStateToProps, { getTeammateById })(Teammate)
+);

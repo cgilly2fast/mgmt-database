@@ -598,7 +598,7 @@ function getTaxAmount(resData, unit) {
 
 function createUnitsHash() {
   return new Promise(function (resolve, reject) {
-    db.collection("mgmt-units")
+    db.collection("units")
       .get()
       .then((snapshot, err) => {
         if (err) {

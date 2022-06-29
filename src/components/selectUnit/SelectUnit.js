@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Form } from "react-bootstrap";
 import "./SelectUnit.css";
-import { useHistory } from "react-router-dom";
+import { useHistory, withRouter } from "react-router-dom";
 import { getActiveUnits } from "../../store/actions/dbActions";
 import { connect, useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -27,6 +27,12 @@ const SelectUnit = () => {
 
   return (
     <>
+      <button
+        onClick={() => this.props.history.goBack()}
+        style={{ background: "none", border: "none", marginBottom: "10px" }}
+      >
+        &lt;- Back
+      </button>
       {id === undefined && (
         <>
           <h2 className="text-center mt-5 mb-3" style={{ color: "#007bff" }}>
@@ -60,6 +66,8 @@ const mapStateToProps = (state) => {
     units: state.db.units,
   };
 };
-export default connect(mapStateToProps, {
-  getActiveUnits,
-})(SelectUnit);
+export default withRouter(
+  connect(mapStateToProps, {
+    getActiveUnits,
+  })(SelectUnit)
+);

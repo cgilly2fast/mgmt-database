@@ -5,7 +5,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { Button, Form, Modal, Spinner, Offcanvas } from "react-bootstrap";
 import "./Calendar.css";
 import moment from "moment-timezone";
-import { useHistory } from "react-router-dom";
+import { useHistory, withRouter } from "react-router-dom";
 import {
   getActiveUnits,
   getCalendar,
@@ -200,6 +200,12 @@ const Calendar = () => {
 
   return (
     <>
+      {/* <button
+        onClick={() => this.props.history.goBack()}
+        style={{ background: "none", border: "none", marginBottom: "10px" }}
+      >
+        &lt;- Back
+      </button> */}
       <>
         {/* Full calendar */}
         <div className="main-div">
@@ -677,9 +683,11 @@ const mapStateToProps = (state) => {
     units: state.db.units,
   };
 };
-export default connect(mapStateToProps, {
-  getActiveUnits,
-  getCalendar,
-  getReservations,
-  getReservationsDetail,
-})(Calendar);
+export default withRouter(
+  connect(mapStateToProps, {
+    getActiveUnits,
+    getCalendar,
+    getReservations,
+    getReservationsDetail,
+  })(Calendar)
+);
