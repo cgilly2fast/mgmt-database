@@ -4,7 +4,7 @@ import { getOwnerById } from "../../store/actions/dbActions";
 import { Container, Row, Card, Button } from "react-bootstrap";
 import { NavLink, Link, withRouter } from "react-router-dom";
 import "./Owner.css";
-
+import BackButton from "../../img/BackButton.svg";
 // import "./Owner.css";
 
 export class Owner extends Component {
@@ -36,12 +36,12 @@ export class Owner extends Component {
 
     return (
       <>
-        <button
+        <img
+          src={BackButton}
+          alt="back"
+          style={{ height: "30px", cursor: "pointer" }}
           onClick={() => this.props.history.goBack()}
-          style={{ background: "none", border: "none", marginBottom: "10px" }}
-        >
-          &lt;- Back
-        </button>
+        />
 
         <Container fluid>
           {owner.picture !== "" ? (

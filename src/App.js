@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useContext } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 
 import Units from "./components/units/Units";
@@ -16,100 +16,72 @@ import { Col, Container, Row } from "react-bootstrap";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import Login from "./components/login/Login";
 import Signup from "./components/signup/Signup";
-import Menu from "./components/menu/Menu";
 import ForgotPassword from "./components/forgotPassword/ForgotPassword";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Calendar from "./components/calendar/Calendar";
 import SelectUnit from "./components/selectUnit/SelectUnit";
-import Header from "./components/header/Header";
 import Map from "./components/map/Map";
 
 export default class App extends Component {
+  // useAuth= useContext(AuthProvider)
   render() {
+    // const currentUser = this.context.useAuth();
     return (
       <AuthProvider>
         <BrowserRouter>
-          <Container fluid> 
-            <Row>
-              <Header />
-              <Col xs={2} style={{ padding: "0px" }}>
-                <Menu />
-              </Col>
-              <Col xs={10} className="mt-5">
-                  <Switch>
-                    <PrivateRoute exact path="/" component={Units} />
-                    <PrivateRoute exact path="/units" component={Units} />
-                    <PrivateRoute
-                      exact
-                      path="/calendar"
-                      component={SelectUnit}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/calendar/:id"
-                      component={Calendar}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/unit/create"
-                      component={UnitForm}
-                    />
-                    <PrivateRoute exact path="/unit/:unitId" component={Unit} />
-                    <PrivateRoute
-                      exact
-                      path="/unit/:unitId/edit"
-                      component={UnitForm}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/unit/:unitId/listing/create"
-                      component={ListingForm}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/unit/:unitId/listing/:provider/edit"
-                      component={ListingForm}
-                    />
-                    <PrivateRoute exact path="/owners" component={Owners} />
-                    <PrivateRoute
-                      exact
-                      path="/owner/create"
-                      component={OwnerForm}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/owner/:ownerId"
-                      component={Owner}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/owner/:ownerId/edit"
-                      component={OwnerForm}
-                    />
+          <Container fluid>
+            <Switch>
+              <PrivateRoute exact path="/" component={Units} />
+              <PrivateRoute exact path="/units" component={Units} />
+              <PrivateRoute exact path="/calendar" component={SelectUnit} />
+              <PrivateRoute exact path="/calendar/:id" component={Calendar} />
+              <PrivateRoute exact path="/unit/create" component={UnitForm} />
+              <PrivateRoute exact path="/unit/:unitId" component={Unit} />
+              <PrivateRoute
+                exact
+                path="/unit/:unitId/edit"
+                component={UnitForm}
+              />
+              <PrivateRoute
+                exact
+                path="/unit/:unitId/listing/create"
+                component={ListingForm}
+              />
+              <PrivateRoute
+                exact
+                path="/unit/:unitId/listing/:provider/edit"
+                component={ListingForm}
+              />
+              <PrivateRoute exact path="/owners" component={Owners} />
+              <PrivateRoute exact path="/owner/create" component={OwnerForm} />
+              <PrivateRoute exact path="/owner/:ownerId" component={Owner} />
+              <PrivateRoute
+                exact
+                path="/owner/:ownerId/edit"
+                component={OwnerForm}
+              />
 
-                    <PrivateRoute exact path="/team" component={Team} />
-                    <PrivateRoute
-                      exact
-                      path="/teammate/create"
-                      component={TeammateForm}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/teammate/:teammateId/edit"
-                      component={TeammateForm}
-                    />
-                    <PrivateRoute
-                      exact
-                      path="/teammate/:teammateId"
-                      component={Teammate}
-                    />
-                    <PrivateRoute exact path="/map" component={Map} />
-                    <Route path="/signup" component={Signup} />
-                    <Route path="/login" component={Login} />
-                    <Route path="/forgot" component={ForgotPassword} />
-                  </Switch>
-              </Col>
-            </Row>
+              <PrivateRoute exact path="/team" component={Team} />
+              <PrivateRoute
+                exact
+                path="/teammate/create"
+                component={TeammateForm}
+              />
+              <PrivateRoute
+                exact
+                path="/teammate/:teammateId/edit"
+                component={TeammateForm}
+              />
+              <PrivateRoute
+                exact
+                path="/teammate/:teammateId"
+                component={Teammate}
+              />
+              <Route exact path="/map" component={Map} />
+              <Route path="/signup" component={Signup} />
+              <Route path="/login" component={Login} />
+              <Route path="/forgot" component={ForgotPassword} />
+            </Switch>
           </Container>
         </BrowserRouter>
       </AuthProvider>

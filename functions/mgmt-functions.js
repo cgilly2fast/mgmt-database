@@ -268,7 +268,7 @@ mgmt.get("/getCalendar/:unitId", async (req, res) => {
   const unitId = req.params.unitId;
   snapshot = await db
     .collection("calendar")
-    .where("unitId", "==", unitId)
+    .where("unit_id", "==", unitId)
     .get();
   let data = [];
   snapshot.forEach((doc) => {
@@ -367,8 +367,8 @@ mgmt.get("/getReservations/:unitId", async (req, res) => {
   let snapshot = {};
   const unitId = req.params.unitId;
   snapshot = await db
-    .collection("reservations")
-    .where("explore.unitId", "==", unitId)
+    .collection("my-stays")
+    .where("unit_id", "==", unitId)
     .get();
   let data = [];
   snapshot.forEach((doc) => {
@@ -386,7 +386,7 @@ mgmt.get("/getReservations/:unitId", async (req, res) => {
 mgmt.get("/getReservationsDetail/:id", async (req, res) => {
   let snapshot = {};
   const id = req.params.id;
-  snapshot = await db.collection("reservations").doc(id).get();
+  snapshot = await db.collection("my-stays").doc(id).get();
   if (snapshot.exists) {
     res.send(snapshot.data());
     return;

@@ -6,12 +6,12 @@ import { withRouter } from "react-router-dom";
 
 const Map = () => (
   <>
-    <button
+    {/* <button
       onClick={() => this.props.history.goBack()}
       style={{ background: "none", border: "none", marginBottom: "10px" }}
     >
       &lt;- Back
-    </button>
+    </button> */}
     <div style={{ height: "1000px" }}>
       <GoogleMapReact
         bootstrapURLKeys={{ key: process.env.REACT_APP_APIKEY }}

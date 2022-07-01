@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { getTeammateById } from "../../store/actions/dbActions";
 import { Container, Button } from "react-bootstrap";
 import { Link, withRouter } from "react-router-dom";
+import BackButton from "../../img/BackButton.svg";
 
 export class Teammate extends Component {
   constructor(props) {
@@ -32,12 +33,12 @@ export class Teammate extends Component {
 
     return (
       <>
-        <button
+        <img
+          src={BackButton}
+          alt="back"
+          style={{ height: "30px", cursor: "pointer" }}
           onClick={() => this.props.history.goBack()}
-          style={{ background: "none", border: "none", marginBottom: "10px" }}
-        >
-          &lt;- Back
-        </button>
+        />
 
         <Container fluid>
           {teammate.picture !== "" ? (

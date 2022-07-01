@@ -4,6 +4,7 @@ import { getUnitById } from "../../store/actions/dbActions";
 import { Container, Row, Nav, Card, Button, Col } from "react-bootstrap";
 import { NavLink, Link, withRouter } from "react-router-dom";
 import moment from "moment-timezone";
+import BackButton from "../../img/BackButton.svg";
 
 import "./Unit.css";
 
@@ -41,14 +42,15 @@ export class Unit extends Component {
 
     // console.log(vrboUrl);
     // console.log(airbnbUrl);
+    console.log("this.props", this.props);
     return (
       <>
-        <button
+        <img
+          src={BackButton}
+          alt="back"
+          style={{ height: "30px", cursor: "pointer" }}
           onClick={() => this.props.history.goBack()}
-          style={{ background: "none", border: "none", marginBottom: "10px" }}
-        >
-          &lt;- Back
-        </button>
+        />
 
         <Container fluid>
           <img

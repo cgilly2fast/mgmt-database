@@ -5,8 +5,9 @@ import { useHistory, withRouter } from "react-router-dom";
 import { getActiveUnits } from "../../store/actions/dbActions";
 import { connect, useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import BackButton from "../../img/BackButton.svg";
 
-const SelectUnit = () => {
+const SelectUnit = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { id } = useParams();
@@ -27,12 +28,12 @@ const SelectUnit = () => {
 
   return (
     <>
-      <button
-        onClick={() => this.props.history.goBack()}
-        style={{ background: "none", border: "none", marginBottom: "10px" }}
-      >
-        &lt;- Back
-      </button>
+      <img
+        src={BackButton}
+        alt="back"
+        style={{ height: "30px", cursor: "pointer" }}
+        onClick={() => props.history.goBack()}
+      />
       {id === undefined && (
         <>
           <h2 className="text-center mt-5 mb-3" style={{ color: "#007bff" }}>

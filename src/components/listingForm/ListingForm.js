@@ -5,6 +5,7 @@ import axios from "axios";
 import ApiUrl from "../../globalVariables";
 import { getUnitById } from "../../store/actions/dbActions";
 import { withRouter } from "react-router-dom";
+import BackButton from "../../img/BackButton.svg";
 
 export class ListingForm extends Component {
   constructor(props) {
@@ -151,12 +152,12 @@ export class ListingForm extends Component {
     const { error, loading, form } = this.state;
     return (
       <>
-        <button
+        <img
+          src={BackButton}
+          alt="back"
+          style={{ height: "30px", cursor: "pointer" }}
           onClick={() => this.props.history.goBack()}
-          style={{ background: "none", border: "none", marginBottom: "10px" }}
-        >
-          &lt;- Back
-        </button>
+        />
 
         <div>
           {error && (

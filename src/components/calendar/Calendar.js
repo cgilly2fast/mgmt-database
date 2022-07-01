@@ -17,6 +17,7 @@ import { connect, useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { ErrorMessage, Formik } from "formik";
 import * as Yup from "yup";
+import BackButton from "../../img/BackButton.svg";
 
 function renderEventContent(eventInfo) {
   return (
@@ -34,14 +35,12 @@ function renderEventContent(eventInfo) {
           />
         )}
       </>
-      <b>
-        <i>{eventInfo?.event?.title}</i>
-      </b>
+      <b>{/* <i>{eventInfo?.event?.title}</i> */}</b>
     </>
   );
 }
 
-const Calendar = () => {
+const Calendar = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [show, setShow] = useState(false);
@@ -61,6 +60,7 @@ const Calendar = () => {
   const reservationDetail = useSelector(
     ({ db }) => db?.reservationDetail?.data
   );
+
   const loading = useSelector(({ db }) => db?.reservationDetail?.loading);
 
   const calendarId = calendardata?.data?.id && calendardata?.data?.id;
@@ -134,10 +134,10 @@ const Calendar = () => {
           type: "reservations",
           id: value?.id,
           title: value?.guest?.firstName,
-          start: value?.checkInDate,
-          end: value?.checkOutDate,
+          start: value?.check_in_date,
+          end: value?.check_out_date,
           extendedProps: {
-            picture: value?.guest?.picture,
+            picture: value?.unit_picture,
             value: value,
           },
           borderColor: "black",
@@ -155,9 +155,9 @@ const Calendar = () => {
         ?.map((values) => {
           const filter = reservationList.find(
             (reserveDate) =>
-              new Date(reserveDate.checkInDate).getTime() <=
+              new Date(reserveDate.check_in_date).getTime() <=
                 new Date(values.date).getTime() &&
-              new Date(reserveDate.checkOutDate).getTime() >
+              new Date(reserveDate.check_out_date).getTime() >
                 new Date(values.date).getTime()
           );
           if (!Boolean(filter)) {
@@ -200,12 +200,12 @@ const Calendar = () => {
 
   return (
     <>
-      {/* <button
-        onClick={() => this.props.history.goBack()}
-        style={{ background: "none", border: "none", marginBottom: "10px" }}
-      >
-        &lt;- Back
-      </button> */}
+      <img
+        src={BackButton}
+        alt="back"
+        style={{ height: "30px", cursor: "pointer" }}
+        onClick={() => props.history.goBack()}
+      />
       <>
         {/* Full calendar */}
         <div className="main-div">
@@ -453,9 +453,9 @@ const Calendar = () => {
                     </Offcanvas.Title>
                   </Offcanvas.Header>
                   <Offcanvas.Body>
-                    {reservationDetail?.explore?.pictures?.[0] !== "" ? (
+                    {reservationDetail?.unit_picture !== "" ? (
                       <img
-                        src={reservationDetail?.explore?.pictures?.[0]}
+                        src={reservationDetail?.unit_picture}
                         alt="property image"
                         className="property-image"
                       />
@@ -472,8 +472,8 @@ const Calendar = () => {
                     <div className="d-flex">
                       <i className="bi bi-box-arrow-in-left" />{" "}
                       <h6 className="mx-3 detail-tag">
-                        {reservationDetail?.checkInDate &&
-                          moment(reservationDetail?.checkInDate).format(
+                        {reservationDetail?.check_in_date &&
+                          moment(reservationDetail?.check_in_date).format(
                             "ddd, MMMM-DD-YYYY"
                           )}
                       </h6>
@@ -481,8 +481,8 @@ const Calendar = () => {
                     <div className="d-flex">
                       <i className="bi bi-box-arrow-in-right" />{" "}
                       <h6 className="mx-3 detail-tag">
-                        {reservationDetail?.checkOutDate &&
-                          moment(reservationDetail?.checkOutDate).format(
+                        {reservationDetail?.check_out_date &&
+                          moment(reservationDetail?.check_out_date).format(
                             "ddd, MMMM-DD-YYYY"
                           )}
                       </h6>
@@ -575,21 +575,21 @@ const Calendar = () => {
             <Modal.Body>
               <h5>Booking Details</h5>
               <hr />
-              {reservationDetail?.reservationCode && (
+              {reservationDetail?.reservation_code && (
                 <>
-                  <p>Reservation Code : {reservationDetail?.reservationCode}</p>
+                  <p>Reservation Code : {reservationDetail?.reservation_code}</p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.checkInDate && (
+              {reservationDetail?.check_in_date && (
                 <>
-                  <p>Check In : {reservationDetail?.checkInDate}</p>
+                  <p>Check In : {reservationDetail?.check_in_date}</p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.checkOutDate && (
+              {reservationDetail?.check_out_date && (
                 <>
-                  <p>Check Out : {reservationDetail?.checkOutDate}</p>
+                  <p>Check Out : {reservationDetail?.check_out_date}</p>
                   <hr />
                 </>
               )}
