@@ -14,7 +14,7 @@ export default function PrivateRoute({ component: Component, ...rest }) {
       render={(props) => {
         return currentUser ? (
           <Row>
-            <Header />
+            {/* <Header /> */}
             <Col xs={2} style={{ padding: "0px" }}>
               <Sidebar />
             </Col>

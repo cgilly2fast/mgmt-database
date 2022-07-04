@@ -18,8 +18,8 @@ import {
   BsPeople,
   BsPerson,
   BsShopWindow,
-  BsTextIndentLeft,
   BsTextIndentRight,
+  BsXLg
 } from "react-icons/bs";
 import "react-pro-sidebar/dist/css/styles.css";
 
@@ -48,9 +48,18 @@ export default function Sidebar() {
   return (
     <div id="header">
       <ProSidebar collapsed={menuCollapse}>
-        <SidebarHeader>
+        <SidebarHeader
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: " center",
+          }}
+        >
+          <NavLink to="/">
+            <h4 style={{ color: "#007bff", margin: 0, width: !menuCollapse ? '100%':'37px', whiteSpace: 'nowrap', overflow: 'hidden' }}>{!menuCollapse ? 'Mgmt Database' : 'MDfs dfsd'}</h4>
+          </NavLink>
           <div className="closemenu" onClick={menuIconClick}>
-            {menuCollapse ? <BsTextIndentLeft /> : <BsTextIndentRight />}
+            {menuCollapse ? <BsXLg style={{width: '15px'}}/> : <BsTextIndentRight />}
           </div>
         </SidebarHeader>
         <SidebarContent className="" style={{ background: "#f1f1f1" }}>
