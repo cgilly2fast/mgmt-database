@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const moment = require("moment-timezone");
 const mgmt = express();
 const cors = require("cors");
-const { credentials } = require("./production-credentials");
+const { credentials } = require("./development_credentials");
 const { v4: uuidv4 } = require("uuid");
 const { db } = require("./admin");
 const { google } = require("googleapis");
@@ -17,15 +17,6 @@ const SCOPES = [
   "https://www.googleapis.com/auth/documents",
   "https://mail.google.com/",
 ];
-
-// const oauth2Client = new google.auth.OAuth2(
-//   credentials.web.client_id,
-//   credentials.web.client_secret,
-//   credentials.web.redirect_uris[2]
-// );
-// oauth2Client.setCredentials({
-//   refresh_token: credentials.refresh_token,
-// });
 
 mgmt.use(bodyParser.json());
 mgmt.use(bodyParser.urlencoded({ extended: false }));

@@ -1,6 +1,6 @@
 // const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const { credentials } = require("./production-credentials");
+const { credentials } = require("./development_credentials");
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(credentials.service_account),
