@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const moment = require("moment-timezone");
 const acct = express();
 const cors = require("cors");
-const { credentials } = require("./credentials");
+const { credentials } = require("./production-credentials");
 const { google } = require("googleapis");
 const session = require("express-session");
 const FirestoreStore = require("firestore-store")(session);
@@ -1128,4 +1128,133 @@ function getAmazonAccountCode(property, unspsc) {
   return segmentCodes[unspsc.substring(0, 2)];
 }
 
+acct.get("/uploadCleaningBills", async (req, res) => {
+  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+  // const { XeroClient, Invoices } = require("xero-node");
+  // const { TokenSet } = require("openid-client");
+  // const xero = new XeroClient({
+  //   clientId: client_id,
+  //   clientSecret: client_secret,
+  //   redirectUris: [redirectUrl],
+  //   scopes: scopes.split(" "),
+  // });
+
+  // await xero.initialize();
+  // await xero.setTokenSet(new TokenSet(req.session.tokenSet));
+
+  // const tokenSet = await xero.readTokenSet();
+
+  // if (!tokenSet.expired()) {
+    try {
+      //get cleaner info from firestore_store
+      const cleanerDocIds = ["8zoJTHLJSaEtfz0AeD7b","5b8d2c31-521a-4c73-be94-f725c1b7c767", "731794c8-8fa3-4c6e-b25e-bae18504ede3"]
+
+      const cleanerRef = db.collection('team').where("uuid", "in", cleanerDocIds)
+      const cleanerSnapshot = await cleanerRef.get();
+
+      if (cleanerSnapshot.empty) {
+        console.log('No matching documents.');
+        return;
+      }  
+      
+      cleanerSnapshot.forEach(doc => {
+        const cleaner = doc.data()
+        const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(cleaner.hours_sheet)[1]
+        const rawCleanings = await getCleaningSheetData(spreadsheetId)
+        const invoices = parseCleaningBills(rawXeroData);
+
+        const newInvoices = new Invoices();
+        newInvoices.invoices = invoices;
+
+        const inviocesRes = await xero.accountingApi.createInvoices(
+          xeroTenantId,
+          newInvoices,
+          false,
+          4
+        );
+        const xeroInvioces = inviocesRes.response.body.Invoices;
+        console.log("invoice length");
+        console.log(invoices.length);
+
+        for (let i = 0; i < xeroInvioces.length; i++) {
+          const invoiceId = xeroInvioces[i].InvoiceID;
+          const lineItems = xeroInvioces[i].LineItems;
+
+          for (let j = 0; j < lineItems.length; j++) {
+            const unitName = lineItems[j].Tracking[0].Option;
+
+            const snapshot = await db
+              .collection("owners")
+              .where("units." + unitName + ".name", "==", unitName)
+              .where("partnership", "==", true)
+              .get();
+
+            if (!snapshot.empty) {
+              let data = [];
+              snapshot.forEach((doc) => {
+                data.push(doc.data());
+              });
+              const linkedRes = await xero.accountingApi.createLinkedTransaction(
+                xeroTenantId,
+                {
+                  sourceTransactionID: invoiceId,
+                  sourceLineItemID: lineItems[j].LineItemID,
+                  contactID: data[0].units[unitName].xero_id,
+                }
+              );
+              //console.log("linkedRes", linkedRes.response.statusCode);
+            }
+          }
+        }
+
+        res.send(xeroInvioces);
+
+      });
+      res.send()
+    
+    } catch (err) {
+      console.log(err);
+      res.send(err);
+      // res.send(
+      //   "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
+      // );
+    }
+  // } else {
+  //   res.send(
+  //     "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
+  //   );
+  // }
+});
+
+function getCleaningSheetData(spreadsheetId) {
+  return new Promise(function (resolve, reject) {
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      ["https://www.googleapis.com/auth/spreadsheets"]
+    );
+
+    const request = {
+      // The ID of the spreadsheet to retrieve data from.
+      spreadsheetId: spreadsheetId, // TODO: Update placeholder value.
+
+      // The A1 notation of the values to retrieve.
+      range: "Completed Cleanings!A2:F", // TODO: Update placeholder value.
+      auth: jwt,
+      key: credentials.api_key,
+    };
+
+    const sheets = google.sheets("v4");
+    sheets.spreadsheets.values.get(request, (err, res) => {
+      if (err) {
+        console.log("Rejecting because of error");
+        reject(err);
+      } else {
+        console.log("Request successful");
+        resolve(res.data.values);
+      }
+    });
+  });
+}
 exports.acct = functions.https.onRequest(acct);
