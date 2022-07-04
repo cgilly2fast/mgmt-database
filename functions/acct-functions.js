@@ -1,61 +1,25 @@
 const functions = require("firebase-functions");
-const express = require("express");
-const bodyParser = require("body-parser");
 const moment = require("moment-timezone");
-const acct = express();
-const cors = require("cors");
 const { credentials } = require("./development_credentials");
 const { google } = require("googleapis");
-const session = require("express-session");
-const FirestoreStore = require("firestore-store")(session);
 const segmentCodes = require("./segmentCodes");
+const { db } = require("./admin");
 
 const LOCAL = true;
-
-const { db } = require("./admin");
-// const { throws } = require('assert');
 let unitsHash = {};
-
-acct.use(bodyParser.json());
-acct.use(bodyParser.urlencoded({ extended: false }));
-acct.use(cors({ origin: true }));
 
 const client_id = credentials.xero_client_id;
 const client_secret = credentials.xero_client_secret;
 const redirectUrl = LOCAL
-  ? "http://localhost:5001/ghotels-production/us-central1/acct/callback"
+  ? "http://localhost:5001/ghotels-development/us-central1/acct/callback"
   : credentials.xero_redirect_uri;
-//uncomment for local testing.
-// const redirectUrl =
-//   'http://localhost:5000/ghotels-production/us-central1/acct/callback';
+
 const xeroTenantId = credentials.xero_tennat_id;
 const scopes =
   "openid profile email accounting.contacts.read accounting.settings accounting.transactions offline_access";
 
-const authenticationData = (req, res) => {
-  return {
-    decodedIdToken: req.session.decodedIdToken,
-    decodedAccessToken: req.session.decodedAccessToken,
-    tokenSet: req.session.tokenSet,
-    allTenants: req.session.allTenants,
-    activeTenant: req.session.activeTenant,
-  };
-};
 
-acct.use(
-  session({
-    store: new FirestoreStore({
-      database: db,
-    }),
-
-    name: "__session", // ← required for Cloud Functions / Cloud Run
-    secret: "keyboard cat",
-    resave: true,
-    saveUninitialized: true,
-  })
-);
-
-acct.get("/connect", async (req, res) => {
+export const connect = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient } = require("xero-node");
 
@@ -80,7 +44,8 @@ acct.get("/connect", async (req, res) => {
   }
 });
 
-acct.get("/callback", async (req, res) => {
+export const callback  = functions.https.onRequest(async (req, res) => {
+  
   const jwtDecode = require("jwt-decode");
   const { XeroClient } = require("xero-node");
   const xero = new XeroClient({
@@ -97,14 +62,18 @@ acct.get("/callback", async (req, res) => {
     const decodedIdToken = jwtDecode(tokenSet.id_token);
     const decodedAccessToken = jwtDecode(tokenSet.access_token);
 
-    req.session.decodedIdToken = decodedIdToken;
-    req.session.decodedAccessToken = decodedAccessToken;
-    req.session.tokenSet = tokenSet;
-    req.session.allTenants = xero.tenants;
-    // XeroClient is sorting tenants behind the scenes so that most recent / active connection is at index 0
-    req.session.activeTenant = xero.tenants[0];
+    const xeroSession = {
+      type: "xero",
+      created: Date.now(),
+      decodedIdToken: decodedIdToken,
+      decodedAccessToken: decodedAccessToken,
+      tokenSet: JSON.stringify(tokenSet),
+      allTenants: JSON.stringify(xero.tenants),
+      // XeroClient is sorting tenants behind the scenes so that most recent / active connection is at index 0
+      activeTenant: JSON.stringify(xero.tenants[0])}
 
-    const authData = authenticationData(req, res);
+    await db.collection("sessions").add(xeroSession)
+    
     res.send("Connected to Xero!");
   } catch (err) {
     console.log(err);
@@ -112,7 +81,7 @@ acct.get("/callback", async (req, res) => {
   }
 });
 
-acct.get("/hawaiiRevenue", async (req, res) => {
+export const hawaiiRevenue = functions.https.onRequest(async (req, res) => {
   unitsHash = await createUnitsHash();
 
   const vrbo = await getVRBOData();
@@ -148,7 +117,7 @@ acct.get("/hawaiiRevenue", async (req, res) => {
   );
 });
 
-acct.get("/separateResAdjs", async (req, res) => {
+export const separateResAdjs = functions.https.onRequest(async (req, res) => {
   unitsHash = await createUnitsHash();
   const jwt = new google.auth.JWT(
     credentials.service_account.client_email,
@@ -215,7 +184,7 @@ acct.get("/separateResAdjs", async (req, res) => {
   res.send(updateRes);
 });
 
-acct.get("/bookingData", async (req, res) => {
+export const bookingData = functions.https.onRequest( async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   unitsHash = await createUnitsHash();
   const { XeroClient, Invoices } = require("xero-node");
@@ -265,8 +234,9 @@ acct.get("/bookingData", async (req, res) => {
   const resAdjs = await getResAdjustments();
   let resAdjInvoices = parseResAdjData(resAdjs);
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
 
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
   if (!tokenSet.expired()) {
@@ -745,7 +715,7 @@ function createUnitsHash() {
   });
 }
 
-acct.get("/uploadMgmtInvoices", async (req, res) => {
+export const uploadMgmtInvoices  = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient, Invoices } = require("xero-node");
   const { TokenSet } = require("openid-client");
@@ -755,11 +725,12 @@ acct.get("/uploadMgmtInvoices", async (req, res) => {
     redirectUris: [redirectUrl],
     scopes: scopes.split(" "),
   });
-  console.log(req.session.tokenSet);
+  //console.log(req.session.tokenSet);
 
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
-
+ 
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
   if (!tokenSet.expired()) {
@@ -791,7 +762,7 @@ acct.get("/uploadMgmtInvoices", async (req, res) => {
 });
 
 // Uploads invoices for reservations booked with units directly operated by Stinson Beach PM
-acct.get("/uploadCompanyInvoices", async (req, res) => {
+export const uploadCompanyInvoices = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient, Invoices } = require("xero-node");
   const { TokenSet } = require("openid-client");
@@ -803,8 +774,9 @@ acct.get("/uploadCompanyInvoices", async (req, res) => {
   });
 
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
-
+ 
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
   if (!tokenSet.expired()) {
@@ -836,7 +808,7 @@ acct.get("/uploadCompanyInvoices", async (req, res) => {
   }
 });
 
-acct.get("/uploadAmazonBills", async (req, res) => {
+export const uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient, Invoices } = require("xero-node");
   const { TokenSet } = require("openid-client");
@@ -848,8 +820,9 @@ acct.get("/uploadAmazonBills", async (req, res) => {
   });
 
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
-
+  
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
   if (!tokenSet.expired()) {
@@ -1128,7 +1101,7 @@ function getAmazonAccountCode(property, unspsc) {
   return segmentCodes[unspsc.substring(0, 2)];
 }
 
-acct.get("/uploadCleaningBills", async (req, res) => {
+export const uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   // const { XeroClient, Invoices } = require("xero-node");
   // const { TokenSet } = require("openid-client");
@@ -1140,8 +1113,9 @@ acct.get("/uploadCleaningBills", async (req, res) => {
   // });
 
   // await xero.initialize();
-  // await xero.setTokenSet(new TokenSet(req.session.tokenSet));
-
+  
+  // const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  // await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   // const tokenSet = await xero.readTokenSet();
 
   // if (!tokenSet.expired()) {
@@ -1257,4 +1231,4 @@ function getCleaningSheetData(spreadsheetId) {
     });
   });
 }
-exports.acct = functions.https.onRequest(acct);
+

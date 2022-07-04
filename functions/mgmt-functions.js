@@ -1,15 +1,9 @@
 const functions = require("firebase-functions");
-const express = require("express");
 const fs = require("fs");
-const bodyParser = require("body-parser");
-const moment = require("moment-timezone");
-const mgmt = express();
-const cors = require("cors");
 const { credentials } = require("./development_credentials");
 const { v4: uuidv4 } = require("uuid");
 const { db } = require("./admin");
 const { google } = require("googleapis");
-const { log } = require("console");
 const SCOPES = [
   "https://www.googleapis.com/auth/drive",
   "https://www.googleapis.com/auth/spreadsheets",
@@ -18,12 +12,7 @@ const SCOPES = [
   "https://mail.google.com/",
 ];
 
-mgmt.use(bodyParser.json());
-mgmt.use(bodyParser.urlencoded({ extended: false }));
-
-mgmt.use(cors({ origin: true }));
-
-mgmt.post("/updateUnit", async (req, res) => {
+export const updateUnit = functions.https.onRequest( async (req, res) => {
   let data = req.body;
   // try {
   //   if (data.id === "") {
@@ -59,8 +48,7 @@ mgmt.post("/updateUnit", async (req, res) => {
     res.send(err);
   }
 });
-
-mgmt.get("/createOauth", async (req, res) => {
+export const createOauth = functions.https.onRequest( async (req, res) => {
   const url = await oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
@@ -69,19 +57,9 @@ mgmt.get("/createOauth", async (req, res) => {
   res.send({ url: url });
 });
 
-mgmt.get("/oauth2callback", async (req, res) => {
-  const code = req.query.code;
-  try {
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
-
-    res.send({ tokens });
-  } catch (err) {
-    res.send(err);
-  }
-});
-mgmt.get("/getUnits", async (req, res) => {
+export const getUnits = functions.https.onRequest(async (req, res) => {
   let snapshot = {};
+  
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
     snapshot = await db.collection("units").where("active", "==", active).get();
@@ -96,7 +74,7 @@ mgmt.get("/getUnits", async (req, res) => {
   res.send(data);
 });
 
-mgmt.get("/getOwnerByUnitId", async (req, res) => {
+export const getOwnerByUnitId = functions.https.onRequest( async (req, res) => {
   const unitName = req.body.query.unit_name;
   const snapshot = await db
     .collection("owners")
@@ -111,14 +89,14 @@ mgmt.get("/getOwnerByUnitId", async (req, res) => {
   res.send(data);
 });
 
-mgmt.get("/getUnits/:unit_id", async (req, res) => {
-  const id = req.params.unit_id;
+export const getUnitsbyId = functions.https.onRequest(async (req, res) => {
+  const id = req.query.unit_id;
   const doc = await db.collection("units").doc(id).get();
 
   res.send(doc.data());
 });
 
-mgmt.get("/getListings", async (req, res) => {
+export const getListings = functions.https.onRequest( async (req, res) => {
   if (req.query.available !== undefined) {
     const available = req.query.available === "true";
     const snapshot = await db
@@ -136,14 +114,14 @@ mgmt.get("/getListings", async (req, res) => {
   res.send(data);
 });
 
-mgmt.get("/getListings/:listing_id", async (req, res) => {
-  const id = req.params.listing_id;
+export const getListingsById = functions.https.onRequest(async (req, res) => {
+  const id = req.quuery.listing_id;
   const doc = await db.collection("listings").doc(id).get();
 
   res.send(doc.data());
 });
 
-mgmt.post("/updateListing", async (req, res) => {
+export const updateListing = functions.https.onRequest( async (req, res) => {
   const id = req.query.id;
   const data = req.query.data;
   const result = await db
@@ -153,7 +131,7 @@ mgmt.post("/updateListing", async (req, res) => {
   res.send(result);
 });
 
-mgmt.get("/getOwners", async (req, res) => {
+export const getOwners = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
@@ -172,14 +150,14 @@ mgmt.get("/getOwners", async (req, res) => {
   res.send(data);
 });
 
-mgmt.get("/getOwners/:owner_id", async (req, res) => {
-  const id = req.params.owner_id;
+export const getOwnersById = functions.https.onRequest( async (req, res) => {
+  const id = req.query.owner_id;
   const doc = await db.collection("owners").doc(id).get();
 
   res.send(doc.data());
 });
 
-mgmt.post("/updateOwner", async (req, res) => {
+export const updateOwner = functions.https.onRequest( async (req, res) => {
   let data = req.body;
   if (data.uuid === "") {
     data.uuid = uuid4();
@@ -199,7 +177,7 @@ mgmt.post("/updateOwner", async (req, res) => {
   }
 });
 
-mgmt.get("/getTeam", async (req, res) => {
+export const getTeam = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
@@ -215,13 +193,13 @@ mgmt.get("/getTeam", async (req, res) => {
   res.send(data);
 });
 
-mgmt.get("/getTeam/:teammate_id", async (req, res) => {
-  const id = req.params.teammate_id;
+export const getTeammateById = functions.https.onRequest(async (req, res) => {
+  const id = req.query.teammate_id;
   const doc = await db.collection("team").doc(id).get();
   res.send(doc.data());
 });
 
-mgmt.post("/updateTeammate", async (req, res) => {
+export const updateTeammate = functions.https.onRequest( async (req, res) => {
   let data = req.body;
   if (data.uuid === "") {
     data.uuid = uuidv4();
@@ -236,7 +214,7 @@ mgmt.post("/updateTeammate", async (req, res) => {
   }
 });
 
-mgmt.post("/checkSignup", async (req, res) => {
+export const checkSignup = functions.https.onRequest(async (req, res) => {
   let data = req.body;
 
   try {
@@ -251,12 +229,12 @@ mgmt.post("/checkSignup", async (req, res) => {
   }
 });
 
-mgmt.get("/getCalendar/:unitId", async (req, res) => {
+export const getCalendar = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
-  const unitId = req.params.unitId;
+  const unit_id = req.params.unit_id;
   snapshot = await db
     .collection("calendar")
-    .where("unit_id", "==", unitId)
+    .where("unit_id", "==", unit_id)
     .get();
   let data = [];
   snapshot.forEach((doc) => {
@@ -271,7 +249,7 @@ mgmt.get("/getCalendar/:unitId", async (req, res) => {
   }
 });
 
-mgmt.post("/updateCalendar", async (req, res) => {
+export const updateCalendar = functions.https.onRequest( async (req, res) => {
   const { id, date, min_stay, price, currency, calendarId, day, reason } =
     req.body;
   try {
@@ -351,17 +329,17 @@ mgmt.post("/updateCalendar", async (req, res) => {
   }
 });
 
-// mgmt.post("/blockDate", async (req, res) => {
+// export const blockDate = functions.https.onRequest( async (req, res) => {
 //   const { id } = req.body;
 //   console.log("req", id);
 // });
 
-mgmt.get("/getReservations/:unitId", async (req, res) => {
+export const getReservationsByUnit = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
-  const unitId = req.params.unitId;
+  const unit_id = req.query.unit_id;
   snapshot = await db
     .collection("my-stays")
-    .where("unit_id", "==", unitId)
+    .where("unit_id", "==", unit_id)
     .get();
   let data = [];
   snapshot.forEach((docs) => {
@@ -376,10 +354,10 @@ mgmt.get("/getReservations/:unitId", async (req, res) => {
   }
 });
 
-mgmt.get("/getReservationsDetail/:id", async (req, res) => {
+export const getReservationsDetail = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
-  const id = req.params.id;
-  snapshot = await db.collection("my-stays").doc(id).get();
+  const reservation_id = req.query.reservation_id;
+  snapshot = await db.collection("my-stays").doc(reservation_id).get();
   if (snapshot.exists) {
     res.send(snapshot.data());
     return;
@@ -544,4 +522,3 @@ function test(data, auth) {
 }
 mgmt.get("/test", async (req, res) => {});
 
-exports.mgmt = functions.https.onRequest(mgmt);

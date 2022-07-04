@@ -17,7 +17,7 @@ export const getUnits = () => {
 export const getUnitById = (unitId) => {
   return (dispatch) => {
     return axios
-      .get(ApiUrl + "/getUnits/" + unitId)
+      .get(ApiUrl + "/getUnitsById", {unit_id:unitId})
       .then((response) => {
         dispatch({ type: "GET_UNIT_SUCCESS", res_data: response.data });
       })
@@ -60,7 +60,7 @@ export const getCalendar = (unitId) => {
       res_data: { loading: true, data: null },
     });
     return axios
-      .get(ApiUrl + "/getCalendar/" + unitId)
+      .get(ApiUrl + "/getCalendar", {unit_id: unitId})
       .then((response) => {
         dispatch({
           type: "GET_CALENDAR_SUCCESS",
@@ -80,7 +80,7 @@ export const getReservations = (unitId) => {
       res_data: { loading: true, data: null },
     });
     return axios
-      .get(ApiUrl + "/getReservations/" + unitId)
+      .get(ApiUrl + "/getReservations",  {unit_id: unitId})
       .then((response) => {
         dispatch({
           type: "GET_RESERVATIONS_SUCCESS",
@@ -100,7 +100,7 @@ export const getReservationsDetail = (id) => {
       res_data: { loading: true, data: null },
     });
     return axios
-      .get(ApiUrl + "/getReservationsDetail/" + id)
+      .get(ApiUrl + "/getReservationsDetail" , {reservation_id: id})
       .then((response) => {
         dispatch({
           type: "GET_RESERVATION_DETAIL_SUCCESS",
@@ -116,7 +116,7 @@ export const getReservationsDetail = (id) => {
 export const getOwnerById = (ownerId) => {
   return (dispatch) => {
     return axios
-      .get(ApiUrl + "/getOwners/" + ownerId)
+      .get(ApiUrl + "/getOwnersById" + ownerId, {owner_id: ownerId})
       .then((response) => {
         dispatch({ type: "GET_OWNER_SUCCESS", res_data: response.data });
       })
@@ -142,7 +142,7 @@ export const getTeam = () => {
 export const getTeammateById = (teammateId) => {
   return (dispatch) => {
     return axios
-      .get(ApiUrl + "/getTeam/" + teammateId)
+      .get(ApiUrl + "/getTeammateById", {teammate_id: teammateId})
       .then((response) => {
         dispatch({ type: "GET_TEAMMATE_SUCCESS", res_data: response.data });
       })
