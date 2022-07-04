@@ -18,6 +18,7 @@ import { useParams } from "react-router-dom";
 import { ErrorMessage, Formik } from "formik";
 import * as Yup from "yup";
 import BackButton from "../../img/BackButton.svg";
+import { useAuth } from "../../context/AuthContext";
 
 function renderEventContent(eventInfo) {
   return (
@@ -153,25 +154,27 @@ const Calendar = (props) => {
     if (eventsList?.length) {
       const data = eventsList
         ?.map((values) => {
-          const filter = reservationList.find(
-            (reserveDate) =>
-              new Date(reserveDate.check_in_date).getTime() <=
-                new Date(values.date).getTime() &&
-              new Date(reserveDate.check_out_date).getTime() >
-                new Date(values.date).getTime()
-          );
-          if (!Boolean(filter)) {
-            return {
-              type: "price",
-              title: "$" + values?.price.price / 10,
-              extendedProps: {
+          if (values.date >= moment(new Date()).format("YYYY-MM-DD")) {
+            const filter = reservationList.find(
+              (reserveDate) =>
+                new Date(reserveDate.check_in_date).getTime() <=
+                  new Date(values.date).getTime() &&
+                new Date(reserveDate.check_out_date).getTime() >
+                  new Date(values.date).getTime()
+            );
+            if (!Boolean(filter)) {
+              return {
+                type: "price",
+                title: "$" + values?.price.price / 10,
+                extendedProps: {
+                  date: values?.date,
+                  value: values,
+                },
                 date: values?.date,
-                value: values,
-              },
-              date: values?.date,
-            };
+              };
+            }
+            return null;
           }
-          return null;
         })
         .filter((res) => res);
       setPostsItems(data);
@@ -577,7 +580,9 @@ const Calendar = (props) => {
               <hr />
               {reservationDetail?.reservation_code && (
                 <>
-                  <p>Reservation Code : {reservationDetail?.reservation_code}</p>
+                  <p>
+                    Reservation Code : {reservationDetail?.reservation_code}
+                  </p>
                   <hr />
                 </>
               )}

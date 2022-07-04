@@ -190,3 +190,17 @@ export const updateOwner = (data) => {
       });
   };
 };
+
+// export const blockPreviousDate = (id) => {
+//   return (dispatch) => {
+//     console.log("data", id);
+//     return axios
+//       .post(ApiUrl + "/blockDate", id)
+//       .then((response) => {
+//         dispatch({ type: "UPDATE_OWNER_SUCCESS", res_data: response.data });
+//       })
+//       .catch((err) => {
+//         dispatch({ type: "UPDATE_OWNER_ERROR", err });
+//       });
+//   };
+// };

@@ -93,10 +93,7 @@ mgmt.get("/getUnits", async (req, res) => {
   let snapshot = {};
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
-    snapshot = await db
-      .collection("units")
-      .where("active", "==", active)
-      .get();
+    snapshot = await db.collection("units").where("active", "==", active).get();
   } else {
     snapshot = await db.collection("units").get();
   }
@@ -363,6 +360,11 @@ mgmt.post("/updateCalendar", async (req, res) => {
   }
 });
 
+// mgmt.post("/blockDate", async (req, res) => {
+//   const { id } = req.body;
+//   console.log("req", id);
+// });
+
 mgmt.get("/getReservations/:unitId", async (req, res) => {
   let snapshot = {};
   const unitId = req.params.unitId;
@@ -371,8 +373,8 @@ mgmt.get("/getReservations/:unitId", async (req, res) => {
     .where("unit_id", "==", unitId)
     .get();
   let data = [];
-  snapshot.forEach((doc) => {
-    data.push({ ...doc.data(), id: doc.id });
+  snapshot.forEach((docs) => {
+    data.push({ ...docs.data(), id: docs.id });
   });
   if (snapshot.size) {
     res.send(data);
