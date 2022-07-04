@@ -1,3 +1,4 @@
 node_modules/
 ./credentials.js
+./production-credentials.js
 .env
