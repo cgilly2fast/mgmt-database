@@ -17,7 +17,7 @@ export const getUnits = () => {
 export const getUnitById = (unitId) => {
   return (dispatch) => {
     return axios
-      .get(ApiUrl + "/getUnitsById", {unit_id:unitId})
+      .get(ApiUrl + "/getUnitsbyId?unitId=" + unitId)
       .then((response) => {
         dispatch({ type: "GET_UNIT_SUCCESS", res_data: response.data });
       })
@@ -60,7 +60,7 @@ export const getCalendar = (unitId) => {
       res_data: { loading: true, data: null },
     });
     return axios
-      .get(ApiUrl + "/getCalendar", {unit_id: unitId})
+      .get(ApiUrl + "/getCalendar?unitId=" + unitId)
       .then((response) => {
         dispatch({
           type: "GET_CALENDAR_SUCCESS",
@@ -80,7 +80,7 @@ export const getReservations = (unitId) => {
       res_data: { loading: true, data: null },
     });
     return axios
-      .get(ApiUrl + "/getReservations",  {unit_id: unitId})
+      .get(ApiUrl + "/getReservationsByUnit?unit_id=" + unitId)
       .then((response) => {
         dispatch({
           type: "GET_RESERVATIONS_SUCCESS",
@@ -100,7 +100,7 @@ export const getReservationsDetail = (id) => {
       res_data: { loading: true, data: null },
     });
     return axios
-      .get(ApiUrl + "/getReservationsDetail" , {reservation_id: id})
+      .get(ApiUrl + "/getReservationsDetail?reservation_id=" + id)
       .then((response) => {
         dispatch({
           type: "GET_RESERVATION_DETAIL_SUCCESS",
@@ -116,7 +116,7 @@ export const getReservationsDetail = (id) => {
 export const getOwnerById = (ownerId) => {
   return (dispatch) => {
     return axios
-      .get(ApiUrl + "/getOwnersById" + ownerId, {owner_id: ownerId})
+      .get(ApiUrl + "/getOwnersById?owner_id=" + ownerId, { owner_id: ownerId })
       .then((response) => {
         dispatch({ type: "GET_OWNER_SUCCESS", res_data: response.data });
       })
@@ -142,7 +142,7 @@ export const getTeam = () => {
 export const getTeammateById = (teammateId) => {
   return (dispatch) => {
     return axios
-      .get(ApiUrl + "/getTeammateById", {teammate_id: teammateId})
+      .get(ApiUrl + "/getTeammateById?teammate_id=" + teammateId)
       .then((response) => {
         dispatch({ type: "GET_TEAMMATE_SUCCESS", res_data: response.data });
       })

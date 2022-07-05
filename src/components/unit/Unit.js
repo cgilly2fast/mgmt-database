@@ -42,7 +42,7 @@ export class Unit extends Component {
 
     // console.log(vrboUrl);
     // console.log(airbnbUrl);
-    console.log("this.props", this.props);
+
     return (
       <>
         <img
@@ -160,19 +160,19 @@ export class Unit extends Component {
 
           <p>{address.display}</p>
 
-          <p>Room type: {unit.roomType}</p>
+          <p>Room type: {unit.room_type}</p>
           <p>Wifi: {unit.wifi}</p>
-          <p>Wifi Password: {unit.wifiPassword}</p>
+          <p>Wifi Password: {unit.wifi_password}</p>
           <p>
             Check Out:{" "}
-            {moment.parseZone("1995-03-17T" + unit.checkOut).format("h:mm a")}
+            {moment.parseZone("1995-03-17T" + unit.check_out).format("h:mm a")}
           </p>
           <p>
             Check In:{" "}
-            {moment.parseZone("1995-03-17T" + unit.checkIn).format("h:mm a")}
+            {moment.parseZone("1995-03-17T" + unit.check_in).format("h:mm a")}
           </p>
 
-          <p>Tax Rate: {unit.taxRate}</p>
+          <p>Tax Rate: {unit.tax_rate}</p>
 
           <h5>Owner</h5>
           <p>
@@ -185,8 +185,8 @@ export class Unit extends Component {
             <i class="bi bi-chevron-compact-right" />
           </p>
           <h5>Code Operations</h5>
-          <p>Remit Taxes: {unit.remitTaxes + ""}</p>
-          <p>Send Guest Info: {unit.sendGuestInfo + ""}</p>
+          <p>Remit Taxes: {unit.remit_taxes + ""}</p>
+          <p>Send Guest Info: {unit.send_guest_info + ""}</p>
           {unit.guest_info_type && (
             <p>Guest Info Type: {unit.guest_info_type + ""}</p>
           )}

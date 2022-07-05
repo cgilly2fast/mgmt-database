@@ -45,6 +45,11 @@
   margin-right: 10px;
 }
 
+.reservation-event {
+  display: flex;
+  justify-content: center;
+}
+
 .owner-name {
   padding-left: 10px;
   text-transform: capitalize;
@@ -55,7 +60,7 @@
 }
 
 .property-image {
-  border-radius: 15px;
+  border-radius: 50px;
   width: 100%;
 }
 
@@ -88,8 +93,12 @@
 
 .title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 100;
   font-family: "Courier New", Courier, monospace;
+  position: absolute;
+  top: 280px;
+  left: 50px;
+  color: #fff;
 }
 
 .detail-tag {

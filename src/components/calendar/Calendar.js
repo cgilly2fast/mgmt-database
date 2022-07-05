@@ -30,13 +30,23 @@ function renderEventContent(eventInfo) {
             <br />
           </>
         ) : (
-          <img
-            src={eventInfo?.event?.extendedProps?.picture}
-            className="img-calendar"
-          />
+          <>
+            <div className="reservation-event">
+              <img
+                src={eventInfo?.event?.extendedProps?.picture}
+                className="img-calendar"
+              />
+              <h5>
+                {
+                  eventInfo?.event?.extendedProps?.value?.checkout?.guest
+                    ?.first_name
+                }
+              </h5>
+            </div>
+          </>
         )}
       </>
-      <b>{/* <i>{eventInfo?.event?.title}</i> */}</b>
+      {/* <b><i>{eventInfo?.event?.title}</i></b> */}
     </>
   );
 }
@@ -126,7 +136,7 @@ const Calendar = (props) => {
         setReservationList(Object?.values(reservations?.data));
       }
     }
-  }, [calendardata.data]);
+  }, [calendardata.data, reservations?.data]);
 
   useEffect(() => {
     if (reservationList?.length) {
@@ -447,47 +457,47 @@ const Calendar = (props) => {
                         <i className="bi bi-person-circle" />
                         &nbsp;&nbsp;
                         <h3 className="model-owner-title">
-                          {reservationDetail?.guest?.firstName &&
-                            reservationDetail?.guest?.firstName}{" "}
-                          {reservationDetail?.guest?.lastName &&
-                            reservationDetail?.guest?.lastName}
+                          {reservationDetail?.checkout?.guest?.first_name &&
+                            reservationDetail?.checkout?.guest?.first_name}{" "}
+                          {reservationDetail?.checkout?.guest?.last_name &&
+                            reservationDetail?.checkout?.guest?.last_name}
                         </h3>
                       </div>
                     </Offcanvas.Title>
                   </Offcanvas.Header>
                   <Offcanvas.Body>
-                    {reservationDetail?.unit_picture !== "" ? (
-                      <img
-                        src={reservationDetail?.unit_picture}
-                        alt="property image"
-                        className="property-image"
-                      />
-                    ) : null}
+                    <div className="d-flex">
+                      {reservationDetail?.my_stays?.unit_picture !== "" ? (
+                        <img
+                          src={reservationDetail?.my_stays?.unit_picture}
+                          alt="property image"
+                          className="property-image"
+                        />
+                      ) : null}
 
-                    <div className="d-flex mt-3">
                       <h6 className="title">
-                        {reservationDetail?.explore?.title
-                          ? reservationDetail?.explore?.title
+                        {reservationDetail?.my_stays?.unit_name
+                          ? reservationDetail?.my_stays?.unit_name
                           : null}
                       </h6>
                     </div>
 
-                    <div className="d-flex">
+                    <div className="d-flex mt-3">
                       <i className="bi bi-box-arrow-in-left" />{" "}
                       <h6 className="mx-3 detail-tag">
-                        {reservationDetail?.check_in_date &&
-                          moment(reservationDetail?.check_in_date).format(
-                            "ddd, MMMM-DD-YYYY"
-                          )}
+                        {reservationDetail?.my_stays?.check_in_date &&
+                          moment(
+                            reservationDetail?.my_stays?.check_in_date
+                          ).format("ddd, MMMM-DD-YYYY")}
                       </h6>
                     </div>
                     <div className="d-flex">
                       <i className="bi bi-box-arrow-in-right" />{" "}
                       <h6 className="mx-3 detail-tag">
-                        {reservationDetail?.check_out_date &&
-                          moment(reservationDetail?.check_out_date).format(
-                            "ddd, MMMM-DD-YYYY"
-                          )}
+                        {reservationDetail?.my_stays?.check_out_date &&
+                          moment(
+                            reservationDetail?.my_stays?.check_out_date
+                          ).format("ddd, MMMM-DD-YYYY")}
                       </h6>
                     </div>
 
@@ -495,15 +505,15 @@ const Calendar = (props) => {
                       <div className="d-flex mt-2">
                         <label className="detail-tag">Nights:</label>
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.nights &&
-                            reservationDetail?.nights}
+                          {reservationDetail?.my_stays?.nights &&
+                            reservationDetail?.my_stays?.nights}
                         </h6>
                       </div>
                       <div className="d-flex mt-2">
                         <label className="detail-tag">Payment:</label>
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.payment?.amount &&
-                            `$${reservationDetail?.payment?.amount}`}
+                          {reservationDetail?.checkout?.payment?.amount &&
+                            `$${reservationDetail?.checkout?.payment?.amount}`}
                         </h6>
                       </div>
                     </div>
@@ -512,22 +522,22 @@ const Calendar = (props) => {
                       <div className="d-flex">
                         <label className="detail-tag">Adults:</label>{" "}
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.occupancy?.adults &&
-                            reservationDetail?.occupancy?.adults}
+                          {reservationDetail?.my_stays?.occupancy?.adults &&
+                            reservationDetail?.my_stays?.occupancy?.adults}
                         </h6>
                       </div>
                       <div className="d-flex">
                         <label className="detail-tag">Children:</label>{" "}
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.occupancy?.children &&
-                            reservationDetail?.occupancy?.children}
+                          {reservationDetail?.my_stays?.occupancy?.children &&
+                            reservationDetail?.my_stays?.occupancy?.children}
                         </h6>
                       </div>
                       <div className="d-flex">
                         <label className="detail-tag">Infants:</label>{" "}
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.occupancy?.infants &&
-                            reservationDetail?.occupancy?.infants}
+                          {reservationDetail?.my_stays?.occupancy?.infants &&
+                            reservationDetail?.my_stays?.occupancy?.infants}
                         </h6>
                       </div>
                     </div>
@@ -568,68 +578,81 @@ const Calendar = (props) => {
             <Modal.Header closeButton>
               <Modal.Title>
                 <h3 className="model-owner-title">
-                  {reservationDetail?.guest?.firstName &&
-                    reservationDetail?.guest?.firstName}{" "}
-                  {reservationDetail?.guest?.lastName &&
-                    reservationDetail?.guest?.lastName}
+                  {reservationDetail?.checkout?.guest?.first_name &&
+                    reservationDetail?.checkout?.guest?.first_name}{" "}
+                  {reservationDetail?.checkout?.guest?.last_name &&
+                    reservationDetail?.checkout?.guest?.last_name}
                 </h3>
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <h5>Booking Details</h5>
+              <h5 style={{ fontFamily: "system-ui", color: "#165aa3" }}>
+                Booking Details
+              </h5>
               <hr />
-              {reservationDetail?.reservation_code && (
+              {reservationDetail?.my_stays?.reservation_code && (
                 <>
-                  <p>
-                    Reservation Code : {reservationDetail?.reservation_code}
+                  <p style={{ fontFamily: "monospace" }}>
+                    Reservation Code :{" "}
+                    {reservationDetail?.my_stays?.reservation_code}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.check_in_date && (
+              {reservationDetail?.my_stays?.check_in_date && (
                 <>
-                  <p>Check In : {reservationDetail?.check_in_date}</p>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Check In : {reservationDetail?.my_stays?.check_in_date}
+                  </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.check_out_date && (
+              {reservationDetail?.my_stays?.check_out_date && (
                 <>
-                  <p>Check Out : {reservationDetail?.check_out_date}</p>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Check Out : {reservationDetail?.my_stays?.check_out_date}
+                  </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.explore?.capacity?.max && (
+              {/* {reservationDetail?.explore?.capacity?.max && (
+                  <>
+                    <p>Guests : {reservationDetail?.explore?.capacity?.max}</p>
+                    <hr />
+                  </>
+                )} */}
+              {reservationDetail?.my_stays?.nights && (
                 <>
-                  <p>Guests : {reservationDetail?.explore?.capacity?.max}</p>
-                  <hr />
-                </>
-              )}
-              {reservationDetail?.nights && (
-                <>
-                  <p>Nights : {reservationDetail?.nights}</p>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Nights : {reservationDetail?.my_stays?.nights}
+                  </p>
                   <hr />
                 </>
               )}
               <br />
-              <h5>Listing Details</h5>
+              <h5 style={{ fontFamily: "system-ui", color: "#165aa3" }}>
+                Listing Details
+              </h5>
               <hr />
-              {reservationDetail?.explore?.title && (
+              {reservationDetail?.my_stays?.unit_name && (
                 <>
-                  <p>Listing Name : {reservationDetail?.explore?.title}</p>
-                  <hr />
-                </>
-              )}
-              {reservationDetail?.explore?.address?.street && (
-                <>
-                  <p>
-                    Listing Address :{" "}
-                    {reservationDetail?.explore?.address?.street},{" "}
-                    {reservationDetail?.explore?.address?.city}
+                  <p style={{ fontFamily: "monospace" }}>
+                    Listing Name : {reservationDetail?.my_stays?.unit_name}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.explore?.capacity?.bedrooms && (
+              {reservationDetail?.checkout?.address?.street && (
+                <>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Listing Address :{" "}
+                    {reservationDetail?.checkout?.address?.street},{" "}
+                    {reservationDetail?.checkout?.address?.city}
+                  </p>
+                  <hr />
+                </>
+              )}
+              {/* {reservationDetail?.explore?.capacity?.bedrooms && (
                 <>
                   <p>
                     Bedrooms : {reservationDetail?.explore?.capacity?.bedrooms}
@@ -651,28 +674,36 @@ const Calendar = (props) => {
                   </p>
                   <hr />
                 </>
-              )}
+              )} */}
               <br />
-              <h5>Payment Details</h5>
+              <h5 style={{ fontFamily: "system-ui", color: "#165aa3" }}>
+                Payment Details
+              </h5>
               <hr />
-              {reservationDetail?.prices?.totalPrice && (
+              {reservationDetail?.checkout?.prices?.totalPrice && (
                 <>
-                  <p>Amount : ${reservationDetail?.prices?.totalPrice}</p>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Amount : ${reservationDetail?.checkout?.prices?.totalPrice}
+                  </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.prices?.total_cleaning_fee && (
+              {reservationDetail?.checkout?.prices?.total_cleaning_fee && (
                 <>
-                  <p>
+                  <p style={{ fontFamily: "monospace" }}>
                     Cleaning Fee : $
-                    {reservationDetail?.prices?.total_cleaning_fee}
+                    {reservationDetail?.checkout?.prices?.total_cleaning_fee}
                   </p>
                   <hr />
                 </>
               )}
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="primary" onClick={handleCloseModel}>
+              <Button
+                variant="primary"
+                onClick={handleCloseModel}
+                style={{ borderRadius: "50px" }}
+              >
                 Close
               </Button>
             </Modal.Footer>

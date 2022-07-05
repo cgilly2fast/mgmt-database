@@ -19,7 +19,7 @@ const scopes =
   "openid profile email accounting.contacts.read accounting.settings accounting.transactions offline_access";
 
 
-export const connect = functions.https.onRequest(async (req, res) => {
+exports.connect = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient } = require("xero-node");
 
@@ -44,7 +44,7 @@ export const connect = functions.https.onRequest(async (req, res) => {
   }
 });
 
-export const callback  = functions.https.onRequest(async (req, res) => {
+exports.callback  = functions.https.onRequest(async (req, res) => {
   
   const jwtDecode = require("jwt-decode");
   const { XeroClient } = require("xero-node");
@@ -81,7 +81,7 @@ export const callback  = functions.https.onRequest(async (req, res) => {
   }
 });
 
-export const hawaiiRevenue = functions.https.onRequest(async (req, res) => {
+exports.hawaiiRevenue = functions.https.onRequest(async (req, res) => {
   unitsHash = await createUnitsHash();
 
   const vrbo = await getVRBOData();
@@ -117,7 +117,7 @@ export const hawaiiRevenue = functions.https.onRequest(async (req, res) => {
   );
 });
 
-export const separateResAdjs = functions.https.onRequest(async (req, res) => {
+exports.separateResAdjs = functions.https.onRequest(async (req, res) => {
   unitsHash = await createUnitsHash();
   const jwt = new google.auth.JWT(
     credentials.service_account.client_email,
@@ -184,7 +184,7 @@ export const separateResAdjs = functions.https.onRequest(async (req, res) => {
   res.send(updateRes);
 });
 
-export const bookingData = functions.https.onRequest( async (req, res) => {
+exports.bookingData = functions.https.onRequest( async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   unitsHash = await createUnitsHash();
   const { XeroClient, Invoices } = require("xero-node");
@@ -715,7 +715,7 @@ function createUnitsHash() {
   });
 }
 
-export const uploadMgmtInvoices  = functions.https.onRequest(async (req, res) => {
+exports.uploadMgmtInvoices  = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient, Invoices } = require("xero-node");
   const { TokenSet } = require("openid-client");
@@ -762,7 +762,7 @@ export const uploadMgmtInvoices  = functions.https.onRequest(async (req, res) =>
 });
 
 // Uploads invoices for reservations booked with units directly operated by Stinson Beach PM
-export const uploadCompanyInvoices = functions.https.onRequest(async (req, res) => {
+exports.uploadCompanyInvoices = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient, Invoices } = require("xero-node");
   const { TokenSet } = require("openid-client");
@@ -808,7 +808,7 @@ export const uploadCompanyInvoices = functions.https.onRequest(async (req, res) 
   }
 });
 
-export const uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
+exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient, Invoices } = require("xero-node");
   const { TokenSet } = require("openid-client");
@@ -1101,7 +1101,7 @@ function getAmazonAccountCode(property, unspsc) {
   return segmentCodes[unspsc.substring(0, 2)];
 }
 
-export const uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
+exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   // const { XeroClient, Invoices } = require("xero-node");
   // const { TokenSet } = require("openid-client");
@@ -1131,7 +1131,7 @@ export const uploadCleaningBills  = functions.https.onRequest(async (req, res) =
         return;
       }  
       
-      cleanerSnapshot.forEach(doc => {
+      cleanerSnapshot.forEach(async doc => {
         const cleaner = doc.data()
         const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(cleaner.hours_sheet)[1]
         const rawCleanings = await getCleaningSheetData(spreadsheetId)
