@@ -1,32 +1,30 @@
 import React, { useState } from "react";
-import { Alert, Navbar, Nav, NavLink, Button } from "react-bootstrap";
+import { Nav, NavLink, Button } from "react-bootstrap";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import "./Sidebar.css";
 import {
   MenuItem,
   ProSidebar,
-  SubMenu,
   Menu,
   SidebarContent,
   SidebarHeader,
 } from "react-pro-sidebar";
 import { FiLogOut } from "react-icons/fi";
-import { AiOutlineUnorderedList } from "react-icons/ai";
 import {
   BsCalendarCheck,
   BsPeople,
   BsPerson,
   BsShopWindow,
   BsTextIndentRight,
-  BsXLg
+  BsXLg,
 } from "react-icons/bs";
 import "react-pro-sidebar/dist/css/styles.css";
 
-export default function Sidebar() {
+export default function Sidebar({ menuCollapse, setMenuCollapse }) {
   const [error, setError] = useState("");
   const { currentUser, logout } = useAuth();
-  const [menuCollapse, setMenuCollapse] = useState(false);
+  // const [menuCollapse, setMenuCollapse] = useState(false);
 
   const history = useHistory();
 
@@ -46,7 +44,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div id="header">
+    <div id="header" style={{ width: !menuCollapse ? "270px" : "80px" }}>
       <ProSidebar collapsed={menuCollapse}>
         <SidebarHeader
           style={{
@@ -56,10 +54,24 @@ export default function Sidebar() {
           }}
         >
           <NavLink to="/">
-            <h4 style={{ color: "#007bff", margin: 0, width: !menuCollapse ? '100%':'37px', whiteSpace: 'nowrap', overflow: 'hidden' }}>{!menuCollapse ? 'Mgmt Database' : 'MDfs dfsd'}</h4>
+            <h4
+              style={{
+                color: "#007bff",
+                margin: 0,
+                width: !menuCollapse ? "100%" : "37px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              }}
+            >
+              {!menuCollapse ? "Mgmt Database" : "MD"}
+            </h4>
           </NavLink>
           <div className="closemenu" onClick={menuIconClick}>
-            {menuCollapse ? <BsXLg style={{width: '15px'}}/> : <BsTextIndentRight />}
+            {menuCollapse ? (
+              <BsXLg style={{ width: "15px" }} />
+            ) : (
+              <BsTextIndentRight />
+            )}
           </div>
         </SidebarHeader>
         <SidebarContent className="" style={{ background: "#f1f1f1" }}>

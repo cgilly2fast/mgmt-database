@@ -69,7 +69,7 @@ export class Unit extends Component {
             + Edit Unit Info
           </Button>
           <Container fluid>
-            <Row>
+            <div>
               <h3>{unit.name}</h3>
               {unit.guidebook_url !== "" ? (
                 <a href={unit.guidebook_url} target="_blank" rel="noreferrer">
@@ -101,7 +101,7 @@ export class Unit extends Component {
                   );
                 }
               })}
-            </Row>
+            </div>
             <p>
               {capacity.max} guests · {capacity.bedrooms} bedrooms ·{" "}
               {capacity.beds} bed · {capacity.bathrooms} bathrooms{" "}

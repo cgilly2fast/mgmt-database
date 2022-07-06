@@ -29,7 +29,7 @@ export default class App extends Component {
     return (
       <AuthProvider>
         <BrowserRouter>
-          <Container fluid>
+          <Container fluid className="p-0">
             <Switch>
               <PrivateRoute exact path="/" component={Units} />
               <PrivateRoute exact path="/units" component={Units} />

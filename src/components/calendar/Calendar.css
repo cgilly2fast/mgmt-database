@@ -22,7 +22,32 @@
 }
 
 .loader {
-  margin: 25% 40%;
+  border: 5px solid white;
+  border-radius: 50%;
+  border-top: 5px solid #3498db;
+  width: 60px;
+  height: 60px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .fc-h-event {
@@ -60,16 +85,17 @@
 }
 
 .property-image {
-  border-radius: 50px;
+  border-radius: 4px;
   width: 100%;
 }
 
 .model-owner-title {
   text-transform: capitalize;
-  color: #007bff;
   font-size: 20px;
   font-family: "Times New Roman", Times, serif;
-  font-weight: 700;
+  font-weight: 400;
+  color: #5c576a;
+  cursor: pointer;
   text-decoration: underline;
 }
 
@@ -96,8 +122,8 @@
   font-weight: 100;
   font-family: "Courier New", Courier, monospace;
   position: absolute;
-  top: 280px;
-  left: 50px;
+  top: 200px;
+  left: 30px;
   color: #fff;
 }
 
@@ -106,6 +132,7 @@
   font-weight: 400;
   font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
   align-self: center;
+  color: #5c576a;
 }
 
 .checkInandOut-div {
