@@ -23,7 +23,6 @@ import { useParams } from "react-router-dom";
 import { ErrorMessage, Formik } from "formik";
 import * as Yup from "yup";
 import BackButton from "../../img/BackButton.svg";
-import { useAuth } from "../../context/AuthContext";
 
 function renderEventContent(eventInfo) {
   return (
@@ -31,7 +30,10 @@ function renderEventContent(eventInfo) {
       <>
         {eventInfo?.event?.extendedProps?.date ? (
           <>
-            <b>Price: ${eventInfo?.event?.extendedProps?.value?.price?.price / 100}</b>
+            <b>
+              Price: $
+              {eventInfo?.event?.extendedProps?.value?.price?.price / 100}
+            </b>
             <br />
           </>
         ) : (
@@ -75,7 +77,7 @@ const Calendar = (props) => {
   const reservationDetail = useSelector(
     ({ db }) => db?.reservationDetail?.data
   );
-
+  console.log("reservations", reservations);
   const loading = useSelector(({ db }) => db?.reservationDetail?.loading);
 
   const calendarId = calendardata?.data?.id && calendardata?.data?.id;
@@ -214,7 +216,7 @@ const Calendar = (props) => {
     currency: Yup.string().required("currency is required"),
     reason: Yup.string().required("reason is required"),
   });
-
+  console.log("calendardata.loading", calendardata.loading);
   return (
     <>
       <img

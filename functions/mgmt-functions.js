@@ -441,6 +441,41 @@ exports.getReservationsDetail = functions.https.onRequest(async (req, res) => {
   });
 });
 
+exports.testHospitableWebhook = functions.https.onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    try {
+      // console.log("reqabc", req.body);
+      db.collection("webshooks")
+        .add(req.body)
+        .then((result) => console.log("result", result.id));
+      res.send("Added data");
+    } catch (error) {
+      res.status(400).send(`Error:${error}`);
+    }
+  });
+});
+
+// exports.getCodeWiseWebhookData = functions.https.onRequest(async (req, res) => {
+//   cors(req, res, async () => {
+//     try {
+//       const { code } = req.query;
+//       console.log("code", code);
+//       const webshooksRef = await db
+//         .collection("webshooks")
+//         .where("code", "==", code)
+//         .get();
+//       let webhookData = [];
+//       webshooksRef.forEach((docs) => {
+//         console.log("WebhooksDocsData", docs.id);
+//         webhookData.push({ ...docs.data() });
+//       });
+//       res.send({ Message: `This code data: ${code}`, data: webhookData });
+//     } catch (error) {
+//       res.status(400).send(`Error:${error}`);
+//     }
+//   });
+// });
+
 // function setUnitFolder(data, offices) {
 //   return new Promise(function (resolve, reject) {
 //     const jwt = new google.auth.JWT(
