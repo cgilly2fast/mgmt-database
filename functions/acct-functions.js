@@ -1156,58 +1156,6 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
       // // console.log("invoice length");
       // // console.log(invoices.length);
       
-<<<<<<< HEAD
-=======
-      cleanerSnapshot.forEach(async doc => {
-        const cleaner = doc.data()
-        const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(cleaner.hours_sheet)[1]
-        const rawCleanings = await getCleaningSheetData(spreadsheetId)
-        const invoices = parseCleaningBills(rawXeroData);
-
-        const newInvoices = new Invoices();
-        newInvoices.invoices = invoices;
-
-        const inviocesRes = await xero.accountingApi.createInvoices(
-          xeroTenantId,
-          newInvoices,
-          false,
-          4
-        );
-        const xeroInvioces = inviocesRes.response.body.Invoices;
-        console.log("invoice length");
-        console.log(invoices.length);
-
-        for (let i = 0; i < xeroInvioces.length; i++) {
-          const invoiceId = xeroInvioces[i].InvoiceID;
-          const lineItems = xeroInvioces[i].LineItems;
-
-          for (let j = 0; j < lineItems.length; j++) {
-            const unitName = lineItems[j].Tracking[0].Option;
-
-            const snapshot = await db
-              .collection("owners")
-              .where("units." + unitName + ".name", "==", unitName)
-              .where("partnership", "==", true)
-              .get();
-
-            if (!snapshot.empty) {
-              let data = [];
-              snapshot.forEach((doc) => {
-                data.push(doc.data());
-              });
-              const linkedRes = await xero.accountingApi.createLinkedTransaction(
-                xeroTenantId,
-                {
-                  sourceTransactionID: invoiceId,
-                  sourceLineItemID: lineItems[j].LineItemID,
-                  contactID: data[0].units[unitName].xero_id,
-                }
-              );
-              //console.log("linkedRes", linkedRes.response.statusCode);
-            }
-          }
-        }
->>>>>>> ba5b0f10c7e8d0691bbc22881b17372931e0a4d1
 
       // for (let i = 0; i < xeroInvioces.length; i++) {
       //   const invoiceId = xeroInvioces[i].InvoiceID;
