@@ -12,7 +12,7 @@ const SCOPES = [
   "https://mail.google.com/",
 ];
 
-export const updateUnit = functions.https.onRequest( async (req, res) => {
+exports.updateUnit = functions.https.onRequest( async (req, res) => {
   let data = req.body;
   // try {
   //   if (data.id === "") {
@@ -48,7 +48,7 @@ export const updateUnit = functions.https.onRequest( async (req, res) => {
     res.send(err);
   }
 });
-export const createOauth = functions.https.onRequest( async (req, res) => {
+exports.createOauth = functions.https.onRequest( async (req, res) => {
   const url = await oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
@@ -57,7 +57,7 @@ export const createOauth = functions.https.onRequest( async (req, res) => {
   res.send({ url: url });
 });
 
-export const getUnits = functions.https.onRequest(async (req, res) => {
+exports.getUnits = functions.https.onRequest(async (req, res) => {
   let snapshot = {};
   
   if (req.query.active !== undefined) {
@@ -74,7 +74,7 @@ export const getUnits = functions.https.onRequest(async (req, res) => {
   res.send(data);
 });
 
-export const getOwnerByUnitId = functions.https.onRequest( async (req, res) => {
+exports.getOwnerByUnitId = functions.https.onRequest( async (req, res) => {
   const unitName = req.body.query.unit_name;
   const snapshot = await db
     .collection("owners")
@@ -89,14 +89,14 @@ export const getOwnerByUnitId = functions.https.onRequest( async (req, res) => {
   res.send(data);
 });
 
-export const getUnitsbyId = functions.https.onRequest(async (req, res) => {
+exports.getUnitsbyId = functions.https.onRequest(async (req, res) => {
   const id = req.query.unit_id;
   const doc = await db.collection("units").doc(id).get();
 
   res.send(doc.data());
 });
 
-export const getListings = functions.https.onRequest( async (req, res) => {
+exports.getListings = functions.https.onRequest( async (req, res) => {
   if (req.query.available !== undefined) {
     const available = req.query.available === "true";
     const snapshot = await db
@@ -114,14 +114,14 @@ export const getListings = functions.https.onRequest( async (req, res) => {
   res.send(data);
 });
 
-export const getListingsById = functions.https.onRequest(async (req, res) => {
+exports.getListingsById = functions.https.onRequest(async (req, res) => {
   const id = req.quuery.listing_id;
   const doc = await db.collection("listings").doc(id).get();
 
   res.send(doc.data());
 });
 
-export const updateListing = functions.https.onRequest( async (req, res) => {
+exports.updateListing = functions.https.onRequest( async (req, res) => {
   const id = req.query.id;
   const data = req.query.data;
   const result = await db
@@ -131,7 +131,7 @@ export const updateListing = functions.https.onRequest( async (req, res) => {
   res.send(result);
 });
 
-export const getOwners = functions.https.onRequest( async (req, res) => {
+exports.getOwners = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
@@ -150,14 +150,14 @@ export const getOwners = functions.https.onRequest( async (req, res) => {
   res.send(data);
 });
 
-export const getOwnersById = functions.https.onRequest( async (req, res) => {
+exports.getOwnersById = functions.https.onRequest( async (req, res) => {
   const id = req.query.owner_id;
   const doc = await db.collection("owners").doc(id).get();
 
   res.send(doc.data());
 });
 
-export const updateOwner = functions.https.onRequest( async (req, res) => {
+exports.updateOwner = functions.https.onRequest( async (req, res) => {
   let data = req.body;
   if (data.uuid === "") {
     data.uuid = uuid4();
@@ -177,7 +177,7 @@ export const updateOwner = functions.https.onRequest( async (req, res) => {
   }
 });
 
-export const getTeam = functions.https.onRequest( async (req, res) => {
+exports.getTeam = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
   if (req.query.active !== undefined) {
     const active = req.query.active === "true";
@@ -193,13 +193,13 @@ export const getTeam = functions.https.onRequest( async (req, res) => {
   res.send(data);
 });
 
-export const getTeammateById = functions.https.onRequest(async (req, res) => {
+exports.getTeammateById = functions.https.onRequest(async (req, res) => {
   const id = req.query.teammate_id;
   const doc = await db.collection("team").doc(id).get();
   res.send(doc.data());
 });
 
-export const updateTeammate = functions.https.onRequest( async (req, res) => {
+exports.updateTeammate = functions.https.onRequest( async (req, res) => {
   let data = req.body;
   if (data.uuid === "") {
     data.uuid = uuidv4();
@@ -214,7 +214,7 @@ export const updateTeammate = functions.https.onRequest( async (req, res) => {
   }
 });
 
-export const checkSignup = functions.https.onRequest(async (req, res) => {
+exports.checkSignup = functions.https.onRequest(async (req, res) => {
   let data = req.body;
 
   try {
@@ -229,7 +229,7 @@ export const checkSignup = functions.https.onRequest(async (req, res) => {
   }
 });
 
-export const getCalendar = functions.https.onRequest( async (req, res) => {
+exports.getCalendar = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
   const unit_id = req.params.unit_id;
   snapshot = await db
@@ -249,7 +249,7 @@ export const getCalendar = functions.https.onRequest( async (req, res) => {
   }
 });
 
-export const updateCalendar = functions.https.onRequest( async (req, res) => {
+exports.updateCalendar = functions.https.onRequest( async (req, res) => {
   const { id, date, min_stay, price, currency, calendarId, day, reason } =
     req.body;
   try {
@@ -329,12 +329,12 @@ export const updateCalendar = functions.https.onRequest( async (req, res) => {
   }
 });
 
-// export const blockDate = functions.https.onRequest( async (req, res) => {
+// exports.blockDate = functions.https.onRequest( async (req, res) => {
 //   const { id } = req.body;
 //   console.log("req", id);
 // });
 
-export const getReservationsByUnit = functions.https.onRequest( async (req, res) => {
+exports.getReservationsByUnit = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
   const unit_id = req.query.unit_id;
   snapshot = await db
@@ -354,7 +354,7 @@ export const getReservationsByUnit = functions.https.onRequest( async (req, res)
   }
 });
 
-export const getReservationsDetail = functions.https.onRequest( async (req, res) => {
+exports.getReservationsDetail = functions.https.onRequest( async (req, res) => {
   let snapshot = {};
   const reservation_id = req.query.reservation_id;
   snapshot = await db.collection("my-stays").doc(reservation_id).get();
@@ -520,5 +520,5 @@ function test(data, auth) {
     );
   });
 }
-mgmt.get("/test", async (req, res) => {});
+
 
