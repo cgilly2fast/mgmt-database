@@ -33,8 +33,9 @@
 
 #header {
   position: absolute;
-  width: 220px;
+  /* width: 220px; */
 }
+
 #header .pro-sidebar {
   height: 100vh;
 }
@@ -60,11 +61,18 @@
   .pro-sidebar-header {
   margin-bottom: 30px;
 }
+@media (max-width: 320px) {
+  #header .pro-sidebar {
+    width: 80px !important;
+    min-width: 80px !important;
+  }
+}
 
 #header .pro-sidebar {
   width: 270px;
   min-width: 100%;
 }
+
 #header .pro-sidebar.collapsed {
   width: 80px;
   min-width: 80px;

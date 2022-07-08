@@ -14,12 +14,12 @@ const SelectUnit = (props) => {
 
   const unitsdata = useSelector(({ db }) => db?.units);
   useEffect(() => {
-    fetchData();
+    dispatch(getActiveUnits());
+    // fetchData();
   }, []);
 
-  const fetchData = () => {
-    dispatch(getActiveUnits());
-  };
+  // const fetchData = () => {
+  // };
 
   const handleSelect = (e) => {
     const id = e.target.value;

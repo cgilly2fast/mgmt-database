@@ -6,6 +6,7 @@ admin.initializeApp({
   credential: admin.credential.applicationDefault(credentials.service_account),
 });
 const db = admin.firestore();
+db.settings({ ignoreUndefinedProperties: true });
 
 module.exports = {
   db,
