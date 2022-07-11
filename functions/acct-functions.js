@@ -5,7 +5,7 @@ const { google } = require("googleapis");
 const segmentCodes = require("./segmentCodes");
 const { db } = require("./admin");
 
-const LOCAL = true;
+const LOCAL = false;
 let unitsHash = {};
 
 const client_id = credentials.xero_client_id;
@@ -67,10 +67,10 @@ exports.callback  = functions.https.onRequest(async (req, res) => {
       created: Date.now(),
       decodedIdToken: decodedIdToken,
       decodedAccessToken: decodedAccessToken,
-      tokenSet: JSON.stringify(tokenSet),
-      allTenants: JSON.stringify(xero.tenants),
+      tokenSet: JSON.parse(JSON.stringify(tokenSet)),
+      allTenants: JSON.parse(JSON.stringify(xero.tenants)),
       // XeroClient is sorting tenants behind the scenes so that most recent / active connection is at index 0
-      activeTenant: JSON.stringify(xero.tenants[0])}
+      activeTenant: JSON.parse(JSON.stringify(xero.tenants[0]))}
 
     await db.collection("sessions").add(xeroSession)
     
@@ -235,7 +235,7 @@ exports.bookingData = functions.https.onRequest( async (req, res) => {
   let resAdjInvoices = parseResAdjData(resAdjs);
   await xero.initialize();
 
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
@@ -729,7 +729,7 @@ exports.uploadMgmtInvoices  = functions.https.onRequest(async (req, res) => {
 
   await xero.initialize();
  
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
@@ -775,7 +775,7 @@ exports.uploadCompanyInvoices = functions.https.onRequest(async (req, res) => {
 
   await xero.initialize();
  
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
@@ -821,7 +821,7 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
 
   await xero.initialize();
   
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
@@ -1115,10 +1115,14 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
 
   await xero.initialize();
   
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").get()
+  // sessionSnapshot.forEach(doc => {
+  //   console.log(doc.id, '=>', doc.data().created);
+  // });
+  
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
-
+  
   if (!tokenSet.expired()) {
     try {
       const ownerSnapshot = await db.collection("owners").where("mgmt_take_cleaning_fee", "==", false).get() 
@@ -1136,7 +1140,7 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
         return;
       }  
       const cleaner = cleanerSnapshot.docs[0].data()
-      const helperName = cleaner.first_name + " " + cleaner.last_name
+      const cleanerName = cleaner.first_name + " " + cleaner.last_name
 
       const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(cleaner.hours_sheet)[1]
       const rawCleanings = await getUnpaidCleaningSheetData(spreadsheetId)
@@ -1144,7 +1148,7 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
      // const invoices = parseCleaningBills(cleanerName, req.body.cleanings, ownerUnitsMap);
 
       const newInvoices = new Invoices();
-      newInvoices.invoices = invoices;
+      newInvoices.invoices = [invoices];
 
       const inviocesRes = await xero.accountingApi.createInvoices(
         xeroTenantId,
@@ -1157,29 +1161,29 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
       // // console.log(invoices.length);
       
 
-      // for (let i = 0; i < xeroInvioces.length; i++) {
-      //   const invoiceId = xeroInvioces[i].InvoiceID;
-      //   const lineItems = xeroInvioces[i].LineItems;
+      for (let i = 0; i < xeroInvioces.length; i++) {
+        const invoiceId = xeroInvioces[i].InvoiceID;
+        const lineItems = xeroInvioces[i].LineItems;
 
-      //   for (let j = 0; j < lineItems.length; j++) {
-      //     const unitName = lineItems[j].Tracking[0].Option;
+        for (let j = 0; j < lineItems.length; j++) {
+          const unitName = lineItems[j].Tracking[0].Option;
 
-      //     if (ownerUnitsMap[unitName] !== undefined) {
+          if (ownerUnitsMap[unitName] !== undefined) {
     
-      //       const linkedRes = await xero.accountingApi.createLinkedTransaction(
-      //         xeroTenantId,
-      //         {
-      //           sourceTransactionID: invoiceId,
-      //           sourceLineItemID: lineItems[j].LineItemID,
-      //           contactID: ownerUnitsMap[unitName].xero_id,
-      //         }
-      //       );
-      //       //console.log("linkedRes", linkedRes.response.statusCode);
-      //     }
-      //   }
-      // }
+            const linkedRes = await xero.accountingApi.createLinkedTransaction(
+              xeroTenantId,
+              {
+                sourceTransactionID: invoiceId,
+                sourceLineItemID: lineItems[j].LineItemID,
+                contactID: ownerUnitsMap[unitName].xero_id,
+              }
+            );
+            //console.log("linkedRes", linkedRes.response.statusCode);
+          }
+        }
+      }
 
-      res.send(xeroInvioces);
+      res.send(inviocesRes);
       //res.send(invoices)
       
     } catch (err) {
@@ -1284,8 +1288,7 @@ function parseCleaningBills(cleanerName, data, ownerUnitsMap) {
     contact: {
       name: cleanerName,
     },
-
-    reference: "Cleaner PMT: " + cleanerName + " on " + moment(data[data.length -1][1]).format("YYYY-MM-DD"),
+    invoiceNumber: "Cleaner PMT: " + cleanerName + " on " + moment(data[data.length -1][1]).format("YYYY-MM-DD"),
     url: "https://stinsonbeachpm.com",
     currencyCode: "USD",
     status: "AUTHORISED", //DRAFT
@@ -1336,7 +1339,7 @@ exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
 
   await xero.initialize();
   
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "asc").limit(1).get()
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
   const tokenSet = await xero.readTokenSet();
 
