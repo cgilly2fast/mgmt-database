@@ -1597,8 +1597,8 @@ function parseHoursBills(teammateName, data, rate) {
   return [jsonXeroData];
 }
 
-exports.refreshXeroConnection = functions.https.onRequest(async (req, res) => {
-  
+exports.refreshXeroConnection = functions.pubsub.schedule('0 0 1 * *')
+  .onRun(async (context) => {
   const { XeroClient } = require("xero-node");
   const { TokenSet } = require("openid-client");
   const xero = new XeroClient({
@@ -1621,9 +1621,9 @@ exports.refreshXeroConnection = functions.https.onRequest(async (req, res) => {
   if (tokenSet.expired()) {
     const validTokenSet = await xero.refreshToken();
     await saveXeroToken(xero, validTokenSet)
-    res.send("Xero Connection Refreshed")
+    return "Xero Connection Refreshed"
   } else {
-    res.send("Xero token not expired. Expires at: " + moment(tokenSet.expires_at *1000).utcOffset("-0700").toString() + " (PST)")
+    return "Xero token not expired. Expires at: " + moment(tokenSet.expires_at *1000).utcOffset("-0700").toString() + " (PST)"
   }
 })
 
