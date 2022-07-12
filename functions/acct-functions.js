@@ -5,7 +5,7 @@ const { google } = require("googleapis");
 const segmentCodes = require("./segmentCodes");
 const { db } = require("./admin");
 
-const LOCAL = false;
+const LOCAL = true;
 let unitsHash = {};
 
 const client_id = credentials.xero_client_id;
@@ -18,11 +18,66 @@ const xeroTenantId = credentials.xero_tennat_id;
 const scopes =
   "openid profile email accounting.contacts.read accounting.settings accounting.transactions offline_access";
 
+  
+
+  exports.getAllXeroContacts  = functions.https.onRequest(async (req, res) => {
+  
+    const { XeroClient, Invoices } = require("xero-node");
+    const { TokenSet } = require("openid-client");
+    const xero = new XeroClient({
+      clientId: client_id,
+      clientSecret: client_secret,
+      redirectUris: [redirectUrl],
+      scopes: scopes.split(" "),
+    });
+  
+    await xero.initialize();
+    
+    const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+    await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+    const tokenSet = await xero.readTokenSet();
+  
+    if (!tokenSet.expired()) {
+      try {
+  
+        // const teammateSnapshot = await db.collection('team').where("uuid", "==", req.query.teammate_id).get()
+  
+        // if (teammateSnapshot.empty) {
+        //   res.send('No teammate for id');
+        //   return;
+        // }  
+        // const teammate = teammateSnapshot.docs[0].data()
+        // const teammateName = teammate.first_name + " " + teammate.last_name
+  
+        // const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(teammate.hours_sheet)[1]
+        // const rawHours = await getUnpaidHoursSheetData(spreadsheetId)
+        // const invoices = parseHoursBills(teammateName, rawHours, teammate.rate);
+       // const invoices = parseHoursBills(teammateName, req.body.cleanings, ownerUnitsMap);
+  
+        // const newInvoices = new Invoices();
+        // newInvoices.invoices = invoices;
+  
+        const contactsRes = await xero.accountingApi.getContacts(xeroTenantId)
+        
+        res.send(contactsRes);
+        //res.send(invoices)
+        
+      } catch (err) {
+        console.log(err);
+        res.send(err);
+      
+      }
+    } else {
+      res.send(
+        "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-development.cloudfunctions.net/connect'>clicking here</a>"
+      );
+    }
+  });
 
 exports.connect = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   const { XeroClient } = require("xero-node");
-  
+  console.log(redirectUrl)
   const xero = new XeroClient({
     clientId: client_id,
     clientSecret: client_secret,
@@ -68,13 +123,14 @@ exports.callback  = functions.https.onRequest(async (req, res) => {
       decodedIdToken: decodedIdToken,
       decodedAccessToken: decodedAccessToken,
       tokenSet: JSON.parse(JSON.stringify(tokenSet)),
-      allTenants: JSON.parse(JSON.stringify(xero.tenants)),
-      // XeroClient is sorting tenants behind the scenes so that most recent / active connection is at index 0
-      activeTenant: JSON.parse(JSON.stringify(xero.tenants[0]))}
+      // allTenants: JSON.parse(JSON.stringify(xero.tenants)),
+      // // XeroClient is sorting tenants behind the scenes so that most recent / active connection is at index 0
+      // activeTenant: JSON.parse(JSON.stringify(xero.tenants[0]))
+    }
 
     await db.collection("sessions").add(xeroSession)
     
-    res.send("Connected to Xero!");
+    res.send(req.url);
   } catch (err) {
     console.log(err);
     res.send("Sorry, something went wrong in callback");
@@ -237,10 +293,15 @@ exports.bookingData = functions.https.onRequest( async (req, res) => {
 
   const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  const tokenSet = await xero.readTokenSet();
+  let tokenSet = await xero.readTokenSet();
 
-  if (!tokenSet.expired()) {
-    const invoices = airbnbInvoices.concat(vrboInvoices).concat(resAdjInvoices);
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+
+  const invoices = airbnbInvoices.concat(vrboInvoices).concat(resAdjInvoices);
 
     try {
       const newInvoices = new Invoices();
@@ -272,11 +333,7 @@ exports.bookingData = functions.https.onRequest( async (req, res) => {
           invoiceString
       );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
 function getVRBOData() {
@@ -728,13 +785,17 @@ exports.uploadMgmtInvoices  = functions.https.onRequest(async (req, res) => {
   //console.log(req.session.tokenSet);
 
   await xero.initialize();
- 
+
   const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  const tokenSet = await xero.readTokenSet();
+  let tokenSet = await xero.readTokenSet();
 
-  if (!tokenSet.expired()) {
-    try {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
       const rawXeroData = await getXeroInvoiceData();
       const invoices = parseXeroData(rawXeroData);
 
@@ -754,11 +815,7 @@ exports.uploadMgmtInvoices  = functions.https.onRequest(async (req, res) => {
         "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
       );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+ 
 });
 
 // Uploads invoices for reservations booked with units directly operated by Stinson Beach PM
@@ -777,10 +834,14 @@ exports.uploadCompanyInvoices = functions.https.onRequest(async (req, res) => {
  
   const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  const tokenSet = await xero.readTokenSet();
+  // let tokenSet = await xero.readTokenSet();
 
-  if (!tokenSet.expired()) {
-    try {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
       const rawXeroData = await getXeroInvoiceData();
       const invoices = parseXeroData(rawXeroData);
 
@@ -801,11 +862,7 @@ exports.uploadCompanyInvoices = functions.https.onRequest(async (req, res) => {
       //   "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
       // );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
 exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
@@ -823,10 +880,14 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
   
   const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  const tokenSet = await xero.readTokenSet();
+  let tokenSet = await xero.readTokenSet();
 
-  if (!tokenSet.expired()) {
-    try {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
       const rawXeroData = await getXeroAmazonData();
 
       const invoices = parseAmazonBills(rawXeroData);
@@ -883,11 +944,7 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
       //   "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
       // );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
 function getXeroInvoiceData() {
@@ -1121,10 +1178,14 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
   // });
   
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  const tokenSet = await xero.readTokenSet();
-  
-  if (!tokenSet.expired()) {
-    try {
+  let tokenSet = await xero.readTokenSet();
+
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
       const ownerSnapshot = await db.collection("owners").where("mgmt_take_cleaning_fee", "==", false).get() 
       
       let ownerUnitsMap = {};
@@ -1148,7 +1209,7 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
      // const invoices = parseCleaningBills(cleanerName, req.body.cleanings, ownerUnitsMap);
 
       const newInvoices = new Invoices();
-      newInvoices.invoices = [invoices];
+      newInvoices.invoices = invoices;
 
       const inviocesRes = await xero.accountingApi.createInvoices(
         xeroTenantId,
@@ -1191,11 +1252,7 @@ exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
       res.send(err);
     
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-development.cloudfunctions.net/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
 exports.getCleaningSheetById = functions.https.onRequest(async (req, res) => {
@@ -1323,11 +1380,11 @@ function parseCleaningBills(cleanerName, data, ownerUnitsMap) {
     
   }
 
-  return jsonXeroData;
+  return [jsonXeroData];
 }
 
 exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
-  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+  
   const { XeroClient, Invoices } = require("xero-node");
   const { TokenSet } = require("openid-client");
   const xero = new XeroClient({
@@ -1341,10 +1398,14 @@ exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
   
   const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  const tokenSet = await xero.readTokenSet();
+  let tokenSet = await xero.readTokenSet();
 
-  if (!tokenSet.expired()) {
-    try {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
 
       const teammateSnapshot = await db.collection('team').where("uuid", "==", req.query.teammate_id).get()
 
@@ -1357,7 +1418,7 @@ exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
 
       const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(teammate.hours_sheet)[1]
       const rawHours = await getUnpaidHoursSheetData(spreadsheetId)
-      const invoices = parseHoursBills(teammateName, rawCleanings, teammate.rate);
+      const invoices = parseHoursBills(teammateName, rawHours, teammate.rate);
      // const invoices = parseHoursBills(teammateName, req.body.cleanings, ownerUnitsMap);
 
       const newInvoices = new Invoices();
@@ -1396,7 +1457,7 @@ exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
       //   }
       // }
 
-      res.send(xeroInvioces);
+      res.send(inviocesRes);
       //res.send(invoices)
       
     } catch (err) {
@@ -1404,11 +1465,7 @@ exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
       res.send(err);
     
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-development.cloudfunctions.net/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
 exports.getHoursSheetById = functions.https.onRequest(async (req, res) => {
@@ -1485,7 +1542,7 @@ function getUnpaidHoursSheetData(spreadsheetId) {
         console.log("Request successful");
         let data = []; 
         for (let i = 0; i < res.data.values.length; i++) {
-          if(res.data.values[i][8] === undefined) {
+          if(res.data.values[i].length > 0 && res.data.values[i][0] !== "" && res.data.values[i][1] !== "" && res.data.values[i][2] !== "" && res.data.values[i][8] === undefined) {
             data.push(res.data.values[i])
           }
         }
@@ -1502,13 +1559,13 @@ function parseHoursBills(teammateName, data, rate) {
       name: teammateName,
     },
 
-    reference: "Contractor PMT: " + teammateName + " on " + moment(data[data.length -1][1]).format("YYYY-MM-DD"),
+    invoiceNumber: "Contractor PMT: " + teammateName + " on " + moment(data[data.length -1][2]).format("YYYY-MM-DD"),
     url: "https://stinsonbeachpm.com",
     currencyCode: "USD",
     status: "AUTHORISED", //DRAFT
     lineAmountTypes: "NoTax",
-    date: moment(data[data.length -1][1]).format("YYYY-MM-DD"),
-    dueDate: moment(data[data.length -1][1]).add(15, "days").format("YYYY-MM-DD"),
+    date: moment(data[data.length -1][2]).format("YYYY-MM-DD"),
+    dueDate: moment(data[data.length -1][2]).add(15, "days").format("YYYY-MM-DD"),
     lineItems: [
     ],
   };
@@ -1520,7 +1577,7 @@ function parseHoursBills(teammateName, data, rate) {
       
       description: teammateName + " on " + data[i][2] + ": " + data[i][1] ,
       quantity: data[i][6],
-      unitAmount: rate, //GET FROM DATABASE
+      unitAmount: (parseFloat(data[i][7])*100/parseFloat(data[i][6])*100)/10000, //GET FROM DATABASE
       accountCode: "6110",
       tracking: [
         {
@@ -1537,9 +1594,57 @@ function parseHoursBills(teammateName, data, rate) {
     
   }
 
-  return jsonXeroData;
+  return [jsonXeroData];
 }
 
+exports.refreshXeroConnection = functions.https.onRequest(async (req, res) => {
+  
+  const { XeroClient } = require("xero-node");
+  const { TokenSet } = require("openid-client");
+  const xero = new XeroClient({
+    clientId: client_id,
+    clientSecret: client_secret,
+    redirectUris: [redirectUrl],
+    scopes: scopes.split(" "),
+  });
+
+  await xero.initialize();
+  
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  // sessionSnapshot.forEach(doc => {
+  //   console.log(doc.id, '=>', doc.data().created);
+  // });
+  
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  const tokenSet = await xero.readTokenSet();
+  
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(xero, validTokenSet)
+    res.send("Xero Connection Refreshed")
+  } else {
+    res.send("Xero token not expired. Expires at: " + moment(tokenSet.expires_at *1000).utcOffset("-0700").toString() + " (PST)")
+  }
+})
+
+function saveXeroToken(xeroToken) {
+  return new Promise(function (resolve, reject) {
+    const jwtDecode = require("jwt-decode");
+    console.log(xero.tenants)
+    const decodedIdToken = jwtDecode(xeroToken.id_token);
+    const decodedAccessToken = jwtDecode(xeroToken.access_token);
+    const xeroSession = {
+      type: "xero",
+      created: Date.now(),
+      decodedIdToken: decodedIdToken,
+      decodedAccessToken: decodedAccessToken,
+      tokenSet: JSON.parse(JSON.stringify(xeroToken))}
+
+    db.collection("sessions").add(xeroSession).then((response) => {
+      resolve(response)
+    })
+  })
+}
 // async function getXeroInvoiceData() {
 //   return new Promise(function (resolve, reject) {
     

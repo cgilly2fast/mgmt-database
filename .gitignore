@@ -25,5 +25,5 @@ yarn-error.log*
 
 credentials.js
 firebase-debug.log
-functions/development_credentials.js
+
 functions/production_credentials.js
