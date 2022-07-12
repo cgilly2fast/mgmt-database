@@ -20,7 +20,7 @@ const scopes =
 
   
 
-  exports.getAllXeroContacts  = functions.https.onRequest(async (req, res) => {
+exports.getAllXeroContacts  = functions.https.onRequest(async (req, res) => {
   
     const { XeroClient, Invoices } = require("xero-node");
     const { TokenSet } = require("openid-client");
@@ -72,7 +72,7 @@ const scopes =
         "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-development.cloudfunctions.net/connect'>clicking here</a>"
       );
     }
-  });
+});
 
 exports.connect = functions.https.onRequest(async (req, res) => {
   res.set("Cache-Control", "public, max-age=300, s-maxage=600");
