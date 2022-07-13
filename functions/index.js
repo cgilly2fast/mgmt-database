@@ -1,32 +1,37 @@
-const {updateUnit,
-    createOauth,
-    getUnits,
-    getOwnerByUnitId,
-    getUnitsbyId,
-    getListings,
-    getListingsById,
-    updateListing,
-    getOwners,
-    getOwnersById,
-    updateOwner,
-    getTeam,
-    getTeammateById,
-    updateTeammate,
-    checkSignup,
-    getCalendar,
-    updateCalendar,
-    getReservationsByUnit,
-    getReservationsDetail } = require("./mgmt-functions");
+const {
+  updateUnit,
+  createOauth,
+  getUnits,
+  getOwnerByUnitId,
+  getUnitsbyId,
+  getListings,
+  getListingsById,
+  updateListing,
+  getOwners,
+  getOwnersById,
+  updateOwner,
+  getTeam,
+  getTeammateById,
+  updateTeammate,
+  checkSignup,
+  getCalendar,
+  updateCalendar,
+  getReservationsByUnit,
+  getReservationsDetail,
+  midnightSchedule,
+} = require("./mgmt-functions");
 
-const {connect,callback, 
-    uploadAmazonBills,
-    uploadCleaningBills,
-    getCleaningSheetById,
-    uploadHoursBills,
-    getHoursSheetById,
-    getAllXeroContacts,
-    refreshXeroConnection
-    } = require("./acct-functions");
+const {
+  connect,
+  callback,
+  uploadAmazonBills,
+  uploadCleaningBills,
+  getCleaningSheetById,
+  uploadHoursBills,
+  getHoursSheetById,
+  getAllXeroContacts,
+  refreshXeroConnection,
+} = require("./acct-functions");
 //const format = require("./format-functions");
 
 exports.connect = connect;
@@ -36,8 +41,8 @@ exports.uploadCleaningBills = uploadCleaningBills;
 exports.getCleaningSheetById = getCleaningSheetById;
 exports.uploadHoursBills = uploadHoursBills;
 exports.getHoursSheetById = getHoursSheetById;
-exports.getAllXeroContacts = getAllXeroContacts
-exports.refreshXeroConnection = refreshXeroConnection
+exports.getAllXeroContacts = getAllXeroContacts;
+exports.refreshXeroConnection = refreshXeroConnection;
 
 exports.updateUnit = updateUnit;
 exports.createOauth = createOauth;
@@ -58,6 +63,6 @@ exports.getCalendar = getCalendar;
 exports.updateCalendar = updateCalendar;
 exports.getReservationsByUnit = getReservationsByUnit;
 exports.getReservationsDetail = getReservationsDetail;
+exports.midnightSchedule = midnightSchedule;
 // exports.testHospitableWebhook = testHospitableWebhook;
 // exports.getCodeWiseWebhookData = getCodeWiseWebhookData;
-

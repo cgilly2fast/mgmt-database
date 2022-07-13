@@ -12,7 +12,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/documents",
   "https://mail.google.com/",
 ];
-
+const moment = require("moment-timezone");
 // const corsHandler = cors({ origin: true });
 
 exports.updateUnit = functions.https.onRequest(async (req, res) => {
@@ -440,6 +440,80 @@ exports.getReservationsDetail = functions.https.onRequest(async (req, res) => {
     }
   });
 });
+
+exports.midnightSchedule = functions.pubsub
+  .schedule("0 0 * * *")
+  .onRun(async (context) => {
+    let calendarRef = [];
+    await db
+      .collection("calendar")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let changedDate = [];
+          const dateList = Object.values(doc.data().days);
+          dateList.map(async (values) => {
+            if (values.date < moment(new Date()).format("YYYY-MM-DD")) {
+              changedDate.push({
+                ...values,
+                status: {
+                  note: "",
+                  reason: "BLOCKED",
+                  available: false,
+                },
+              });
+            }
+          });
+          calendarRef.push({ id: doc.id, days: changedDate });
+        });
+        let temprecord = {};
+        calendarRef.map(async (item) => {
+          item.days.map((e) => (temprecord[e.date] = e));
+          await db.collection("calendar").doc(item.id).set(
+            {
+              days: temprecord,
+            },
+            { merge: true }
+          );
+        });
+      });
+    adCalendarCollection();
+    return "set suucess";
+  });
+
+const adCalendarCollection = async () => {
+  let adCalendarRef = [];
+  await db
+    .collection("ad-calendar")
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        let changedDate = [];
+        const dateList = Object.values(doc.data().days);
+        dateList.map((values) => {
+          if (values.date < moment(new Date()).format("YYYY-MM-DD")) {
+            changedDate.push({
+              ...values,
+              status: {
+                available: false,
+              },
+            });
+          }
+        });
+        adCalendarRef.push({ id: doc.id, days: changedDate });
+      });
+      let temprecord = {};
+      adCalendarRef.map(async (item) => {
+        item.days.map((e) => (temprecord[e.date] = e));
+        await db.collection("ad-calendar").doc(item.id).set(
+          {
+            days: temprecord,
+          },
+          { merge: true }
+        );
+      });
+    });
+};
 
 // exports.testHospitableWebhook = functions.https.onRequest(async (req, res) => {
 //   cors(req, res, async () => {
