@@ -64,5 +64,3 @@ exports.updateCalendar = updateCalendar;
 exports.getReservationsByUnit = getReservationsByUnit;
 exports.getReservationsDetail = getReservationsDetail;
 exports.midnightSchedule = midnightSchedule;
-// exports.testHospitableWebhook = testHospitableWebhook;
-// exports.getCodeWiseWebhookData = getCodeWiseWebhookData;

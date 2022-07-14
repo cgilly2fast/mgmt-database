@@ -40,14 +40,14 @@ function renderEventContent(eventInfo) {
           <>
             <div className="reservation-event">
               <img
-                src={eventInfo?.event?.extendedProps?.picture}
+                src={
+                  eventInfo?.event?.extendedProps?.picture &&
+                  eventInfo?.event?.extendedProps?.picture
+                }
                 className="img-calendar"
               />
               <h5>
-                {
-                  eventInfo?.event?.extendedProps?.value?.checkout?.guest
-                    ?.first_name
-                }
+                {eventInfo?.event?.extendedProps?.value?.guest?.first_name}
               </h5>
             </div>
           </>
@@ -77,7 +77,7 @@ const Calendar = (props) => {
   const reservationDetail = useSelector(
     ({ db }) => db?.reservationDetail?.data
   );
-  console.log("reservations", reservations);
+
   const loading = useSelector(({ db }) => db?.reservationDetail?.loading);
 
   const calendarId = calendardata?.data?.id && calendardata?.data?.id;
@@ -149,12 +149,12 @@ const Calendar = (props) => {
       const data = reservationList.map((value) => {
         return {
           type: "reservations",
-          id: value?.id,
-          title: value?.guest?.firstName,
-          start: value?.check_in_date,
-          end: value?.check_out_date,
+          id: value?.uuid,
+          title: value?.guest?.first_name,
+          start: value?.start_date,
+          end: value?.end_date,
           extendedProps: {
-            picture: value?.unit_picture,
+            picture: value?.guest?.picture,
             value: value,
           },
           borderColor: "black",
@@ -173,9 +173,9 @@ const Calendar = (props) => {
           if (values.date >= moment(new Date()).format("YYYY-MM-DD")) {
             const filter = reservationList.find(
               (reserveDate) =>
-                new Date(reserveDate.check_in_date).getTime() <=
+                new Date(reserveDate.start_date).getTime() <=
                   new Date(values.date).getTime() &&
-                new Date(reserveDate.check_out_date).getTime() >
+                new Date(reserveDate.end_date).getTime() >
                   new Date(values.date).getTime()
             );
             if (!Boolean(filter)) {
@@ -216,7 +216,7 @@ const Calendar = (props) => {
     currency: Yup.string().required("currency is required"),
     reason: Yup.string().required("reason is required"),
   });
-  console.log("calendardata.loading", calendardata.loading);
+
   return (
     <>
       <img
@@ -468,10 +468,11 @@ const Calendar = (props) => {
                         />
                         &nbsp;&nbsp;
                         <h3 className="model-owner-title m-0">
-                          {reservationDetail?.checkout?.guest?.first_name &&
-                            reservationDetail?.checkout?.guest?.first_name}{" "}
-                          {reservationDetail?.checkout?.guest?.last_name &&
-                            reservationDetail?.checkout?.guest?.last_name}
+                          {reservationDetail?.reservation?.guest?.first_name &&
+                            reservationDetail?.reservation?.guest
+                              ?.first_name}{" "}
+                          {reservationDetail?.reservation?.guest?.last_name &&
+                            reservationDetail?.reservation?.guest?.last_name}
                         </h3>
                       </div>
                     </Offcanvas.Title>
@@ -486,11 +487,11 @@ const Calendar = (props) => {
                         />
                       ) : null}
 
-                      <h6 className="title">
-                        {reservationDetail?.my_stays?.unit_name
-                          ? reservationDetail?.my_stays?.unit_name
+                      {/* <h6 className="title">
+                        {reservationDetail?.reservation?.unitName
+                          ? reservationDetail?.reservation?.unitName
                           : null}
-                      </h6>
+                      </h6> */}
                     </div>
 
                     <div className="d-flex mt-3">
@@ -498,9 +499,9 @@ const Calendar = (props) => {
                         style={{ fontSize: "20px", color: "#5c576a" }}
                       />
                       <h6 className="mx-3 detail-tag">
-                        {reservationDetail?.my_stays?.check_in_date &&
+                        {reservationDetail?.reservation?.start_date &&
                           moment(
-                            reservationDetail?.my_stays?.check_in_date
+                            reservationDetail?.reservation?.start_date
                           ).format("ddd, MMMM-DD-YYYY")}
                       </h6>
                     </div>
@@ -509,9 +510,9 @@ const Calendar = (props) => {
                         style={{ fontSize: "20px", color: "#5c576a" }}
                       />{" "}
                       <h6 className="mx-3 detail-tag">
-                        {reservationDetail?.my_stays?.check_out_date &&
+                        {reservationDetail?.reservation?.end_date &&
                           moment(
-                            reservationDetail?.my_stays?.check_out_date
+                            reservationDetail?.reservation?.end_date
                           ).format("ddd, MMMM-DD-YYYY")}
                       </h6>
                     </div>
@@ -523,15 +524,16 @@ const Calendar = (props) => {
                       <div className="d-flex">
                         <label className="detail-tag">Nights:</label>
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.my_stays?.nights &&
-                            reservationDetail?.my_stays?.nights}
+                          {reservationDetail?.reservation?.nights &&
+                            reservationDetail?.reservation?.nights}
                         </h6>
                       </div>
                       <div className="d-flex">
                         <label className="detail-tag">Payment:</label>
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.checkout?.payment?.amount &&
-                            `$${reservationDetail?.checkout?.payment?.amount}`}
+                          {reservationDetail?.reservation?.invoice
+                            ?.total_price &&
+                            `$${reservationDetail?.reservation?.invoice?.total_price}`}
                         </h6>
                       </div>
                     </div>
@@ -543,22 +545,23 @@ const Calendar = (props) => {
                       <div className="d-flex">
                         <label className="detail-tag">Adults:</label>{" "}
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.my_stays?.occupancy?.adults &&
-                            reservationDetail?.my_stays?.occupancy?.adults}
+                          {reservationDetail?.reservation?.occupancy?.adults &&
+                            reservationDetail?.reservation?.occupancy?.adults}
                         </h6>
                       </div>
                       <div className="d-flex">
                         <label className="detail-tag">Children:</label>{" "}
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.my_stays?.occupancy?.children &&
-                            reservationDetail?.my_stays?.occupancy?.children}
+                          {reservationDetail?.reservation?.occupancy
+                            ?.children &&
+                            reservationDetail?.reservation?.occupancy?.children}
                         </h6>
                       </div>
                       <div className="d-flex">
                         <label className="detail-tag">Infants:</label>{" "}
                         <h6 className="mx-3 detail-tag">
-                          {reservationDetail?.my_stays?.occupancy?.infants &&
-                            reservationDetail?.my_stays?.occupancy?.infants}
+                          {reservationDetail?.reservation?.occupancy?.infants &&
+                            reservationDetail?.reservation?.occupancy?.infants}
                         </h6>
                       </div>
                     </div>
@@ -598,12 +601,31 @@ const Calendar = (props) => {
           <Modal show={showModel} onHide={handleCloseModel}>
             <Modal.Header closeButton>
               <Modal.Title>
-                <h3 className="model-owner-title">
-                  {reservationDetail?.checkout?.guest?.first_name &&
-                    reservationDetail?.checkout?.guest?.first_name}{" "}
-                  {reservationDetail?.checkout?.guest?.last_name &&
-                    reservationDetail?.checkout?.guest?.last_name}
-                </h3>
+                <div className="d-flex">
+                  {reservationDetail?.reservation?.guest?.picture ? (
+                    <img
+                      src={
+                        reservationDetail?.reservation?.guest?.picture &&
+                        reservationDetail?.reservation?.guest?.picture
+                      }
+                      alt="guest_pic"
+                      className="guest-image"
+                    />
+                  ) : (
+                    <>
+                      <BsPersonCircle
+                        style={{ fontSize: "25px", color: "#5c576a" }}
+                      />
+                      &nbsp;&nbsp;
+                    </>
+                  )}
+                  <h3 className="model-owner-title">
+                    {reservationDetail?.reservation?.guest?.first_name &&
+                      reservationDetail?.reservation?.guest?.first_name}{" "}
+                    {reservationDetail?.reservation?.guest?.last_name &&
+                      reservationDetail?.reservation?.guest?.last_name}
+                  </h3>
+                </div>
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -611,27 +633,27 @@ const Calendar = (props) => {
                 Booking Details
               </h5>
               <hr />
-              {reservationDetail?.my_stays?.reservation_code && (
+              {reservationDetail?.reservation?.reservation_code && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
                     Reservation Code :{" "}
-                    {reservationDetail?.my_stays?.reservation_code}
+                    {reservationDetail?.reservation?.reservation_code}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.my_stays?.check_in_date && (
+              {reservationDetail?.reservation?.start_date && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Check In : {reservationDetail?.my_stays?.check_in_date}
+                    Check In : {reservationDetail?.reservation?.start_date}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.my_stays?.check_out_date && (
+              {reservationDetail?.reservation?.end_date && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Check Out : {reservationDetail?.my_stays?.check_out_date}
+                    Check Out : {reservationDetail?.reservation?.end_date}
                   </p>
                   <hr />
                 </>
@@ -642,10 +664,10 @@ const Calendar = (props) => {
                     <hr />
                   </>
                 )} */}
-              {reservationDetail?.my_stays?.nights && (
+              {reservationDetail?.reservation?.nights && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Nights : {reservationDetail?.my_stays?.nights}
+                    Nights : {reservationDetail?.reservation?.nights}
                   </p>
                   <hr />
                 </>
@@ -655,10 +677,10 @@ const Calendar = (props) => {
                 Listing Details
               </h5>
               <hr />
-              {reservationDetail?.my_stays?.unit_name && (
+              {reservationDetail?.reservation?.unitName && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Listing Name : {reservationDetail?.my_stays?.unit_name}
+                    Listing Name : {reservationDetail?.reservation?.unitName}
                   </p>
                   <hr />
                 </>
@@ -701,19 +723,20 @@ const Calendar = (props) => {
                 Payment Details
               </h5>
               <hr />
-              {reservationDetail?.checkout?.prices?.totalPrice && (
+              {reservationDetail?.reservation?.invoice?.total_price && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Amount : ${reservationDetail?.checkout?.prices?.totalPrice}
+                    Amount : $
+                    {reservationDetail?.reservation?.invoice?.total_price}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.checkout?.prices?.total_cleaning_fee && (
+              {reservationDetail?.reservation?.invoice?.cleaning_fee && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
                     Cleaning Fee : $
-                    {reservationDetail?.checkout?.prices?.total_cleaning_fee}
+                    {reservationDetail?.reservation?.invoice?.cleaning_fee}
                   </p>
                   <hr />
                 </>
