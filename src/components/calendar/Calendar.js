@@ -14,7 +14,6 @@ import { useHistory, withRouter } from "react-router-dom";
 import {
   getActiveUnits,
   getCalendar,
-  getReservations,
   updateCalendar,
   getReservationsDetail,
 } from "../../store/actions/dbActions";
@@ -32,22 +31,27 @@ function renderEventContent(eventInfo) {
           <>
             <b>
               Price: $
-              {eventInfo?.event?.extendedProps?.value?.price?.price / 100}
+              {eventInfo?.event?.extendedProps?.value?.price?.price / 10}
             </b>
             <br />
           </>
         ) : (
           <>
             <div className="reservation-event">
-              <img
-                src={
-                  eventInfo?.event?.extendedProps?.picture &&
-                  eventInfo?.event?.extendedProps?.picture
-                }
-                className="img-calendar"
-              />
+              {eventInfo?.event?.extendedProps?.picture ? (
+                <img
+                  src={
+                    eventInfo?.event?.extendedProps?.picture &&
+                    eventInfo?.event?.extendedProps?.picture
+                  }
+                  className="img-calendar"
+                />
+              ) : null}
               <h5>
-                {eventInfo?.event?.extendedProps?.value?.guest?.first_name}
+                {
+                  eventInfo?.event?.extendedProps?.value?.reservation
+                    ?.first_name
+                }
               </h5>
             </div>
           </>
@@ -73,14 +77,15 @@ const Calendar = (props) => {
 
   const unitsdata = useSelector(({ db }) => db?.units);
   const calendardata = useSelector(({ db }) => db?.calendar);
-  const reservations = useSelector(({ db }) => db?.reservations);
+
   const reservationDetail = useSelector(
     ({ db }) => db?.reservationDetail?.data
   );
-
   const loading = useSelector(({ db }) => db?.reservationDetail?.loading);
 
   const calendarId = calendardata?.data?.id && calendardata?.data?.id;
+
+  const unitData = calendardata?.data?.unit && calendardata?.data?.unit;
 
   useEffect(() => {
     fetchData();
@@ -88,7 +93,6 @@ const Calendar = (props) => {
 
   useEffect(() => {
     dispatch(getCalendar(id));
-    dispatch(getReservations(id));
   }, [id]);
 
   const fetchData = () => {
@@ -131,30 +135,27 @@ const Calendar = (props) => {
   };
 
   useEffect(() => {
-    if (
-      (calendardata?.loading === false && calendardata?.data) ||
-      (reservations?.loading === false && reservations?.data)
-    ) {
+    if (calendardata?.loading === false && calendardata?.data) {
       if (calendardata?.data?.days) {
         setEventsList(Object?.values(calendardata?.data?.days));
       }
-      if (reservations?.data) {
-        setReservationList(Object?.values(reservations?.data));
+      if (calendardata?.data?.responce) {
+        setReservationList(Object?.values(calendardata?.data?.responce));
       }
     }
-  }, [calendardata.data, reservations?.data]);
+  }, [calendardata.data]);
 
   useEffect(() => {
     if (reservationList?.length) {
       const data = reservationList.map((value) => {
         return {
           type: "reservations",
-          id: value?.uuid,
-          title: value?.guest?.first_name,
+          id: value?.reservation?.reservation_id,
+          title: value?.reservation?.first_name,
           start: value?.start_date,
           end: value?.end_date,
           extendedProps: {
-            picture: value?.guest?.picture,
+            picture: value?.reservation?.picture,
             value: value,
           },
           borderColor: "black",
@@ -170,15 +171,8 @@ const Calendar = (props) => {
     if (eventsList?.length) {
       const data = eventsList
         ?.map((values) => {
-          if (values.date >= moment(new Date()).format("YYYY-MM-DD")) {
-            const filter = reservationList.find(
-              (reserveDate) =>
-                new Date(reserveDate.start_date).getTime() <=
-                  new Date(values.date).getTime() &&
-                new Date(reserveDate.end_date).getTime() >
-                  new Date(values.date).getTime()
-            );
-            if (!Boolean(filter)) {
+          if (values.status.reason !== "BLOCKED")
+            if (values.date >= moment(new Date()).format("YYYY-MM-DD")) {
               return {
                 type: "price",
                 title: "$" + values?.price.price / 10,
@@ -189,8 +183,6 @@ const Calendar = (props) => {
                 date: values?.date,
               };
             }
-            return null;
-          }
         })
         .filter((res) => res);
       setPostsItems(data);
@@ -265,7 +257,7 @@ const Calendar = (props) => {
                 ]}
                 selectable={true}
                 eventContent={renderEventContent}
-                eventClick={handleClick}
+                eventClick={(arg) => handleClick(arg)}
               />
             </>
           )}
@@ -279,7 +271,7 @@ const Calendar = (props) => {
                 ...data,
                 day: data?.value?.day,
                 min_stay: data?.value?.min_stay,
-                price: data?.value?.price?.price / 100,
+                price: data?.value?.price?.price / 10,
                 currency: data?.value?.price?.currency,
                 reason: data?.value?.status?.reason,
               }}
@@ -289,7 +281,6 @@ const Calendar = (props) => {
                 setSubmitting(true);
                 const reloadCalendar = () => {
                   dispatch(getCalendar(id));
-                  dispatch(getReservations(id));
                 };
                 const data = await { ...values, calendarId, id };
                 dispatch(updateCalendar(data, reloadCalendar));
@@ -463,10 +454,23 @@ const Calendar = (props) => {
                   >
                     <Offcanvas.Title className="m-0">
                       <div className="d-flex m-0">
-                        <BsPersonCircle
-                          style={{ fontSize: "25px", color: "#5c576a" }}
-                        />
-                        &nbsp;&nbsp;
+                        {reservationDetail?.reservation?.guest?.picture ? (
+                          <img
+                            src={
+                              reservationDetail?.reservation?.guest?.picture &&
+                              reservationDetail?.reservation?.guest?.picture
+                            }
+                            alt="guest_pic"
+                            className="guest-image"
+                          />
+                        ) : (
+                          <>
+                            <BsPersonCircle
+                              style={{ fontSize: "25px", color: "#5c576a" }}
+                            />
+                            &nbsp;&nbsp;
+                          </>
+                        )}
                         <h3 className="model-owner-title m-0">
                           {reservationDetail?.reservation?.guest?.first_name &&
                             reservationDetail?.reservation?.guest
@@ -479,19 +483,17 @@ const Calendar = (props) => {
                   </Offcanvas.Header>
                   <Offcanvas.Body>
                     <div className="d-flex" style={{ position: "relative" }}>
-                      {reservationDetail?.my_stays?.unit_picture !== "" ? (
+                      {unitData?.picture !== "" ? (
                         <img
-                          src={reservationDetail?.my_stays?.unit_picture}
+                          src={unitData?.picture}
                           alt="property image"
                           className="property-image"
                         />
                       ) : null}
 
-                      {/* <h6 className="title">
-                        {reservationDetail?.reservation?.unitName
-                          ? reservationDetail?.reservation?.unitName
-                          : null}
-                      </h6> */}
+                      <h6 className="title">
+                        {unitData?.name ? unitData?.name : null}
+                      </h6>
                     </div>
 
                     <div className="d-flex mt-3">
@@ -658,12 +660,14 @@ const Calendar = (props) => {
                   <hr />
                 </>
               )}
-              {/* {reservationDetail?.explore?.capacity?.max && (
-                  <>
-                    <p>Guests : {reservationDetail?.explore?.capacity?.max}</p>
-                    <hr />
-                  </>
-                )} */}
+              {reservationDetail?.reservation?.occupancy?.guests && (
+                <>
+                  <p>
+                    Guests : {reservationDetail?.reservation?.occupancy?.guests}
+                  </p>
+                  <hr />
+                </>
+              )}
               {reservationDetail?.reservation?.nights && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
@@ -677,47 +681,64 @@ const Calendar = (props) => {
                 Listing Details
               </h5>
               <hr />
-              {reservationDetail?.reservation?.unitName && (
+              {unitData?.name && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Listing Name : {reservationDetail?.reservation?.unitName}
+                    Listing Name : {unitData?.name}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.checkout?.address?.street && (
+              {unitData?.address?.street && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Listing Address :{" "}
-                    {reservationDetail?.checkout?.address?.street},{" "}
-                    {reservationDetail?.checkout?.address?.city}
+                    Listing Address : {unitData?.address?.street},{" "}
+                    {unitData?.address?.city}
                   </p>
                   <hr />
                 </>
               )}
-              {/* {reservationDetail?.explore?.capacity?.bedrooms && (
+              {unitData?.capacity?.beds && (
                 <>
-                  <p>
-                    Bedrooms : {reservationDetail?.explore?.capacity?.bedrooms}
+                  <p style={{ fontFamily: "monospace" }}>
+                    Beds : {unitData?.capacity?.beds}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.explore?.capacity?.beds && (
+              {unitData?.capacity?.bathrooms && (
                 <>
-                  <p>Beds : {reservationDetail?.explore?.capacity?.beds}</p>
-                  <hr />
-                </>
-              )}
-              {reservationDetail?.explore?.capacity?.bathrooms && (
-                <>
-                  <p>
-                    Bathrooms :{" "}
-                    {reservationDetail?.explore?.capacity?.bathrooms}
+                  <p style={{ fontFamily: "monospace" }}>
+                    Bathrooms : {unitData?.capacity?.bathrooms}
                   </p>
                   <hr />
                 </>
-              )} */}
+              )}
+              {unitData?.capacity?.bedrooms ||
+                (unitData?.capacity?.bedrooms === 0 && (
+                  <>
+                    <p style={{ fontFamily: "monospace" }}>
+                      Bedrooms: {unitData?.capacity?.bedrooms}
+                    </p>
+                    <hr />
+                  </>
+                ))}
+              {unitData?.room_type && (
+                <>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Property type : {unitData?.room_type}
+                  </p>
+                  <hr />
+                </>
+              )}
+              {unitData?.property_type && (
+                <>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Room type : {unitData?.property_type}
+                  </p>
+                  <hr />
+                </>
+              )}
               <br />
               <h5 style={{ fontFamily: "system-ui", color: "#165aa3" }}>
                 Payment Details
@@ -767,7 +788,6 @@ export default withRouter(
   connect(mapStateToProps, {
     getActiveUnits,
     getCalendar,
-    getReservations,
     getReservationsDetail,
   })(Calendar)
 );

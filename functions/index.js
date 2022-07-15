@@ -19,6 +19,7 @@ const {
   getReservationsByUnit,
   getReservationsDetail,
   midnightSchedule,
+  staticData,
 } = require("./mgmt-functions");
 
 const {
@@ -64,3 +65,4 @@ exports.updateCalendar = updateCalendar;
 exports.getReservationsByUnit = getReservationsByUnit;
 exports.getReservationsDetail = getReservationsDetail;
 exports.midnightSchedule = midnightSchedule;
+exports.staticData = staticData;

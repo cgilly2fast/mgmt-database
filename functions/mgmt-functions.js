@@ -278,33 +278,49 @@ exports.getCalendar = functions.https.onRequest(async (req, res) => {
     let snapshot = {};
     const unit_id = req.query.unitId;
     if (unit_id) {
+      const unitRef = await db.collection("units").doc(unit_id).get();
       snapshot = await db
         .collection("calendar")
         .where("unit_id", "==", unit_id)
         .get();
       let data = [];
       snapshot.forEach((doc) => {
-        // let arrayDate = [];
-        // const dateRef = Object.values(doc.data().days);
-        // dateRef.find((value) => {
-        //   let reservationIdRef = [];
-        //   if (value.reservation.reservation_id) {
-        //     arrayDate.push(value);
-        //   }
-        // });
-        // const output = [];
-        // Object.values(
-        //   arrayDate.reduce((res, obj) => {
-        //     let key = obj.reservation.reservation_id;
-        //     res[key] = [...(res[key] || []), { ...obj }];
-        //     console.log(res);
-        //     return res;
-        //   }, {})
-        // ).forEach((arr) => {
-        //   console.log("arr", arr);
-        //   output.push({ ...arr });
-        // });
-        data.push({ ...doc.data(), id: doc.id });
+        let arrayDate = [];
+        const dateRef = Object.values(doc.data().days);
+        dateRef.find((value) => {
+          if (value.reservation.reservation_id) {
+            arrayDate.push(value);
+          }
+        });
+
+        const responce = arrayDate.reduce((res, obj) => {
+          if (!res[obj.reservation.reservation_id])
+            res[obj.reservation.reservation_id] = [];
+          res[obj.reservation.reservation_id].push(obj);
+          return res;
+        }, {});
+
+        const responce123 = Object.values(responce).map((res) => {
+          const sortedData = res.sort((a, b) =>
+            new Date(a.date).getTime() > new Date(b.date).getTime() ? 1 : -1
+          );
+          if (sortedData?.length) {
+            return {
+              ...sortedData[0],
+              start_date: sortedData[0].date,
+              end_date: moment(sortedData[sortedData.length - 1].date)
+                .add(1, "d")
+                .format("YYYY-MM-DD"),
+            };
+          }
+        });
+
+        data.push({
+          ...doc.data(),
+          id: doc.id,
+          responce: responce123,
+          unit: unitRef.data(),
+        });
       });
       if (snapshot.size) {
         res.send(data[0]);
@@ -344,11 +360,12 @@ exports.updateCalendar = functions.https.onRequest(async (req, res) => {
         days: {
           [date && date]: {
             date: date,
-            min_stay: min_stay,
+            day: day,
             price: {
-              amount: price * 10,
+              price: price * 10,
               currency: currency,
             },
+            status: { available: true },
           },
         },
       };
@@ -360,38 +377,30 @@ exports.updateCalendar = functions.https.onRequest(async (req, res) => {
         .collection("ad-calendar")
         .where("unit_id", "==", id)
         .get();
-      let adCalendarData = [];
-      let daysData = [];
       if (adCalendar.empty) {
         res.send("no record found");
         return;
       } else {
-        adCalendar.forEach((docs) =>
-          adCalendarData.push({ ...docs.data(), id: docs.id })
-        );
-        if (adCalendarData) {
-          adCalendarData.map((item) => {
-            if (item?.days) {
-              daysData = Object.values(item.days);
-              daysData.map((ele) => {
-                if (ele.date === date) {
-                  db.collection("ad-calendar")
-                    .doc(item?.id)
-                    .set(adData, { merge: true });
-                  res.send({
-                    calendarId: calendarId,
-                    ad_calendar_uuid: item?.id,
-                  });
-                  return;
-                } else {
-                  res.send("No record found");
-                  return;
-                }
+        if (
+          adCalendar.size &&
+          adCalendar.docs[0]?.id &&
+          adCalendar.docs[0]?.data()
+        ) {
+          const daysData = Object.values(adCalendar?.docs[0]?.data()?.days);
+          daysData.find((ele) => {
+            if (ele.date === date) {
+              db.collection("ad-calendar")
+                .doc(adCalendar.docs[0]?.id)
+                .set(adData, { merge: true });
+              res.send({
+                calendarId: calendarId,
+                ad_calendar_uuid: adCalendar.docs[0]?.id,
               });
+              return;
             }
           });
         } else {
-          res.send("No record found");
+          res.send("No record foundsss");
           return;
         }
       }
@@ -409,28 +418,9 @@ exports.updateCalendar = functions.https.onRequest(async (req, res) => {
 exports.getReservationsByUnit = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     const unit_id = req.query.unit_id;
-    console.log("unit_id", unit_id);
     const querysnapshot = db.collection("units").doc(unit_id);
     await querysnapshot.get().then(async (doc) => {
       if (doc.exists) {
-        // const calendarRef = await db
-        //   .collection("calendar")
-        //   .where("unit_id", "==", doc?.data()?.id)
-        //   .get();
-        // let data = [];
-        // calendarRef.forEach((docs) => {
-        //   const dateRef = Object.values(docs.data().days);
-        //   let arrayDate = [];
-        //   dateRef.find((value) => {
-        //     let reservationIdRef = [];
-        //     if (value.reservation.reservation_id) {
-        //       arrayDate.push(value);
-        //     }
-        //   });
-
-        //   data.push(arrayDate);
-        // });
-
         const reservationRef = await db
           .collection("reservations")
           .where("hospitable_id", "==", doc?.data()?.hospitable_id)
@@ -454,19 +444,13 @@ exports.getReservationsByUnit = functions.https.onRequest(async (req, res) => {
 
 exports.getReservationsDetail = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
-    let snapshot = {};
     const reservation_id = req.query.reservation_id;
-    snapshot = await db.collection("reservations").doc(reservation_id).get();
+    const snapshot = await db
+      .collection("reservations")
+      .doc(reservation_id)
+      .get();
     if (snapshot.exists) {
-      // if (snapshot.data().checkout_id) {
-      //   const checkoutRef = await db
-      //     .collection("checkout")
-      //     .doc(snapshot.data().checkout_id)
-      //     .get();
-      // if (checkoutRef.exists) {
       res.send({ reservation: snapshot.data() });
-      // }
-      // }
       return;
     } else {
       res.send("No record found");
@@ -475,57 +459,46 @@ exports.getReservationsDetail = functions.https.onRequest(async (req, res) => {
   });
 });
 
+// exports.midnightSchedule = functions.https.onRequest(async (req, res) => {
 exports.midnightSchedule = functions.pubsub
   .schedule("0 0 * * *")
   .onRun(async (context) => {
-    let calendarRef = [];
     await db
       .collection("calendar")
       .get()
       .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          let changedDate = [];
-          const dateList = Object.values(doc.data().days);
-          dateList.map(async (values) => {
-            if (values.date < moment(new Date()).format("YYYY-MM-DD")) {
-              if (values.status.reason === "AVAILABLE") {
-                changedDate.push({
-                  reservation: {
-                    first_name: values?.reservation?.first_name,
-                    picture: values?.reservation?.picture,
-                    last_name: values?.reservation?.last_name,
-                    reservation_id: values?.reservation?.reservation_id,
-                  },
-                  min_stay: values?.min_stay,
-                  day: values?.day,
-                  date: values?.date,
-                  price: {
-                    price: values?.price?.price,
-                    currency: values?.price?.currency,
-                  },
-                  status: {
-                    note: "",
-                    reason: "BLOCKED",
-                    available: false,
-                  },
-                });
-              }
-            }
-          });
-          calendarRef.push({ id: doc.id, days: changedDate });
-        });
-        let temprecord = {};
-        calendarRef.map(async (item) => {
-          item.days.map((e) => (temprecord[e.date] = e));
-          await db.collection("calendar").doc(item.id).set(
+        querySnapshot.forEach(async (doc) => {
+          const data = doc.data().days;
+          let list = Object.entries(data).reduce((acc, cuu) => {
+            const values = {
+              ...cuu[1],
+              status: {
+                note: "",
+                reason:
+                  cuu?.[1]?.date < moment(new Date()).format("YYYY-MM-DD")
+                    ? "BLOCKED"
+                    : cuu?.[1]?.status?.reason,
+                available:
+                  cuu?.[1]?.date < moment(new Date()).format("YYYY-MM-DD")
+                    ? false
+                    : cuu?.[1]?.status?.available,
+              },
+            };
+            acc[cuu[0]] = values;
+            return acc;
+          }, {});
+          // if (doc.id == "NRPEH61xmiEZpOFQGmfI") {
+          await db.collection("calendar").doc(doc.id).set(
             {
-              days: temprecord,
+              days: list,
             },
             { merge: true }
           );
+          // }
         });
       });
     adCalendarCollection();
+    // res.send("set suucess");
     return "set suucess";
   });
 
@@ -567,6 +540,76 @@ const adCalendarCollection = async () => {
       });
     });
 };
+
+exports.staticData = functions.https.onRequest(async (req, res) => {
+  const id = req.query.id;
+  const tempRecord = [];
+  const adCalendarRef = await db.collection("ad-calendar").doc(id).get();
+  if (adCalendarRef.exists) {
+    const calendarRef = await db
+      .collection("calendar")
+      .where("unit_id", "==", adCalendarRef.data().unit_id)
+      .get();
+
+    // const dateList = Object.values(adCalendarRef.data().days);
+    // dateList.map((item) => {
+    //   tempRecord.push({
+    //     reservation: {
+    //       first_name: "",
+    //       picture: "",
+    //       last_name: "",
+    //       reservation_id: "",
+    //     },
+    //     min_stay: 2,
+    //     day: item?.day,
+    //     date: item?.date,
+    //     price: {
+    //       price: 10000,
+    //       currency: item?.price?.currency,
+    //     },
+    //     status: {
+    //       note: "",
+    //       reason: "AVAILABLE",
+    //       available: true,
+    //     },
+    //   });
+    // });
+    const data = adCalendarRef.data().days;
+    let list = Object.entries(data).reduce((acc, cuu) => {
+      const values = {
+        ...cuu[1],
+        reservation: {
+          first_name: "",
+          picture: "",
+          last_name: "",
+          reservation_id: "",
+        },
+        status: {
+          note: "",
+          reason: "AVAILABLE",
+          available: true,
+        },
+        min_stay: 2,
+      };
+      acc[cuu[0]] = values;
+      return acc;
+    }, {});
+    console.log("ID: ", calendarRef?.docs[0]?.id);
+    await db.collection("calendar").doc(calendarRef?.docs[0]?.id).set(
+      {
+        days: list,
+      },
+      { merge: true }
+    );
+  }
+  // let temp = {};
+  // tempRecord.map(async (item) => {
+  //   item.days.map((e) => (temp[e.date] = e));
+
+  // });
+  // tempRecord.push(docs.data().days);
+  res.send(adCalendarRef.data());
+});
 
 // function setUnitFolder(data, offices) {
 //   return new Promise(function (resolve, reject) {
