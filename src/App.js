@@ -1,4 +1,4 @@
-import React, { Component, useContext } from "react";
+import React, { Component } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 
 import Units from "./components/units/Units";
@@ -12,20 +12,18 @@ import TeammateForm from "./components/teammateForm/TeammateForm";
 import OwnerForm from "./components/ownerForm/OwnerForm";
 import ListingForm from "./components/listingForm/ListingForm";
 
-import { Col, Container, Row } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import Login from "./components/login/Login";
 import Signup from "./components/signup/Signup";
 import ForgotPassword from "./components/forgotPassword/ForgotPassword";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import Calendar from "./components/calendar/Calendar";
 import SelectUnit from "./components/selectUnit/SelectUnit";
 import Map from "./components/map/Map";
 
 export default class App extends Component {
-  // useAuth= useContext(AuthProvider)
   render() {
-    // const currentUser = this.context.useAuth();
     return (
       <AuthProvider>
         <BrowserRouter>

@@ -714,15 +714,14 @@ const Calendar = (props) => {
                   <hr />
                 </>
               )}
-              {unitData?.capacity?.bedrooms ||
-                (unitData?.capacity?.bedrooms === 0 && (
-                  <>
-                    <p style={{ fontFamily: "monospace" }}>
-                      Bedrooms: {unitData?.capacity?.bedrooms}
-                    </p>
-                    <hr />
-                  </>
-                ))}
+              {unitData?.capacity?.bedrooms >= 0 && (
+                <>
+                  <p style={{ fontFamily: "monospace" }}>
+                    Bedrooms: {unitData?.capacity?.bedrooms}
+                  </p>
+                  <hr />
+                </>
+              )}
               {unitData?.room_type && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
