@@ -10,26 +10,29 @@ import Team from "./components/team/Team";
 import Teammate from "./components/teammate/Teammate";
 import TeammateForm from "./components/teammateForm/TeammateForm";
 import OwnerForm from "./components/ownerForm/OwnerForm";
+import ListingForm from "./components/listingForm/ListingForm";
 
 import { Container } from "react-bootstrap";
-import { ListingForm } from "./components/listingForm/ListingForm";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import Login from "./components/login/Login";
 import Signup from "./components/signup/Signup";
-import Menu from "./components/menu/Menu";
 import ForgotPassword from "./components/forgotPassword/ForgotPassword";
 import { AuthProvider } from "./context/AuthContext";
+import Calendar from "./components/calendar/Calendar";
+import SelectUnit from "./components/selectUnit/SelectUnit";
+import Map from "./components/map/Map";
 
-class App extends Component {
+export default class App extends Component {
   render() {
     return (
       <AuthProvider>
         <BrowserRouter>
-          <Container>
-            <Menu></Menu>
+          <Container fluid className="p-0">
             <Switch>
               <PrivateRoute exact path="/" component={Units} />
               <PrivateRoute exact path="/units" component={Units} />
+              <PrivateRoute exact path="/calendar" component={SelectUnit} />
+              <PrivateRoute exact path="/calendar/:id" component={Calendar} />
               <PrivateRoute exact path="/unit/create" component={UnitForm} />
               <PrivateRoute exact path="/unit/:unitId" component={Unit} />
               <PrivateRoute
@@ -44,7 +47,7 @@ class App extends Component {
               />
               <PrivateRoute
                 exact
-                path="/unit/:unitId/listing/:listingId/edit"
+                path="/unit/:unitId/listing/:provider/edit"
                 component={ListingForm}
               />
               <PrivateRoute exact path="/owners" component={Owners} />
@@ -72,6 +75,7 @@ class App extends Component {
                 path="/teammate/:teammateId"
                 component={Teammate}
               />
+              <Route exact path="/map" component={Map} />
               <Route path="/signup" component={Signup} />
               <Route path="/login" component={Login} />
               <Route path="/forgot" component={ForgotPassword} />
@@ -82,5 +86,3 @@ class App extends Component {
     );
   }
 }
-
-export default App;

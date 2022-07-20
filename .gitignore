@@ -24,3 +24,6 @@ yarn-debug.log*
 yarn-error.log*
 
 credentials.js
+firebase-debug.log
+
+functions/production_credentials.js

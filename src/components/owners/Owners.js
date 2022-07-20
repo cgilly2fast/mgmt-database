@@ -11,10 +11,9 @@ export class Owners extends Component {
   }
   render() {
     const { owners } = this.props;
-    console.log(this.props);
     return (
       <div>
-        <Container>
+        <Container fluid>
           <Button as={Link} to="/owner/create" variant="primary">
             + Add New Owner
           </Button>

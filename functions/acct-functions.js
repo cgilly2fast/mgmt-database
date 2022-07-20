@@ -1,67 +1,88 @@
-const functions = require('firebase-functions');
-const express = require('express');
-const bodyParser = require('body-parser');
-const moment = require('moment-timezone');
-const acct = express();
-const cors = require('cors');
-const { credentials } = require('./credentials');
-const { google } = require('googleapis');
-const session = require('express-session');
-const FirestoreStore = require('firestore-store')(session);
-const segmentCodes = require('./segmentCodes');
+const functions = require("firebase-functions");
+const moment = require("moment-timezone");
+const { credentials } = require("./development_credentials");
+const { google } = require("googleapis");
+const segmentCodes = require("./segmentCodes");
+const { db } = require("./admin");
 
 const LOCAL = true;
-
-const { db } = require('./admin');
-// const { throws } = require('assert');
 let unitsHash = {};
-
-acct.use(bodyParser.json());
-acct.use(bodyParser.urlencoded({ extended: false }));
-acct.use(cors({ origin: true }));
 
 const client_id = credentials.xero_client_id;
 const client_secret = credentials.xero_client_secret;
-const redirectUrl = (LOCAL ? "http://localhost:5001/ghotels-production/us-central1/acct/callback" : credentials.xero_redirect_uri);
-//uncomment for local testing.
-// const redirectUrl =
-//   'http://localhost:5000/ghotels-production/us-central1/acct/callback';
+const redirectUrl = LOCAL
+  ? "http://localhost:5001/ghotels-development/us-central1/callback"
+  : credentials.xero_redirect_uri;
+
 const xeroTenantId = credentials.xero_tennat_id;
 const scopes =
-  'openid profile email accounting.contacts.read accounting.settings accounting.transactions offline_access';
+  "openid profile email accounting.contacts.read accounting.settings accounting.transactions offline_access";
 
-const authenticationData = (req, res) => {
-  return {
-    decodedIdToken: req.session.decodedIdToken,
-    decodedAccessToken: req.session.decodedAccessToken,
-    tokenSet: req.session.tokenSet,
-    allTenants: req.session.allTenants,
-    activeTenant: req.session.activeTenant,
-  };
-};
+  
 
-acct.use(
-  session({
-    store: new FirestoreStore({
-      database: db,
-    }),
+exports.getAllXeroContacts  = functions.https.onRequest(async (req, res) => {
+  
+    const { XeroClient, Invoices } = require("xero-node");
+    const { TokenSet } = require("openid-client");
+    const xero = new XeroClient({
+      clientId: client_id,
+      clientSecret: client_secret,
+      redirectUris: [redirectUrl],
+      scopes: scopes.split(" "),
+    });
+  
+    await xero.initialize();
+    
+    const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+    await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+    const tokenSet = await xero.readTokenSet();
+  
+    if (!tokenSet.expired()) {
+      try {
+  
+        // const teammateSnapshot = await db.collection('team').where("uuid", "==", req.query.teammate_id).get()
+  
+        // if (teammateSnapshot.empty) {
+        //   res.send('No teammate for id');
+        //   return;
+        // }  
+        // const teammate = teammateSnapshot.docs[0].data()
+        // const teammateName = teammate.first_name + " " + teammate.last_name
+  
+        // const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(teammate.hours_sheet)[1]
+        // const rawHours = await getUnpaidHoursSheetData(spreadsheetId)
+        // const invoices = parseHoursBills(teammateName, rawHours, teammate.rate);
+       // const invoices = parseHoursBills(teammateName, req.body.cleanings, ownerUnitsMap);
+  
+        // const newInvoices = new Invoices();
+        // newInvoices.invoices = invoices;
+  
+        const contactsRes = await xero.accountingApi.getContacts(xeroTenantId)
+        
+        res.send(contactsRes);
+        //res.send(invoices)
+        
+      } catch (err) {
+        console.log(err);
+        res.send(err);
+      
+      }
+    } else {
+      res.send(
+        "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-development.cloudfunctions.net/connect'>clicking here</a>"
+      );
+    }
+});
 
-    name: '__session', // ← required for Cloud Functions / Cloud Run
-    secret: 'keyboard cat',
-    resave: true,
-    saveUninitialized: true,
-  })
-);
-
-acct.get('/connect', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-  const { XeroClient } = require('xero-node');
-
+exports.connect = functions.https.onRequest(async (req, res) => {
+  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+  const { XeroClient } = require("xero-node");
+  console.log(redirectUrl)
   const xero = new XeroClient({
     clientId: client_id,
     clientSecret: client_secret,
     redirectUris: [redirectUrl],
-    scopes: scopes.split(' '),
+    scopes: scopes.split(" "),
   });
   try {
     await xero.initialize();
@@ -74,45 +95,49 @@ acct.get('/connect', async (req, res) => {
     res.redirect(consentUrl);
   } catch (err) {
     console.log(err);
-    res.send('Sorry, something went wrong in connect');
+    res.send("Sorry, something went wrong in connect");
   }
 });
 
-acct.get('/callback', async (req, res) => {
-  const jwtDecode = require('jwt-decode');
-  const { XeroClient } = require('xero-node');
+exports.callback  = functions.https.onRequest(async (req, res) => {
+  
+  const jwtDecode = require("jwt-decode");
+  const { XeroClient } = require("xero-node");
   const xero = new XeroClient({
     clientId: client_id,
     clientSecret: client_secret,
     redirectUris: [redirectUrl],
-    scopes: scopes.split(' '),
+    scopes: scopes.split(" "),
   });
   await xero.initialize();
   try {
     const tokenSet = await xero.apiCallback(req.url);
-    //console.log(tokenSet);
     await xero.updateTenants();
 
     const decodedIdToken = jwtDecode(tokenSet.id_token);
     const decodedAccessToken = jwtDecode(tokenSet.access_token);
 
-    req.session.decodedIdToken = decodedIdToken;
-    req.session.decodedAccessToken = decodedAccessToken;
-    req.session.tokenSet = tokenSet;
-    req.session.allTenants = xero.tenants;
-    // XeroClient is sorting tenants behind the scenes so that most recent / active connection is at index 0
-    req.session.activeTenant = xero.tenants[0];
+    const xeroSession = {
+      type: "xero",
+      created: Date.now(),
+      decodedIdToken: decodedIdToken,
+      decodedAccessToken: decodedAccessToken,
+      tokenSet: JSON.parse(JSON.stringify(tokenSet)),
+      // allTenants: JSON.parse(JSON.stringify(xero.tenants)),
+      // // XeroClient is sorting tenants behind the scenes so that most recent / active connection is at index 0
+      // activeTenant: JSON.parse(JSON.stringify(xero.tenants[0]))
+    }
 
-    const authData = authenticationData(req, res);
-    //console.log(authData)
-    res.send('Connected to Xero!');
+    await db.collection("sessions").add(xeroSession)
+    
+    res.send(req.url);
   } catch (err) {
     console.log(err);
-    res.send('Sorry, something went wrong in callback');
+    res.send("Sorry, something went wrong in callback");
   }
 });
 
-acct.get('/hawaiiRevenue', async (req, res) => {
+exports.hawaiiRevenue = functions.https.onRequest(async (req, res) => {
   unitsHash = await createUnitsHash();
 
   const vrbo = await getVRBOData();
@@ -122,10 +147,10 @@ acct.get('/hawaiiRevenue', async (req, res) => {
   if (airbnb !== undefined && airbnb.length > 0) {
     for (let i = 0; i < airbnb.length; i++) {
       if (
-        airbnb[i][1] !== 'Pass Through Tot' &&
-        airbnb[i][1] !== 'Payout' &&
-        airbnb[i][1] !== 'Resolution Payout' &&
-        unitsHash[airbnb[i][6]].office === 'Waikiki'
+        airbnb[i][1] !== "Pass Through Tot" &&
+        airbnb[i][1] !== "Payout" &&
+        airbnb[i][1] !== "Resolution Payout" &&
+        unitsHash[airbnb[i][6]].office === "Waikiki"
       ) {
         revenue += parseFloat(airbnb[i][10]);
       }
@@ -134,27 +159,27 @@ acct.get('/hawaiiRevenue', async (req, res) => {
 
   if (vrbo !== undefined && vrbo.length > 0) {
     for (let i = 0; i < vrbo.length; i++) {
-      if (unitsHash[vrbo[i][6]].office === 'Waikiki') {
+      if (unitsHash[vrbo[i][6]].office === "Waikiki") {
         revenue += parseFloat(vrbo[i][13]);
       }
     }
   }
 
   res.send(
-    'Hawaii Revenue for GE: $' +
+    "Hawaii Revenue for GE: $" +
       revenue * 1.04712 +
-      'Hawaii Revenue for TAT: $' +
+      "Hawaii Revenue for TAT: $" +
       revenue
   );
 });
 
-acct.get('/separateResAdjs', async (req, res) => {
+exports.separateResAdjs = functions.https.onRequest(async (req, res) => {
   unitsHash = await createUnitsHash();
   const jwt = new google.auth.JWT(
     credentials.service_account.client_email,
     null,
     credentials.service_account.private_key,
-    ['https://www.googleapis.com/auth/spreadsheets']
+    ["https://www.googleapis.com/auth/spreadsheets"]
   );
 
   const vrbo = await getVRBOData();
@@ -164,9 +189,9 @@ acct.get('/separateResAdjs', async (req, res) => {
   if (airbnb !== undefined && airbnb.length > 0) {
     for (let i = 0; i < airbnb.length; i++) {
       if (
-        airbnb[i][1] !== 'Payout' &&
-        airbnb[i][1] !== 'Reservation' &&
-        airbnb[i][1] !== 'Pass Through Tot'
+        airbnb[i][1] !== "Payout" &&
+        airbnb[i][1] !== "Reservation" &&
+        airbnb[i][1] !== "Pass Through Tot"
       ) {
         adjustments.push(airbnb[i]);
       }
@@ -175,17 +200,17 @@ acct.get('/separateResAdjs', async (req, res) => {
 
   if (vrbo !== undefined && vrbo.length > 0) {
     for (let i = 0; i < vrbo.length; i++) {
-      if (vrbo[i][6] === 'Refund' || parseFloat(vrbo[i][13]) < 0) {
+      if (vrbo[i][6] === "Refund" || parseFloat(vrbo[i][13]) < 0) {
         let row = [];
         row.push(vrbo[i][10]);
-        row.push('HomeAway');
+        row.push("HomeAway");
         row.push(vrbo[i][3]);
         row.push(vrbo[i][7]);
         row.push(vrbo[i][9]);
-        row.push(vrbo[i][4] + ' ' + vrbo[i][5]);
-        row.push('321.' + vrbo[i][0] + '.' + vrbo[i][1]);
-        row.push('');
-        row.push('');
+        row.push(vrbo[i][4] + " " + vrbo[i][5]);
+        row.push("321." + vrbo[i][0] + "." + vrbo[i][1]);
+        row.push("");
+        row.push("");
         row.push(vrbo[i][16]);
         row.push(vrbo[i][13]);
 
@@ -196,41 +221,41 @@ acct.get('/separateResAdjs', async (req, res) => {
 
   const request = {
     // The ID of the spreadsheet to retrieve data from.
-    spreadsheetId: '1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y', // TODO: Update placeholder value.
+    spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
 
     // The A1 notation of the values to retrieve.
-    range: 'Res. Adj. Worksheet!A2:N', // TODO: Update placeholder value.
-    valueInputOption: 'USER_ENTERED',
+    range: "Res. Adj. Worksheet!A2:N", // TODO: Update placeholder value.
+    valueInputOption: "USER_ENTERED",
     requestBody: {
-      majorDimension: 'ROWS',
-      range: 'Res. Adj. Worksheet!A2:N',
+      majorDimension: "ROWS",
+      range: "Res. Adj. Worksheet!A2:N",
       values: adjustments,
     },
     auth: jwt,
     key: credentials.api_key,
   };
 
-  const sheets = google.sheets('v4');
+  const sheets = google.sheets("v4");
   const updateRes = await sheets.spreadsheets.values.update(request);
   res.send(updateRes);
 });
 
-acct.get('/bookingData', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+exports.bookingData = functions.https.onRequest( async (req, res) => {
+  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
   unitsHash = await createUnitsHash();
-  const { XeroClient, Invoices } = require('xero-node');
-  const { TokenSet } = require('openid-client');
+  const { XeroClient, Invoices } = require("xero-node");
+  const { TokenSet } = require("openid-client");
   const xero = new XeroClient({
     clientId: client_id,
     clientSecret: client_secret,
     redirectUris: [redirectUrl],
-    scopes: scopes.split(' '),
+    scopes: scopes.split(" "),
   });
 
   const airbnb = [];
   const airbnValues = await getAirbnbData();
   for (let i = 0; i < airbnValues.length; i++) {
-    if (airbnValues[i][1] === 'Reservation') {
+    if (airbnValues[i][1] === "Reservation") {
       airbnb.push(airbnValues[i]);
     }
   }
@@ -240,7 +265,7 @@ acct.get('/bookingData', async (req, res) => {
   } catch (err) {
     console.log(err);
     res.send({
-      'ERROR: Airbnb unit name does not have match in MGMT database, update name is database':
+      "ERROR: Airbnb unit name does not have match in MGMT database, update name is database":
         err,
     });
   }
@@ -248,7 +273,7 @@ acct.get('/bookingData', async (req, res) => {
   let vrbo = [];
   const vrboValues = await getVRBOData();
   for (let i = 0; i < vrboValues.length; i++) {
-    if (vrboValues[i][6] !== 'Refund' && parseFloat(vrboValues[i][13]) >= 0) {
+    if (vrboValues[i][6] !== "Refund" && parseFloat(vrboValues[i][13]) >= 0) {
       vrbo.push(vrboValues[i]);
     }
   }
@@ -259,19 +284,24 @@ acct.get('/bookingData', async (req, res) => {
   } catch (err) {
     console.log(err);
     res.send({
-      'ERROR: VRBO Property ID does not have match in MGMT database': err,
+      "ERROR: VRBO Property ID does not have match in MGMT database": err,
     });
   }
   const resAdjs = await getResAdjustments();
   let resAdjInvoices = parseResAdjData(resAdjs);
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
 
-  const tokenSet = await xero.readTokenSet();
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  let tokenSet = await xero.readTokenSet();
 
-  if (!tokenSet.expired()) {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
 
-    const invoices = airbnbInvoices.concat(vrboInvoices).concat(resAdjInvoices);
+  const invoices = airbnbInvoices.concat(vrboInvoices).concat(resAdjInvoices);
 
     try {
       const newInvoices = new Invoices();
@@ -287,30 +317,23 @@ acct.get('/bookingData', async (req, res) => {
     } catch (err) {
       console.log(err);
       const invoiceIndex = undefined;
-      if(err.response.body.Message !== undefined){
-         invoiceIndex = err.response.body.Message.split('[')
-          .pop()
-          .split(']')[0];
+      if (err.response.body.Message !== undefined) {
+        invoiceIndex = err.response.body.Message.split("[").pop().split("]")[0];
       }
-      let invoiceString = '';
+      let invoiceString = "";
       if (invoiceIndex !== undefined) {
         const invoice = invoices[invoiceIndex];
-        invoiceString = '<p>' + JSON.stringify(invoice) + '</p>';
-        console.log(invoice);
+        invoiceString = "<p>" + JSON.stringify(invoice) + "</p>";
       }
 
       res.send(
         "<p>Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a></p> <p>Response from server: " +
           err.response.body.Message +
-          '</p>' +
+          "</p>" +
           invoiceString
       );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
 function getVRBOData() {
@@ -319,55 +342,55 @@ function getVRBOData() {
       credentials.service_account.client_email,
       null,
       credentials.service_account.private_key,
-      ['https://www.googleapis.com/auth/spreadsheets']
+      ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
     const request = {
       // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: '1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y', // TODO: Update placeholder value.
+      spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
 
       // The A1 notation of the values to retrieve.
-      range: 'VRBO Data!A3:Q', // TODO: Update placeholder value.
+      range: "VRBO Data!A3:Q", // TODO: Update placeholder value.
       auth: jwt,
       key: credentials.api_key,
     };
 
-    const sheets = google.sheets('v4');
+    const sheets = google.sheets("v4");
     sheets.spreadsheets.values.get(request, (err, res) => {
       if (err) {
-        console.log('Rejecting because of error');
+        console.log("Rejecting because of error");
         reject(err);
       } else {
-        console.log('Request successful');
+        console.log("Request successful");
         let reservations = [];
         const vrboData = res.data.values;
 
         if (vrboData !== undefined && vrboData.length > 0) {
           for (let i = 0; i < vrboData.length; i++) {
             if (
-              vrboData[i][6] !== 'Refund' &&
+              vrboData[i][6] !== "Refund" &&
               parseFloat(vrboData[i][13]) >= 0
             ) {
               let row = [];
               row.push(vrboData[i][10]);
-              row.push('HomeAway');
+              row.push("HomeAway");
               row.push(vrboData[i][3]);
               row.push(vrboData[i][7]);
               row.push(vrboData[i][9]);
-              row.push(vrboData[i][4] + ' ' + vrboData[i][5]);
-              row.push('321.' + vrboData[i][0] + '.' + vrboData[i][1]);
-              row.push('');
-              row.push('');
-              row.push('');
+              row.push(vrboData[i][4] + " " + vrboData[i][5]);
+              row.push("321." + vrboData[i][0] + "." + vrboData[i][1]);
+              row.push("");
+              row.push("");
+              row.push("");
               row.push(vrboData[i][13]);
-              row.push('');
+              row.push("");
               row.push(vrboData[i][12]);
               row.push(
-                vrboData[i][6] !== 'Reserve'
+                vrboData[i][6] !== "Reserve"
                   ? 0
                   : unitsHash[row[6]].cleaning_fee
               );
-              row.push('vrbo');
+              row.push("vrbo");
 
               reservations.push(row);
             }
@@ -386,26 +409,26 @@ function getAirbnbData() {
       credentials.service_account.client_email,
       null,
       credentials.service_account.private_key,
-      ['https://www.googleapis.com/auth/spreadsheets']
+      ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
     const request = {
       // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: '1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y', // TODO: Update placeholder value.
+      spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
 
       // The A1 notation of the values to retrieve.
-      range: 'Airbnb Data!A3:Q', // TODO: Update placeholder value.
+      range: "Airbnb Data!A3:Q", // TODO: Update placeholder value.
       auth: jwt,
       key: credentials.api_key,
     };
 
-    const sheets = google.sheets('v4');
+    const sheets = google.sheets("v4");
     sheets.spreadsheets.values.get(request, (err, res) => {
       if (err) {
-        console.log('Rejecting because of error');
+        console.log("Rejecting because of error");
         reject(err);
       }
-      console.log('Request successful');
+      console.log("Request successful");
       if (res.data.values !== undefined) {
         resolve(res.data.values);
       }
@@ -421,26 +444,26 @@ function getResAdjustments() {
       credentials.service_account.client_email,
       null,
       credentials.service_account.private_key,
-      ['https://www.googleapis.com/auth/spreadsheets']
+      ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
     const request = {
       // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: '1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y', // TODO: Update placeholder value.
+      spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
 
       // The A1 notation of the values to retrieve.
-      range: 'Res. Adj. Worksheet!A2:M', // TODO: Update placeholder value.
+      range: "Res. Adj. Worksheet!A2:M", // TODO: Update placeholder value.
       auth: jwt,
       key: credentials.api_key,
     };
 
-    const sheets = google.sheets('v4');
+    const sheets = google.sheets("v4");
     sheets.spreadsheets.values.get(request, (err, res) => {
       if (err) {
-        console.log('Rejecting because of error');
+        console.log("Rejecting because of error");
         reject(err);
       }
-      console.log('Request successful');
+      console.log("Request successful");
 
       if (res.data.values === undefined) {
         resolve([]);
@@ -455,36 +478,37 @@ function parseResAdjData(data) {
 
   for (let i = 0; i < data.length; i++) {
     const unit = unitsHash[data[i][6]];
-    if(data[i][1] === "Tax Withholding for US Income") {
+    if (data[i][1] === "Tax Withholding for US Income") {
       jsonXeroData[i] = {
-        type: 'ACCPAY',
+        type: "ACCPAY",
         contact: {
-          name: unit.name + ' Guest',
+          name: unit.name + " Guest",
         },
 
-        invoiceNumber: 'TAX-' + data[i][2],
+        invoiceNumber: "TAX-" + data[i][2],
         reference: makePlatformReference(data[i], unit),
-        url: 'https://stinsonbeachpm.com',
-        currencyCode: 'USD',
-        status: 'DRAFT', //AUTHORISED
-        lineAmountTypes: 'NoTax',
-        date: moment(data[i][3]).format('YYYY-MM-DD'),
-        dueDate: moment(data[i][0]).add(5, 'days').format('YYYY-MM-DD'),
+        url: "https://stinsonbeachpm.com",
+        currencyCode: "USD",
+        status: "DRAFT", //AUTHORISED
+        lineAmountTypes: "NoTax",
+        date: moment(data[i][3]).format("YYYY-MM-DD"),
+        dueDate: moment(data[i][0]).add(5, "days").format("YYYY-MM-DD"),
         lineItems: [
           {
             item: "Tax Withholding for US Income",
             description: data[i][7],
             quantity: 1,
-            unitAmount: data[i][10] >= 0 ? data[i][10] : data[i][10].substring(1),
-            accountCode: '6660',
+            unitAmount:
+              data[i][10] >= 0 ? data[i][10] : data[i][10].substring(1),
+            accountCode: "6660",
             tracking: [
               {
-                name: 'Property',
+                name: "Property",
                 option: unit.name,
               },
               {
-                name: 'Channel',
-                option: data[i][1] === 'HomeAway' ? 'HomeAway' : 'Airbnb',
+                name: "Channel",
+                option: data[i][1] === "HomeAway" ? "HomeAway" : "Airbnb",
               },
             ],
           },
@@ -492,34 +516,35 @@ function parseResAdjData(data) {
       };
     } else {
       jsonXeroData[i] = {
-        type: data[i][10] >= 0 ? 'ACCREC' : 'ACCPAY',
+        type: data[i][10] >= 0 ? "ACCREC" : "ACCPAY",
         contact: {
-          name: unit.name + ' Guest',
+          name: unit.name + " Guest",
         },
 
-        invoiceNumber: 'ADJ-' + data[i][2],
+        invoiceNumber: "ADJ-" + data[i][2],
         reference: makePlatformReference(data[i], unit),
-        url: 'https://stinsonbeachpm.com',
-        currencyCode: 'USD',
-        status: 'DRAFT', //AUTHORISED
-        lineAmountTypes: 'NoTax',
-        date: moment(data[i][3]).format('YYYY-MM-DD'),
-        dueDate: moment(data[i][0]).add(5, 'days').format('YYYY-MM-DD'),
+        url: "https://stinsonbeachpm.com",
+        currencyCode: "USD",
+        status: "DRAFT", //AUTHORISED
+        lineAmountTypes: "NoTax",
+        date: moment(data[i][3]).format("YYYY-MM-DD"),
+        dueDate: moment(data[i][0]).add(5, "days").format("YYYY-MM-DD"),
         lineItems: [
           {
-            item: data[i][10] >= 0 ? 'Other Guest Fee' : 'Refund to Guest',
+            item: data[i][10] >= 0 ? "Other Guest Fee" : "Refund to Guest",
             description: data[i][7],
             quantity: 1,
-            unitAmount: data[i][10] >= 0 ? data[i][10] : data[i][10].substring(1),
-            accountCode: data[i][10] >= 0 ? '4300' : '4740',
+            unitAmount:
+              data[i][10] >= 0 ? data[i][10] : data[i][10].substring(1),
+            accountCode: data[i][10] >= 0 ? "4300" : "4740",
             tracking: [
               {
-                name: 'Property',
+                name: "Property",
                 option: unit.name,
               },
               {
-                name: 'Channel',
-                option: data[i][1] === 'HomeAway' ? 'HomeAway' : 'Airbnb',
+                name: "Channel",
+                option: data[i][1] === "HomeAway" ? "HomeAway" : "Airbnb",
               },
             ],
           },
@@ -538,112 +563,109 @@ function parseInvoiceData(data) {
     for (let i = 0; i < data.length; i++) {
       const unit = unitsHash[data[i][6]];
       if (unit === undefined) {
-        console.log('Hash Parse Failed ' + i);
-        console.log(data[i]);
+        console.log("Hash Parse Failed " + i);
         reject(data[i]);
       }
 
       jsonXeroData[i] = {
-        type: 'ACCREC',
+        type: "ACCREC",
         contact: {
-          name: unit.name + ' Guest',
+          name: unit.name + " Guest",
         },
 
-        invoiceNumber: 'INV-' + data[i][2],
+        invoiceNumber: "INV-" + data[i][2],
         reference: makePlatformReference(data[i], unit),
-        url: 'https://stinsonbeachpm.com',
-        currencyCode: 'USD',
-        status: 'DRAFT', //AUTHORISED
-        lineAmountTypes: 'NoTax',
-        date: moment(data[i][0]).format('YYYY-MM-DD'),
-        dueDate: moment(data[i][0]).add(5, 'days').format('YYYY-MM-DD'),
+        url: "https://stinsonbeachpm.com",
+        currencyCode: "USD",
+        status: "DRAFT", //AUTHORISED
+        lineAmountTypes: "NoTax",
+        date: moment(data[i][0]).format("YYYY-MM-DD"),
+        dueDate: moment(data[i][0]).add(5, "days").format("YYYY-MM-DD"),
         lineItems: [
           {
-            item: 'Rent',
-            description: 'Rent',
+            item: "Rent",
+            description: "Rent",
             quantity: data[i][4],
             unitAmount: calcNightlyRent(data[i], unit),
-            accountCode: '4000',
+            accountCode: "4000",
             tracking: [
               {
-                name: 'Property',
+                name: "Property",
                 option: unit.name,
               },
               {
-                name: 'Channel',
-                option: data[i][1] === 'HomeAway' ? 'HomeAway' : 'Airbnb',
+                name: "Channel",
+                option: data[i][1] === "HomeAway" ? "HomeAway" : "Airbnb",
               },
             ],
           },
           {
-            item: 'Cleaning Fee',
-            description: 'Cleaning Fee',
+            item: "Cleaning Fee",
+            description: "Cleaning Fee",
             quantity: 1,
             unitAmount: data[i][13],
-            accountCode: '4100',
+            accountCode: "4100",
             tracking: [
               {
-                name: 'Property',
+                name: "Property",
                 option: unit.name,
               },
               {
-                name: 'Channel',
-                option: data[i][1] === 'HomeAway' ? 'HomeAway' : 'Airbnb',
+                name: "Channel",
+                option: data[i][1] === "HomeAway" ? "HomeAway" : "Airbnb",
               },
             ],
           },
           {
-            item: 'Channel Fee',
-            description: 'Channel Fee',
+            item: "Channel Fee",
+            description: "Channel Fee",
             quantity: 1,
-            unitAmount: '-' + data[i][12],
-            accountCode: '5000',
+            unitAmount: "-" + data[i][12],
+            accountCode: "5000",
             tracking: [
               {
-                name: 'Property',
+                name: "Property",
                 option: unit.name,
               },
               {
-                name: 'Channel',
-                option: data[i][1] === 'HomeAway' ? 'HomeAway' : 'Airbnb',
+                name: "Channel",
+                option: data[i][1] === "HomeAway" ? "HomeAway" : "Airbnb",
               },
             ],
           },
         ],
       };
-      //console.log(unit.remit_taxes);
       if (unit.remit_taxes) {
-        
-        const provider = (data[i][1] === 'HomeAway' ? 'homeaway' : 'airbnb')
-        console.log(provider)
-        for(id in unit.listings) {
-          const listing = unit.listings[id]
-          console.log(listing)
-            if(listing.provider === provider  && (listing.remit_taxes === true || listing.remit_taxes === "TRUE")) {
-              let tax = getTaxAmount(data[i], unit);
-              jsonXeroData[i].lineItems.push({
-                item: 'Tax Due',
-                description:
-                  'Tax Due: ' +
-                  (tax > 0 ? unit.tax_rate : '0.00%') +
-                  ' of $' +
-                  getTaxableRev(data[i], unit),
-                quantity: 1,
-                unitAmount: tax,
-                accountCode: '2200',
-                tracking: [
-                  {
-                    name: 'Property',
-                    option: unit.name,
-                  },
-                  {
-                    name: 'Channel',
-                    option: data[i][1] === 'HomeAway' ? 'HomeAway' : 'Airbnb',
-                  },
-                ],
-              });
-            }
-          
+        const provider = data[i][1] === "HomeAway" ? "homeaway" : "airbnb";
+        for (id in unit.listings) {
+          const listing = unit.listings[id];
+          if (
+            listing.provider === provider &&
+            (listing.remit_taxes === true || listing.remit_taxes === "TRUE")
+          ) {
+            let tax = getTaxAmount(data[i], unit);
+            jsonXeroData[i].lineItems.push({
+              item: "Tax Due",
+              description:
+                "Tax Due: " +
+                (tax > 0 ? unit.tax_rate : "0.00%") +
+                " of $" +
+                getTaxableRev(data[i], unit),
+              quantity: 1,
+              unitAmount: tax,
+              accountCode: "2200",
+              tracking: [
+                {
+                  name: "Property",
+                  option: unit.name,
+                },
+                {
+                  name: "Channel",
+                  option: data[i][1] === "HomeAway" ? "HomeAway" : "Airbnb",
+                },
+              ],
+            });
+          }
         }
       }
     }
@@ -653,21 +675,21 @@ function parseInvoiceData(data) {
 }
 
 function makePlatformReference(resData, unit) {
-  let str = '';
-  str += resData[1] === 'HomeAway' ? 'HomeAway ' : 'Airbnb ';
-  str += resData[5] + '; ';
-  str += resData[3] + ' - ' + unit.name + ' Guest; ';
-  str += unit.cleaning_fee + '; ' + resData[2];
+  let str = "";
+  str += resData[1] === "HomeAway" ? "HomeAway " : "Airbnb ";
+  str += resData[5] + "; ";
+  str += resData[3] + " - " + unit.name + " Guest; ";
+  str += unit.cleaning_fee + "; " + resData[2];
 
   return str;
 }
 
 function calcNightlyRent(resData, unit) {
-  let amount = resData[10] === '' ? 0 : resData[10];
-  let hostFee = resData[12] === '' ? 0 : resData[12];
-  let cleaningFee = resData[13] === '' ? 0 : resData[13];
+  let amount = resData[10] === "" ? 0 : resData[10];
+  let hostFee = resData[12] === "" ? 0 : resData[12];
+  let cleaningFee = resData[13] === "" ? 0 : resData[13];
 
-  if (resData[1] === 'HomeAway') {
+  if (resData[1] === "HomeAway") {
     // console.log(resData[5])
     // console.log((parseFloat(amount) + parseFloat(hostFee) - parseFloat(cleaningFee) - getTaxAmount(resData, unit)))
     // console.log(resData[4])
@@ -689,13 +711,13 @@ function calcNightlyRent(resData, unit) {
 }
 
 function getTaxableRev(resData, unit) {
-  let amount = resData[10] === '' ? 0 : resData[10];
-  let hostFee = resData[12] === '' ? 0 : resData[12];
+  let amount = resData[10] === "" ? 0 : resData[10];
+  let hostFee = resData[12] === "" ? 0 : resData[12];
   let gross = parseFloat(amount) + parseFloat(hostFee);
   let percent = 1 + parseFloat(unit.tax_rate);
   let tax = gross - gross / percent;
   let answer = 0;
-  if (resData[1] !== 'HomeAway') {
+  if (resData[1] !== "HomeAway") {
     answer = parseFloat(amount) + parseFloat(hostFee);
   } else {
     answer =
@@ -724,7 +746,7 @@ function getTaxAmount(resData, unit) {
 
 function createUnitsHash() {
   return new Promise(function (resolve, reject) {
-    db.collection('units')
+    db.collection("units")
       .get()
       .then((snapshot, err) => {
         if (err) {
@@ -737,7 +759,7 @@ function createUnitsHash() {
 
           for (const listingId in docData.listings) {
             const listing = docData.listings[listingId];
-            if (listing.provider === 'airbnb') {
+            if (listing.provider === "airbnb") {
               data[listing.public_name] = docData;
             } else {
               data[listing.id] = docData;
@@ -750,25 +772,30 @@ function createUnitsHash() {
   });
 }
 
-acct.get('/uploadMgmtInvoices', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-  const { XeroClient, Invoices } = require('xero-node');
-  const { TokenSet } = require('openid-client');
+exports.uploadMgmtInvoices  = functions.https.onRequest(async (req, res) => {
+  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+  const { XeroClient, Invoices } = require("xero-node");
+  const { TokenSet } = require("openid-client");
   const xero = new XeroClient({
     clientId: client_id,
     clientSecret: client_secret,
     redirectUris: [redirectUrl],
-    scopes: scopes.split(' '),
+    scopes: scopes.split(" "),
   });
-  console.log(req.session.tokenSet);
+  //console.log(req.session.tokenSet);
 
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
 
-  const tokenSet = await xero.readTokenSet();
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  let tokenSet = await xero.readTokenSet();
 
-  if (!tokenSet.expired()) {
-    try {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
       const rawXeroData = await getXeroInvoiceData();
       const invoices = parseXeroData(rawXeroData);
 
@@ -776,7 +803,7 @@ acct.get('/uploadMgmtInvoices', async (req, res) => {
       newInvoices.invoices = invoices;
 
       const response = await xero.accountingApi.createInvoices(
-        '15a0a407-e2d1-48e3-9255-f8d61cef5c93',
+        "15a0a407-e2d1-48e3-9255-f8d61cef5c93",
         newInvoices,
         false,
         4
@@ -788,32 +815,33 @@ acct.get('/uploadMgmtInvoices', async (req, res) => {
         "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
       );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+ 
 });
 
 // Uploads invoices for reservations booked with units directly operated by Stinson Beach PM
-acct.get('/uploadCompanyInvoices', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-  const { XeroClient, Invoices } = require('xero-node');
-  const { TokenSet } = require('openid-client');
+exports.uploadCompanyInvoices = functions.https.onRequest(async (req, res) => {
+  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+  const { XeroClient, Invoices } = require("xero-node");
+  const { TokenSet } = require("openid-client");
   const xero = new XeroClient({
     clientId: client_id,
     clientSecret: client_secret,
     redirectUris: [redirectUrl],
-    scopes: scopes.split(' '),
+    scopes: scopes.split(" "),
   });
 
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
+ 
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  // let tokenSet = await xero.readTokenSet();
 
-  const tokenSet = await xero.readTokenSet();
-
-  if (!tokenSet.expired()) {
-    try {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
       const rawXeroData = await getXeroInvoiceData();
       const invoices = parseXeroData(rawXeroData);
 
@@ -834,31 +862,32 @@ acct.get('/uploadCompanyInvoices', async (req, res) => {
       //   "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
       // );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
-acct.get('/uploadAmazonBills', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-  const { XeroClient, Invoices } = require('xero-node');
-  const { TokenSet } = require('openid-client');
+exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
+  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+  const { XeroClient, Invoices } = require("xero-node");
+  const { TokenSet } = require("openid-client");
   const xero = new XeroClient({
     clientId: client_id,
     clientSecret: client_secret,
     redirectUris: [redirectUrl],
-    scopes: scopes.split(' '),
+    scopes: scopes.split(" "),
   });
 
   await xero.initialize();
-  await xero.setTokenSet(new TokenSet(req.session.tokenSet));
+  
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  let tokenSet = await xero.readTokenSet();
 
-  const tokenSet = await xero.readTokenSet();
-
-  if (!tokenSet.expired()) {
-    try {
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
       const rawXeroData = await getXeroAmazonData();
 
       const invoices = parseAmazonBills(rawXeroData);
@@ -873,7 +902,7 @@ acct.get('/uploadAmazonBills', async (req, res) => {
         4
       );
       const xeroInvioces = inviocesRes.response.body.Invoices;
-      console.log('invoice length');
+      console.log("invoice length");
       console.log(invoices.length);
 
       for (let i = 0; i < xeroInvioces.length; i++) {
@@ -884,9 +913,9 @@ acct.get('/uploadAmazonBills', async (req, res) => {
           const unitName = lineItems[j].Tracking[0].Option;
 
           const snapshot = await db
-            .collection('owners')
-            .where('units.' + unitName + '.name', '==', unitName)
-            .where('partnership', '==', true)
+            .collection("owners")
+            .where("units." + unitName + ".name", "==", unitName)
+            .where("partnership", "==", true)
             .get();
 
           if (!snapshot.empty) {
@@ -915,11 +944,7 @@ acct.get('/uploadAmazonBills', async (req, res) => {
       //   "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
       // );
     }
-  } else {
-    res.send(
-      "Access to xero has expired, reconnect by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-    );
-  }
+  
 });
 
 function getXeroInvoiceData() {
@@ -928,26 +953,26 @@ function getXeroInvoiceData() {
       credentials.service_account.client_email,
       null,
       credentials.service_account.private_key,
-      ['https://www.googleapis.com/auth/spreadsheets']
+      ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
     const request = {
       // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: '1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y', // TODO: Update placeholder value.
+      spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
 
       // The A1 notation of the values to retrieve.
-      range: 'Xero Export!A2:AA', // TODO: Update placeholder value.
+      range: "Xero Export!A2:AA", // TODO: Update placeholder value.
       auth: jwt,
       key: credentials.api_key,
     };
 
-    const sheets = google.sheets('v4');
+    const sheets = google.sheets("v4");
     sheets.spreadsheets.values.get(request, (err, res) => {
       if (err) {
-        console.log('Rejecting because of error');
+        console.log("Rejecting because of error");
         reject(err);
       } else {
-        console.log('Request successful');
+        console.log("Request successful");
         resolve(res.data.values);
       }
     });
@@ -961,19 +986,19 @@ function parseXeroData(data) {
     if (checkExists[data[i][10]] === undefined) {
       checkExists[data[i][10]] = i;
       jsonXeroData[i] = {
-        type: data[i][17] >= 0 ? 'ACCREC' : 'ACCPAY',
+        type: data[i][17] >= 0 ? "ACCREC" : "ACCPAY",
         contact: {
           name: data[i][0],
         },
 
         invoiceNumber: data[i][10],
         reference: data[i][11],
-        url: 'https://stinsonbeachpm.com',
-        currencyCode: 'USD',
-        status: 'DRAFT', //AUTHORISED
-        lineAmountTypes: 'NoTax',
-        date: moment(data[i][12]).format('YYYY-MM-DD'),
-        dueDate: moment(data[i][13]).format('YYYY-MM-DD'),
+        url: "https://stinsonbeachpm.com",
+        currencyCode: "USD",
+        status: "DRAFT", //AUTHORISED
+        lineAmountTypes: "NoTax",
+        date: moment(data[i][12]).format("YYYY-MM-DD"),
+        dueDate: moment(data[i][13]).format("YYYY-MM-DD"),
         lineItems: [
           {
             item: data[i][14],
@@ -1025,26 +1050,26 @@ function getXeroAmazonData() {
       credentials.service_account.client_email,
       null,
       credentials.service_account.private_key,
-      ['https://www.googleapis.com/auth/spreadsheets']
+      ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
     const request = {
       // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: '1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y', // TODO: Update placeholder value.
+      spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
 
       // The A1 notation of the values to retrieve.
-      range: 'Amazon Data!A2:AA', // TODO: Update placeholder value.
+      range: "Amazon Data!A2:AA", // TODO: Update placeholder value.
       auth: jwt,
       key: credentials.api_key,
     };
 
-    const sheets = google.sheets('v4');
+    const sheets = google.sheets("v4");
     sheets.spreadsheets.values.get(request, (err, res) => {
       if (err) {
-        console.log('Rejecting because of error');
+        console.log("Rejecting because of error");
         reject(err);
       } else {
-        console.log('Request successful');
+        console.log("Request successful");
         resolve(res.data.values);
       }
     });
@@ -1056,28 +1081,28 @@ function parseAmazonBills(data) {
   let jsonXeroData = [];
   for (let i = 0; i < data.length; i++) {
     if (
-      data[i][10] !== '6782' &&
-      data[i][10] !== '1252' &&
-      data[i][6] !== 'Cancelled'
+      data[i][10] !== "6782" &&
+      data[i][10] !== "1252" &&
+      data[i][6] !== "Cancelled"
     ) {
-      data[i][7] = 'AMZN-' + data[i][7].substring(0, 8);
+      data[i][7] = "AMZN-" + data[i][7].substring(0, 8);
       data[i][11] = getAmazonAccountCode(data[i][17], data[i][11]);
       if (checkExists[data[i][7]] === undefined) {
         checkExists[data[i][7]] = i;
         jsonXeroData[i] = {
-          type: 'ACCPAY',
+          type: "ACCPAY",
           contact: {
-            name: 'Amazon',
+            name: "Amazon",
           },
 
           invoiceNumber: data[i][7],
-          reference: 'PO-' + data[i][2] + ' ' + data[i][17],
-          url: 'https://stinsonbeachpm.com',
-          currencyCode: 'USD',
-          status: 'DRAFT', //AUTHORISED
-          lineAmountTypes: 'NoTax',
-          date: moment(data[i][0]).format('YYYY-MM-DD'),
-          dueDate: moment(data[i][0]).add(15, 'days').format('YYYY-MM-DD'),
+          reference: "PO-" + data[i][2] + " " + data[i][17],
+          url: "https://stinsonbeachpm.com",
+          currencyCode: "USD",
+          status: "DRAFT", //AUTHORISED
+          lineAmountTypes: "NoTax",
+          date: moment(data[i][0]).format("YYYY-MM-DD"),
+          dueDate: moment(data[i][0]).add(15, "days").format("YYYY-MM-DD"),
           lineItems: [
             {
               //item: data[i][14],
@@ -1087,11 +1112,11 @@ function parseAmazonBills(data) {
               accountCode: data[i][11],
               tracking: [
                 {
-                  name: 'Property',
+                  name: "Property",
                   option: data[i][18],
                 },
                 {
-                  name: 'Channel',
+                  name: "Channel",
                   option: data[i][19],
                 },
               ],
@@ -1107,11 +1132,11 @@ function parseAmazonBills(data) {
           accountCode: data[i][11],
           tracking: [
             {
-              name: 'Property',
+              name: "Property",
               option: data[i][18],
             },
             {
-              name: 'Channel',
+              name: "Channel",
               option: data[i][19],
             },
           ],
@@ -1122,15 +1147,507 @@ function parseAmazonBills(data) {
 
   return jsonXeroData;
 }
+
 function getAmazonAccountCode(property, unspsc) {
   if (
-    property === '11 Sierra' ||
-    property === 'Mouse Hole' ||
-    property === 'Casita Azul'
+    property === "11 Sierra" ||
+    property === "Mouse Hole" ||
+    property === "Casita Azul"
   ) {
-    return '5556';
+    return "5556";
   }
   return segmentCodes[unspsc.substring(0, 2)];
 }
 
-exports.acct = functions.https.onRequest(acct);
+exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
+  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+  const { XeroClient, Invoices } = require("xero-node");
+  const { TokenSet } = require("openid-client");
+  const xero = new XeroClient({
+    clientId: client_id,
+    clientSecret: client_secret,
+    redirectUris: [redirectUrl],
+    scopes: scopes.split(" "),
+  });
+
+  await xero.initialize();
+  
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").get()
+  // sessionSnapshot.forEach(doc => {
+  //   console.log(doc.id, '=>', doc.data().created);
+  // });
+  
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  let tokenSet = await xero.readTokenSet();
+
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
+      const ownerSnapshot = await db.collection("owners").where("mgmt_take_cleaning_fee", "==", false).get() 
+      
+      let ownerUnitsMap = {};
+      ownerSnapshot.forEach(doc => {
+        const owner = doc.data()
+        ownerUnitsMap = {...ownerUnitsMap, ...owner.units}
+      });
+
+      const cleanerSnapshot = await db.collection('team').where("uuid", "==", req.query.cleaner_id).get()
+
+      if (cleanerSnapshot.empty) {
+        res.send('No cleaner for id');
+        return;
+      }  
+      const cleaner = cleanerSnapshot.docs[0].data()
+      const cleanerName = cleaner.first_name + " " + cleaner.last_name
+
+      const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(cleaner.hours_sheet)[1]
+      const rawCleanings = await getUnpaidCleaningSheetData(spreadsheetId)
+      const invoices = parseCleaningBills(cleanerName, rawCleanings, ownerUnitsMap);
+     // const invoices = parseCleaningBills(cleanerName, req.body.cleanings, ownerUnitsMap);
+
+      const newInvoices = new Invoices();
+      newInvoices.invoices = invoices;
+
+      const inviocesRes = await xero.accountingApi.createInvoices(
+        xeroTenantId,
+        newInvoices,
+        false,
+        4
+      );
+      const xeroInvioces = inviocesRes.response.body.Invoices;
+      // // console.log("invoice length");
+      // // console.log(invoices.length);
+      
+
+      for (let i = 0; i < xeroInvioces.length; i++) {
+        const invoiceId = xeroInvioces[i].InvoiceID;
+        const lineItems = xeroInvioces[i].LineItems;
+
+        for (let j = 0; j < lineItems.length; j++) {
+          const unitName = lineItems[j].Tracking[0].Option;
+
+          if (ownerUnitsMap[unitName] !== undefined) {
+    
+            const linkedRes = await xero.accountingApi.createLinkedTransaction(
+              xeroTenantId,
+              {
+                sourceTransactionID: invoiceId,
+                sourceLineItemID: lineItems[j].LineItemID,
+                contactID: ownerUnitsMap[unitName].xero_id,
+              }
+            );
+            //console.log("linkedRes", linkedRes.response.statusCode);
+          }
+        }
+      }
+
+      res.send(inviocesRes);
+      //res.send(invoices)
+      
+    } catch (err) {
+      console.log(err);
+      res.send(err);
+    
+    }
+  
+});
+
+exports.getCleaningSheetById = functions.https.onRequest(async (req, res) => {
+  const cleanerSnapshot = await db.collection('team').where("uuid", "==", req.query.cleaner_id).get()
+
+  if (cleanerSnapshot.empty) {
+    res.send('No cleaner for id');
+    return;
+  }  
+  const cleaner = cleanerSnapshot.docs[0].data()
+  const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(cleaner.hours_sheet)[1]
+  const rawCleanings = await getCleaningSheetData(spreadsheetId)
+  res.send(rawCleanings)
+})
+
+function getCleaningSheetData(spreadsheetId) {
+  return new Promise(function (resolve, reject) {
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      ["https://www.googleapis.com/auth/spreadsheets"]
+    );
+
+    const request = {
+      // The ID of the spreadsheet to retrieve data from.
+      spreadsheetId: spreadsheetId, // TODO: Update placeholder value.
+
+      // The A1 notation of the values to retrieve.
+      range: "Completed Cleanings!A2:F", // TODO: Update placeholder value.
+      auth: jwt,
+      key: credentials.api_key,
+    };
+
+    const sheets = google.sheets("v4");
+    sheets.spreadsheets.values.get(request, (err, res) => {
+      if (err) {
+        console.log("Rejecting because of error");
+        reject(err);
+      } else {
+        console.log("Request successful");
+        resolve(res.data.values);
+      }
+    });
+  });
+}
+
+
+function getUnpaidCleaningSheetData(spreadsheetId) {
+  return new Promise(function (resolve, reject) {
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      ["https://www.googleapis.com/auth/spreadsheets"]
+    );
+
+    const request = {
+      // The ID of the spreadsheet to retrieve data from.
+      spreadsheetId: spreadsheetId, // TODO: Update placeholder value.
+
+      // The A1 notation of the values to retrieve.
+      range: "Completed Cleanings!A2:F", // TODO: Update placeholder value.
+      auth: jwt,
+      key: credentials.api_key,
+    };
+
+    const sheets = google.sheets("v4");
+    sheets.spreadsheets.values.get(request, (err, res) => {
+      if (err) {
+        console.log("Rejecting because of error");
+        reject(err);
+      } else {
+        console.log("Request successful");
+        let data = []; 
+        for (let i = 0; i < res.data.values.length; i++) {
+          if(res.data.values[i][5] === undefined) {
+            data.push(res.data.values[i])
+          }
+        }
+        resolve(data);
+      }
+    });
+  });
+}
+
+function parseCleaningBills(cleanerName, data, ownerUnitsMap) {
+  let jsonXeroData =  {
+    type: "ACCPAY",
+    contact: {
+      name: cleanerName,
+    },
+    invoiceNumber: "Cleaner PMT: " + cleanerName + " on " + moment(data[data.length -1][1]).format("YYYY-MM-DD"),
+    url: "https://stinsonbeachpm.com",
+    currencyCode: "USD",
+    status: "AUTHORISED", //DRAFT
+    lineAmountTypes: "NoTax",
+    date: moment(data[data.length -1][1]).format("YYYY-MM-DD"),
+    dueDate: moment(data[data.length -1][1]).add(15, "days").format("YYYY-MM-DD"),
+    lineItems: [
+    ],
+  };
+  
+  for (let i = 0; i < data.length; i++) {
+      
+    jsonXeroData.lineItems.push({
+      // item: data[i][14],
+      
+      description: "Cleaning on " + data[i][1] + " at " + data[i][2] ,
+      quantity: 1,
+      unitAmount: parseInt(data[i][3]),
+      accountCode: ownerUnitsMap[data[i][2]] == undefined? "5010": "5555",
+      tracking: [
+        {
+          name: "Property",
+          option: data[i][2],
+        },
+        {
+          name: "Channel",
+          option: "Operation Expense",
+        },
+      ],
+    });
+      
+    
+  }
+
+  return [jsonXeroData];
+}
+
+exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
+  
+  const { XeroClient, Invoices } = require("xero-node");
+  const { TokenSet } = require("openid-client");
+  const xero = new XeroClient({
+    clientId: client_id,
+    clientSecret: client_secret,
+    redirectUris: [redirectUrl],
+    scopes: scopes.split(" "),
+  });
+
+  await xero.initialize();
+  
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  let tokenSet = await xero.readTokenSet();
+
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+  try {
+
+      const teammateSnapshot = await db.collection('team').where("uuid", "==", req.query.teammate_id).get()
+
+      if (teammateSnapshot.empty) {
+        res.send('No teammate for id');
+        return;
+      }  
+      const teammate = teammateSnapshot.docs[0].data()
+      const teammateName = teammate.first_name + " " + teammate.last_name
+
+      const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(teammate.hours_sheet)[1]
+      const rawHours = await getUnpaidHoursSheetData(spreadsheetId)
+      const invoices = parseHoursBills(teammateName, rawHours, teammate.rate);
+     // const invoices = parseHoursBills(teammateName, req.body.cleanings, ownerUnitsMap);
+
+      const newInvoices = new Invoices();
+      newInvoices.invoices = invoices;
+
+      const inviocesRes = await xero.accountingApi.createInvoices(
+        xeroTenantId,
+        newInvoices,
+        false,
+        4
+      );
+      const xeroInvioces = inviocesRes.response.body.Invoices;
+      // // console.log("invoice length");
+      // // console.log(invoices.length);
+      
+
+      // for (let i = 0; i < xeroInvioces.length; i++) {
+      //   const invoiceId = xeroInvioces[i].InvoiceID;
+      //   const lineItems = xeroInvioces[i].LineItems;
+
+      //   for (let j = 0; j < lineItems.length; j++) {
+      //     const unitName = lineItems[j].Tracking[0].Option;
+
+      //     if (ownerUnitsMap[unitName] !== undefined) {
+    
+      //       const linkedRes = await xero.accountingApi.createLinkedTransaction(
+      //         xeroTenantId,
+      //         {
+      //           sourceTransactionID: invoiceId,
+      //           sourceLineItemID: lineItems[j].LineItemID,
+      //           contactID: ownerUnitsMap[unitName].xero_id,
+      //         }
+      //       );
+      //       //console.log("linkedRes", linkedRes.response.statusCode);
+      //     }
+      //   }
+      // }
+
+      res.send(inviocesRes);
+      //res.send(invoices)
+      
+    } catch (err) {
+      console.log(err);
+      res.send(err);
+    
+    }
+  
+});
+
+exports.getHoursSheetById = functions.https.onRequest(async (req, res) => {
+  const teammateSnapshot = await db.collection('team').where("uuid", "==", req.query.cleaner_id).get()
+
+  if (teammateSnapshot.empty) {
+    res.send('No cleaner for id');
+    return;
+  }  
+  const teammate = teammateSnapshot.docs[0].data()
+  const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(teammate.hours_sheet)[1]
+  const rawHours = await getHoursSheetData(spreadsheetId)
+  res.send(rawHours)
+})
+
+function getHoursSheetData(spreadsheetId) {
+  return new Promise(function (resolve, reject) {
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      ["https://www.googleapis.com/auth/spreadsheets"]
+    );
+
+    const request = {
+      // The ID of the spreadsheet to retrieve data from.
+      spreadsheetId: spreadsheetId, // TODO: Update placeholder value.
+
+      // The A1 notation of the values to retrieve.
+      range: "Hours Log!A3:I", // TODO: Update placeholder value.
+      auth: jwt,
+      key: credentials.api_key,
+    };
+
+    const sheets = google.sheets("v4");
+    sheets.spreadsheets.values.get(request, (err, res) => {
+      if (err) {
+        console.log("Rejecting because of error");
+        reject(err);
+      } else {
+        console.log("Request successful");
+        resolve(res.data.values);
+      }
+    });
+  });
+}
+
+
+function getUnpaidHoursSheetData(spreadsheetId) {
+  return new Promise(function (resolve, reject) {
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      ["https://www.googleapis.com/auth/spreadsheets"]
+    );
+
+    const request = {
+      // The ID of the spreadsheet to retrieve data from.
+      spreadsheetId: spreadsheetId, // TODO: Update placeholder value.
+
+      // The A1 notation of the values to retrieve.
+      range: "Hours Log!A3:I", // TODO: Update placeholder value.
+      auth: jwt,
+      key: credentials.api_key,
+    };
+
+    const sheets = google.sheets("v4");
+    sheets.spreadsheets.values.get(request, (err, res) => {
+      if (err) {
+        console.log("Rejecting because of error");
+        reject(err);
+      } else {
+        console.log("Request successful");
+        let data = []; 
+        for (let i = 0; i < res.data.values.length; i++) {
+          if(res.data.values[i].length > 0 && res.data.values[i][0] !== "" && res.data.values[i][1] !== "" && res.data.values[i][2] !== "" && res.data.values[i][8] === undefined) {
+            data.push(res.data.values[i])
+          }
+        }
+        resolve(data);
+      }
+    });
+  });
+}
+
+function parseHoursBills(teammateName, data, rate) {
+  let jsonXeroData =  {
+    type: "ACCPAY",
+    contact: {
+      name: teammateName,
+    },
+
+    invoiceNumber: "Contractor PMT: " + teammateName + " on " + moment(data[data.length -1][2]).format("YYYY-MM-DD"),
+    url: "https://stinsonbeachpm.com",
+    currencyCode: "USD",
+    status: "AUTHORISED", //DRAFT
+    lineAmountTypes: "NoTax",
+    date: moment(data[data.length -1][2]).format("YYYY-MM-DD"),
+    dueDate: moment(data[data.length -1][2]).add(15, "days").format("YYYY-MM-DD"),
+    lineItems: [
+    ],
+  };
+  
+  for (let i = 0; i < data.length; i++) {
+      
+    jsonXeroData.lineItems.push({
+      // item: data[i][14],
+      
+      description: teammateName + " on " + data[i][2] + ": " + data[i][1] ,
+      quantity: data[i][6],
+      unitAmount: (parseFloat(data[i][7])*100/parseFloat(data[i][6])*100)/10000, //GET FROM DATABASE
+      accountCode: "6110",
+      tracking: [
+        {
+          name: "Property",
+          option: "General",
+        },
+        {
+          name: "Channel",
+          option: "Operation Expense",
+        },
+      ],
+    });
+      
+    
+  }
+
+  return [jsonXeroData];
+}
+
+exports.refreshXeroConnection = functions.pubsub.schedule('0 0 1 * *')
+  .onRun(async (context) => {
+  const { XeroClient } = require("xero-node");
+  const { TokenSet } = require("openid-client");
+  const xero = new XeroClient({
+    clientId: client_id,
+    clientSecret: client_secret,
+    redirectUris: [redirectUrl],
+    scopes: scopes.split(" "),
+  });
+
+  await xero.initialize();
+  
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  // sessionSnapshot.forEach(doc => {
+  //   console.log(doc.id, '=>', doc.data().created);
+  // });
+  
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  const tokenSet = await xero.readTokenSet();
+  
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(xero, validTokenSet)
+    return "Xero Connection Refreshed"
+  } else {
+    return "Xero token not expired. Expires at: " + moment(tokenSet.expires_at *1000).utcOffset("-0700").toString() + " (PST)"
+  }
+})
+
+function saveXeroToken(xeroToken) {
+  return new Promise(function (resolve, reject) {
+    const jwtDecode = require("jwt-decode");
+    console.log(xero.tenants)
+    const decodedIdToken = jwtDecode(xeroToken.id_token);
+    const decodedAccessToken = jwtDecode(xeroToken.access_token);
+    const xeroSession = {
+      type: "xero",
+      created: Date.now(),
+      decodedIdToken: decodedIdToken,
+      decodedAccessToken: decodedAccessToken,
+      tokenSet: JSON.parse(JSON.stringify(xeroToken))}
+
+    db.collection("sessions").add(xeroSession).then((response) => {
+      resolve(response)
+    })
+  })
+}
+// async function getXeroInvoiceData() {
+//   return new Promise(function (resolve, reject) {
+    
+    
+//   });
+// }
