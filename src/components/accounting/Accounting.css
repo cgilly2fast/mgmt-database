@@ -1,0 +1,70 @@
+.account-div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.account-title {
+  color: #0d6efd;
+}
+
+.account-button {
+  background: #007bff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  color: white;
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 0 0.75em;
+}
+
+.tbody,
+td,
+tfoot,
+th,
+thead,
+tr {
+  border-style: none;
+  background-color: #f1f1f1;
+}
+
+.active-button {
+  font-size: 85%;
+  background-color: #007bff;
+  box-shadow: 0px 1px 2px #b8eef7;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+}
+
+.table-header {
+  display: block;
+}
+
+.table-body {
+  overflow-y: scroll;
+  max-height: 50vh;
+  display: block;
+}
+
+.dropdown-toggle {
+  width: 70%;
+}
+
+.dropdown-toggle::after {
+  margin-left: 21.255em !important;
+}
+
+.dropdown-menu.show {
+  width: 70%;
+}
+
+.create-connection-dropdown .dropdown-toggle::after {
+  margin-left: 13.255em !important;
+}
+
+.create-connection-dropdown-2 .dropdown-toggle::after {
+    margin-left: 10.255em !important;
+  }

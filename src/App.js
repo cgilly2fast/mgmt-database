@@ -21,6 +21,8 @@ import { AuthProvider } from "./context/AuthContext";
 import Calendar from "./components/calendar/Calendar";
 import SelectUnit from "./components/selectUnit/SelectUnit";
 import Map from "./components/map/Map";
+import Accounting from "./components/accounting/Accounting";
+import Rules from "./components/rules/Rules";
 
 export default class App extends Component {
   render() {
@@ -32,7 +34,13 @@ export default class App extends Component {
               <PrivateRoute exact path="/" component={Units} />
               <PrivateRoute exact path="/units" component={Units} />
               <PrivateRoute exact path="/calendar" component={SelectUnit} />
+              <PrivateRoute exact path="/rules" component={Rules} />
               <PrivateRoute exact path="/calendar/:id" component={Calendar} />
+              <PrivateRoute
+                exact
+                path="/accounting-connections"
+                component={Accounting}
+              />
               <PrivateRoute exact path="/unit/create" component={UnitForm} />
               <PrivateRoute exact path="/unit/:unitId" component={Unit} />
               <PrivateRoute

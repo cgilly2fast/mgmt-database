@@ -9,6 +9,7 @@ import {
   Menu,
   SidebarContent,
   SidebarHeader,
+  SubMenu,
 } from "react-pro-sidebar";
 import { FiLogOut } from "react-icons/fi";
 import {
@@ -18,13 +19,13 @@ import {
   BsShopWindow,
   BsTextIndentRight,
   BsXLg,
+  BsCalculator,
 } from "react-icons/bs";
 import "react-pro-sidebar/dist/css/styles.css";
 
 export default function Sidebar({ menuCollapse, setMenuCollapse }) {
   const [error, setError] = useState("");
   const { currentUser, logout } = useAuth();
-  // const [menuCollapse, setMenuCollapse] = useState(false);
 
   const history = useHistory();
 
@@ -100,6 +101,20 @@ export default function Sidebar({ menuCollapse, setMenuCollapse }) {
               </Link>
             </MenuItem>
 
+            <SubMenu title="Accounting" icon={<BsCalculator />}>
+              <MenuItem className="dropdown-menu-list mb-3">
+                <Link to="/accounting-connections" style={{ color: "#000" }}>
+                  Accounting Connections
+                </Link>
+              </MenuItem>
+
+              <MenuItem>
+                <Link to="/rules" style={{ color: "#000" }}>
+                  Rules
+                </Link>
+              </MenuItem>
+            </SubMenu>
+
             {currentUser ? (
               <MenuItem icon={<FiLogOut />}>
                 <Button
@@ -123,49 +138,5 @@ export default function Sidebar({ menuCollapse, setMenuCollapse }) {
         </SidebarContent>
       </ProSidebar>
     </div>
-    // <Navbar
-    //   bg="light"
-    //   expand="lg"
-    //   className="col-md-12 d-none d-md-block sidebar"
-    // >
-    //   {/* <Navbar.Brand>
-    //     <NavLink to="/units">
-    //       <h4>Mgmt Database</h4>
-    //     </NavLink>
-    //   </Navbar.Brand> */}
-
-    //   <Navbar.Toggle aria-controls="basic-navbar-nav" />
-    //   <Navbar.Collapse id="basic-navbar-nav">
-    //     <Nav className="mr-auto navbar-nav">
-    //       {error && <Alert variant="danger">{error}</Alert>}
-    //       <Nav.Link as={Link} to="/units">
-    //         Units
-    //       </Nav.Link>
-
-    //       <Nav.Link as={Link} to="/owners">
-    //         Owners
-    //       </Nav.Link>
-    //       <Nav.Link as={Link} to="/team">
-    //         Team
-    //       </Nav.Link>
-    //       <Nav.Link as={Link} to="/calendar">
-    //         Calendar
-    //       </Nav.Link>
-    //       {currentUser ? (
-    //         <Nav.Link>
-    //           <Button
-    //             variant="link"
-    //             onClick={handleLogout}
-    //             style={{ padding: "0px" }}
-    //           >
-    //             Log Out
-    //           </Button>
-    //         </Nav.Link>
-    //       ) : (
-    //         <Nav.Link as={Link} to="/login">Log In</Nav.Link>
-    //       )}
-    //     </Nav>
-    //   </Navbar.Collapse>
-    // </Navbar>
   );
 }
