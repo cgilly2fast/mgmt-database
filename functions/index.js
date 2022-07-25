@@ -32,6 +32,8 @@ const {
   getHoursSheetById,
   getAllXeroContacts,
   refreshXeroConnection,
+  createBillableExpenseInvoice,
+  templatingTest
 } = require("./acct-functions");
 //const format = require("./format-functions");
 
@@ -44,6 +46,8 @@ exports.uploadHoursBills = uploadHoursBills;
 exports.getHoursSheetById = getHoursSheetById;
 exports.getAllXeroContacts = getAllXeroContacts;
 exports.refreshXeroConnection = refreshXeroConnection;
+exports.createBillableExpenseInvoice = createBillableExpenseInvoice
+exports.templatingTest = templatingTest
 
 exports.updateUnit = updateUnit;
 exports.createOauth = createOauth;

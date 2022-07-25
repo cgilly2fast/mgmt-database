@@ -983,8 +983,8 @@ function saveXeroToken(xeroToken) {
 //   }
 // })
 
-function parseAccountingRuleInvoices(rule, data, rate) {
-  //const teammateSnapshot = await db.collection('team').where("uuid", "==", rule.invoice.contact.id).get()
+const parseAccountingRuleInvoices = async function (rule, data, rate) {
+  const teammateSnapshot = await db.collection('team').where("uuid", "==", rule.invoice.contact.id).get()
 
   if (teammateSnapshot.empty) {
     res.send('No teammember for id');
@@ -1037,14 +1037,6 @@ function parseAccountingRuleInvoices(rule, data, rate) {
 
   return [jsonXeroData];
 }
-// async function getXeroInvoiceData() {
-//   return new Promise(function (resolve, reject) {
-    
-    
-//   });
-// }
-
-// helper template function(tupleData, template, contactInfo, )
 
 exports.createBillableExpenseInvoice  = functions.https.onRequest(async (req, res) => {
   
@@ -1078,55 +1070,60 @@ exports.createBillableExpenseInvoice  = functions.https.onRequest(async (req, re
       }  
       const owner = ownerSnapshot.docs[0].data()
       
-      //const ownerName = owner.first_name + " " + owner.last_name
-      let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(xeroTenantId, undefined, undefined, undefined,owner.xero_id)
+      
+      let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(xeroTenantId, undefined, undefined, undefined, owner.xero_id, 'APPROVED')
+
+      const linkedTxns = linkedTxnsResponse.body.linkedTransactions
       
       const linkedInvoicesIds = listUniqueInvoicesIds(linkedTxnsResponse.body.linkedTransactions)
 
       const getInvoicesResponse = await xero.accountingApi.getInvoices(xeroTenantId, undefined, undefined, undefined, linkedInvoicesIds)
 
-      const linkedLineItems = listLinkedLineItems(getInvoicesResponse.body.invoices,linkedTxnsResponse.body.linkedTransactions )
-      //const rawHours = await getUnpaidHoursSheetData(teammate.hours_sheet)
-      //const invoices = parseHoursBills(teammateName, rawHours, teammate.rate);
-     // const invoices = parseHoursBills(teammateName, req.body.cleanings, ownerUnitsMap);
+      const linkedLineItems = listLinkedLineItems(getInvoicesResponse.body.invoices, linkedTxns)
 
-      // const newInvoices = new Invoices();
-      // newInvoices.invoices = invoices;
+      const invoices = parseBillableExpenseInvoice(linkedLineItems, owner.company_name)
 
-      // const inviocesRes = await xero.accountingApi.createInvoices(
-      //   xeroTenantId,
-      //   newInvoices,
-      //   false,
-      //   4
-      // );
-      // const xeroInvioces = inviocesRes.response.body.Invoices;
-      // // console.log("invoice length");
-      // // console.log(invoices.length);
+      const newInvoices = new Invoices();
+      newInvoices.invoices = invoices;
+
+      const inviocesRes = await xero.accountingApi.createInvoices(
+        xeroTenantId,
+        newInvoices,
+        false,
+        4
+      );
+      const xeroInvioces = inviocesRes.response.body.Invoices[0];
+
+      let linkedTxnsIds = {}
       
+      for(let i = 0; i < linkedTxns.length; i++) {
+        if(linkedTxnsIds[linkedTxns[i].sourceLineItemID] === undefined) {
+          linkedTxnsIds[linkedTxns[i].sourceLineItemID] = linkedTxns[i]
+        }
+      }
+      
+      
+    for (let j = 0; j < xeroInvioces.LineItems.length; j++) {    
+      for (let i = 0; i < linkedLineItems.length; i++) {
+          if(linkedLineItems[i].description === xeroInvioces.LineItems[j].Description 
+            && linkedLineItems[i].quantity === xeroInvioces.LineItems[j].Quantity 
+            && linkedLineItems[i].unitAmount === xeroInvioces.LineItems[j].UnitAmount) {
+              const linkedTransactions = [{
+                targetTransactionID: xeroInvioces.InvoiceID,
+                targetLineItemID: xeroInvioces.LineItems[j].LineItemID}]
+                console.log(linkedTransactions)
+              const linkedRes = await xero.accountingApi.updateLinkedTransaction(
+                xeroTenantId,
+                linkedTxnsIds[linkedLineItems[i].lineItemID].linkedTransactionID,
+                {linkedTransactions:linkedTransactions}
+              );
+              console.log(linkedRes.body)
+              
+          }
+        }
+      }
 
-      // for (let i = 0; i < xeroInvioces.length; i++) {
-      //   const invoiceId = xeroInvioces[i].InvoiceID;
-      //   const lineItems = xeroInvioces[i].LineItems;
-
-      //   for (let j = 0; j < lineItems.length; j++) {
-      //     const unitName = lineItems[j].Tracking[0].Option;
-
-      //     if (ownerUnitsMap[unitName] !== undefined) {
-    
-      //       const linkedRes = await xero.accountingApi.createLinkedTransaction(
-      //         xeroTenantId,
-      //         {
-      //           sourceTransactionID: invoiceId,
-      //           sourceLineItemID: lineItems[j].LineItemID,
-      //           contactID: ownerUnitsMap[unitName].xero_id,
-      //         }
-      //       );
-      //       //console.log("linkedRes", linkedRes.response.statusCode);
-      //     }
-      //   }
-      // }
-
-      res.send(response.body);
+      res.send(linkedTxns);
       //res.send(invoices)
       
     } catch (err) {
@@ -1149,6 +1146,75 @@ function listUniqueInvoicesIds(linkedTxns){
   return LinkedInvoicesIds
 }
 
-listLinkedLineItems = async function() {
+const listLinkedLineItems = function(invoices, linkedTxns) {
+  let lineItems = []
+  let linkedTxnsIds = {}
 
+  for(let i = 0; i < linkedTxns.length; i++) {
+    if(linkedTxnsIds[linkedTxns[i].sourceLineItemID] === undefined) {
+      linkedTxnsIds[linkedTxns[i].sourceLineItemID] = true
+    }
+  }
+ 
+  for(let i = 0; i < invoices.length; i++) {
+    for(let j = 0; j < invoices[i].lineItems.length;j++){
+      let curId = invoices[i].lineItems[j].lineItemID
+      if(linkedTxnsIds[curId]){
+        lineItems.push(invoices[i].lineItems[j])
+      }
+    }
+  }
+  return lineItems
 }
+
+const parseBillableExpenseInvoice = function(listLinkedLineItems, ownerName) {
+  let jsonXeroData =  {
+    type: "ACCREC",
+    contact: {
+      name: ownerName,
+    },
+    currencyCode: "USD",
+    status: "AUTHORISED", //DRAFT
+    lineAmountTypes: "NoTax",
+    date: moment().subtract(1,'months').endOf('month').format('YYYY-MM-DD'),
+    dueDate: moment().subtract(1,'months').endOf('month').add(15, "days").format('YYYY-MM-DD'),
+    reference: ownerName + " Billable Expenses " +moment().subtract(1,'months').endOf('month').format('MM-YYYY'),
+    lineItems: [
+    ],
+  };
+  
+
+  for (let i = 0; i < listLinkedLineItems.length; i++) {
+      
+    jsonXeroData.lineItems.push({
+      // item: ,
+      description: listLinkedLineItems[i].description ,
+      quantity: listLinkedLineItems[i].quantity,
+      unitAmount: listLinkedLineItems[i].unitAmount, //GET FROM DATABASE
+      accountCode: "4500",
+      tracking: [
+        listLinkedLineItems[i].tracking[0],
+        
+      ],
+    });
+  }
+  return [jsonXeroData]
+}
+
+exports.templatingTest = functions.https.onRequest(async (req, res) => {
+  const TemplateEngine = require("./template-engine")
+  
+
+  const rulesDoc = await db.collection('accounting-rules').doc("NOnwEZ1q3FjqIvytzXzs").get()
+
+  if (!rulesDoc.exists) {
+    res.send('No cleaner for id');
+    return;
+  }  
+  const rule = rulesDoc.data()
+  
+  const rawHours = await getHoursSheetData(rule.source_data)
+  let templateEngine = new TemplateEngine(rule, rawHours)
+
+  res.send(templateEngine.exec("Cleaning on <%work_date%> at <%work_description%>"))
+})
