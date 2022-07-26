@@ -14,6 +14,19 @@ export const getUnits = () => {
   };
 };
 
+export const getConnections = () => {
+  return (dispatch) => {
+    return axios
+      .get(ApiUrl + "/getConnections")
+      .then((response) => {
+        dispatch({ type: "GET_CONNECTIONS_SUCCESS", res_data: response.data });
+      })
+      .catch((err) => {
+        dispatch({ type: "GET_CONNECTIONS_ERROR", err });
+      });
+  };
+};
+
 export const getUnitById = (unitId) => {
   return (dispatch) => {
     return axios

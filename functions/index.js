@@ -20,6 +20,7 @@ const {
   getReservationsDetail,
   midnightSchedule,
   staticData,
+  getConnections,
 } = require("./mgmt-functions");
 
 const {
@@ -33,7 +34,7 @@ const {
   getAllXeroContacts,
   refreshXeroConnection,
   createBillableExpenseInvoice,
-  templatingTest
+  templatingTest,
 } = require("./acct-functions");
 //const format = require("./format-functions");
 
@@ -46,8 +47,8 @@ exports.uploadHoursBills = uploadHoursBills;
 exports.getHoursSheetById = getHoursSheetById;
 exports.getAllXeroContacts = getAllXeroContacts;
 exports.refreshXeroConnection = refreshXeroConnection;
-exports.createBillableExpenseInvoice = createBillableExpenseInvoice
-exports.templatingTest = templatingTest
+exports.createBillableExpenseInvoice = createBillableExpenseInvoice;
+exports.templatingTest = templatingTest;
 
 exports.updateUnit = updateUnit;
 exports.createOauth = createOauth;
@@ -70,3 +71,4 @@ exports.getReservationsByUnit = getReservationsByUnit;
 exports.getReservationsDetail = getReservationsDetail;
 exports.midnightSchedule = midnightSchedule;
 exports.staticData = staticData;
+exports.getConnections = getConnections;

@@ -23,6 +23,7 @@ import SelectUnit from "./components/selectUnit/SelectUnit";
 import Map from "./components/map/Map";
 import Accounting from "./components/accounting/Accounting";
 import Rules from "./components/rules/Rules";
+import AccountingRulesForm from "./components/accountingRulesForm/AccountingRulesForm";
 
 export default class App extends Component {
   render() {
@@ -35,6 +36,11 @@ export default class App extends Component {
               <PrivateRoute exact path="/units" component={Units} />
               <PrivateRoute exact path="/calendar" component={SelectUnit} />
               <PrivateRoute exact path="/rules" component={Rules} />
+              <PrivateRoute
+                exact
+                path="/accounting-rules"
+                component={AccountingRulesForm}
+              />
               <PrivateRoute exact path="/calendar/:id" component={Calendar} />
               <PrivateRoute
                 exact

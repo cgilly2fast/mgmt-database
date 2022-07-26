@@ -44,6 +44,7 @@ function renderEventContent(eventInfo) {
                     eventInfo?.event?.extendedProps?.picture &&
                     eventInfo?.event?.extendedProps?.picture
                   }
+                  alt="img"
                   className="img-calendar"
                 />
               ) : null}
@@ -486,7 +487,7 @@ const Calendar = (props) => {
                       {unitData?.picture !== "" ? (
                         <img
                           src={unitData?.picture}
-                          alt="property image"
+                          alt="property"
                           className="property-image"
                         />
                       ) : null}

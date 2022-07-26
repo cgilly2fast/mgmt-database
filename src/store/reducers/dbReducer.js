@@ -9,6 +9,7 @@ const initState = {
   calendar: { loading: true, data: null },
   reservations: { loading: true, data: null },
   reservationDetail: {},
+  connections: [],
 };
 
 const dbReducer = (state = initState, action) => {
@@ -19,6 +20,14 @@ const dbReducer = (state = initState, action) => {
         units: action.res_data,
       };
     case "GET_UNITS_ERROR":
+      return state;
+
+    case "GET_CONNECTIONS_SUCCESS":
+      return {
+        ...state,
+        connections: action.res_data,
+      };
+    case "GET_CONNECTIONS_ERROR":
       return state;
 
     case "GET_ACTIVE_UNITS_SUCCESS":

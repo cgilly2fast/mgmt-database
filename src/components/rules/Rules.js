@@ -2,6 +2,7 @@ import React from "react";
 import { Accordion } from "react-bootstrap";
 import "./Rules.css";
 import { BsPencil, BsArrowRight } from "react-icons/bs";
+import { Link } from "react-router-dom";
 
 const rulesList = [
   {
@@ -80,7 +81,9 @@ const Rules = () => {
       <div className="rules-div">
         <h3 className="rules-title">Rules</h3>
         <button type="submit" className="rules-button">
-          +Add Rules
+          <Link to="/accounting-rules" style={{ color: "#fff" }}>
+            +Add Rules
+          </Link>
         </button>
       </div>
 
@@ -91,7 +94,7 @@ const Rules = () => {
               <Accordion.Header>
                 <div className="accordion-div">
                   <div>
-                    <p>
+                    <p className="p-tag">
                       {item.platform}
                       <br />
                       {item.listing_account}
@@ -99,20 +102,20 @@ const Rules = () => {
                   </div>
                   <BsArrowRight />
                   <div>
-                    <p>
+                    <p className="p-tag">
                       {item.xero_platform}
                       <br />
                       {item.accounting_account}
                     </p>
                   </div>
                   <div>
-                    <p>
+                    <p className="p-tag">
                       {item.active}
                       <br />
                       SET LISTINGS
                     </p>
                   </div>
-                  <div style={{ alignSelf: "center" }}>
+                  <div>
                     <button type="submit" className="rules-active-button">
                       Active
                     </button>

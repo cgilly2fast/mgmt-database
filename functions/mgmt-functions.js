@@ -273,6 +273,21 @@ exports.checkSignup = functions.https.onRequest(async (req, res) => {
   });
 });
 
+exports.getConnections = functions.https.onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    try {
+      const snapshot = await db.collection("connections").get();
+      let data = [];
+      snapshot.forEach((doc) => {
+        data.push(doc.data());
+      });
+      res.send(data);
+    } catch (err) {
+      res.send(err);
+    }
+  });
+});
+
 exports.getCalendar = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     let snapshot = {};
