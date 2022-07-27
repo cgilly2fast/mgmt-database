@@ -918,116 +918,126 @@ function saveXeroToken(xeroToken) {
   })
 }
 
-// exports.executeAccountingRule - functions.https.onRequest(async (req, res) =>{
-//   const { XeroClient } = require("xero-node");
-//   const { TokenSet } = require("openid-client");
-//   const xero = new XeroClient({
-//     clientId: client_id,
-//     clientSecret: client_secret,
-//     redirectUris: [redirectUrl],
-//     scopes: scopes.split(" "),
-//   });
+exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
+  // const { XeroClient } = require("xero-node");
+  // const { TokenSet } = require("openid-client");
+  // const xero = new XeroClient({
+  //   clientId: client_id,
+  //   clientSecret: client_secret,
+  //   redirectUris: [redirectUrl],
+  //   scopes: scopes.split(" "),
+  // });
 
-//   await xero.initialize();
+  // await xero.initialize();
   
-//   const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
-//   // sessionSnapshot.forEach(doc => {
-//   //   console.log(doc.id, '=>', doc.data().created);
-//   // });
+  // const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  // // sessionSnapshot.forEach(doc => {
+  // //   console.log(doc.id, '=>', doc.data().created);
+  // // });
   
-//   await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-//   const tokenSet = await xero.readTokenSet();
+  // await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  // const tokenSet = await xero.readTokenSet();
   
-//   if (tokenSet.expired()) {
-//     const validTokenSet = await xero.refreshToken();
-//     await saveXeroToken(validTokenSet)
-//     tokenSet = validTokenSet
-//   } 
-//   try {
-//     const rule = req.query
-//     let xeroInvioceResponse = {}
-//     let invoices = {}
-//     if(rule.type === "HOURS"){
-//       const rawHours = await getUnpaidHoursSheetData(spreadsheetId)
-//       invoices = parseHoursBills(teammateName, rawHours, teammate.rate);
+  // if (tokenSet.expired()) {
+  //   const validTokenSet = await xero.refreshToken();
+  //   await saveXeroToken(validTokenSet)
+  //   tokenSet = validTokenSet
+  // } 
+  // try {
+  //   const rule = req.query
+  //   let xeroInvioceResponse = {}
+    let invoices = {}
 
-//     } else if(rule.type === "CLEANING") {
-//       const rawCleanings = await getUnpaidCleaningSheetData(cleaner.hours_sheet)
-//       invoices = parseCleaningBills(cleanerName, rawCleanings, ownerUnitsMap);
+    const rulesDoc = await db.collection('accounting-rules').doc("VteS4polyi9lLTlWqlTf").get()
 
-//     }
+    if (!rulesDoc.exists) {
+      res.send('No cleaner for id');
+      return;
+    }  
+    const rule = rulesDoc.data()
+    if(rule.type === "HOURS"){
+      const rawHours = await getUnpaidHoursSheetData(rule.source_data)
+      invoices = parseAccountingRuleInvoices(rule, rawHours);
 
-//     const newInvoices = new Invoices();
-//     newInvoices.invoices = invoices;
+    } else if(rule.type === "CLEANING") {
+      const rawCleanings = await getUnpaidCleaningSheetData(rule.source_data)
+      invoices = parseAccountingRuleInvoices(rule, rawCleanings);
+    }
 
-//     const inviocesRes = await xero.accountingApi.createInvoices(
-//       xeroTenantId,
-//       newInvoices,
-//       false,
-//       4
-//     );
-//     xeroInvioceResponse = inviocesRes.response.body.Invoices;
-//       // get source data
-//       // parse invoice(data, AccountingRule)
-//       //send invoice to xero
+    // const newInvoices = new Invoices();
+    // newInvoices.invoices = invoices;
+
+    // const inviocesRes = await xero.accountingApi.createInvoices(
+    //   xeroTenantId,
+    //   newInvoices,
+    //   false,
+    //   4
+    // );
+    // xeroInvioceResponse = inviocesRes.response.body.Invoices;
+      // get source data
+      // parse invoice(data, AccountingRule)
+      //send invoice to xero
     
-//     // if billable create linked transactions in invoice
+    // if billable create linked transactions in invoice
 
-//     // else if mirror 
-//       // create mirror transactions
+    // else if mirror 
+      // create mirror transactions
 
-//     // if email reciept
-//       // create email receipt
-//   } catch (e) {
+    // if email reciept
+      // create email receipt
+  // } catch (e) {
     
-//   }
-// })
+  // }
+  res.send(invoices)
+})
 
-const parseAccountingRuleInvoices = async function (rule, data, rate) {
-  const teammateSnapshot = await db.collection('team').where("uuid", "==", rule.invoice.contact.id).get()
+function parseAccountingRuleInvoices(rule, data) {
+  // const teammateSnapshot = await db.collection('team').where("uuid", "==", rule.invoice.contact.id).get()
 
-  if (teammateSnapshot.empty) {
-    res.send('No teammember for id');
-    return;
-  }  
-  const teammate = teammateSnapshot.docs[0].data()
-  
+  // if (teammateSnapshot.empty) {
+  //   res.send('No teammember for id');
+  //   return;
+  // }  
+  //const teammate = teammateSnapshot.docs[0].data()
+  const TemplateEngine = require("./template-engine")
+  const templateEngine = new TemplateEngine(rule)
+
   let jsonXeroData =  {
     type: rule.invoice.type,
     contact: {
       name: rule.invoice.contact.name,
     },
-    currencyCode: rule.invioce.currency,
+    currencyCode: rule.invoice.currency,
     status: "AUTHORISED", //DRAFT
     lineAmountTypes: "NoTax",
-    date: parseTemplate(rule.invoice.date),
-    dueDate: parseTemplate(rule.invoice.dueDate),
+    date: templateEngine.exec(rule.invoice.date),
+    dueDate: templateEngine.exec(rule.invoice.due_date),
     lineItems: [
     ],
   };
   if(rule.type === "ACCPAY") {
-    jsonXeroData.invoiceNumber = parseTemplate(rule.invoice.reference)
+    jsonXeroData.invoiceNumber = templateEngine.exec(rule.invoice.reference,)
   } else {
-    jsonXeroData.reference = parseTemplate(rule.invoice.reference)
+    jsonXeroData.reference = templateEngine.exec(rule.invoice.reference)
   }
 
   for (let i = 0; i < data.length; i++) {
-      
+    
     jsonXeroData.lineItems.push({
       // item: data[i][14],
       
-      description: parseTemplate(rule.invoice.line_items.description) ,
-      quantity: data[i][6],
-      unitAmount: (parseFloat(data[i][7])*100/parseFloat(data[i][6])*100)/10000, //GET FROM DATABASE
-      accountCode: "6110",
+      description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
+      quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
+      unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+      accountCode: rule.invoice.line_items.account_code,
       tracking: [
         {
-          name: "Property",
-          option: "General",
+          name: rule.invoice.line_items.tracking[0].name,
+          option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
         },
         {
-          name: "Channel",
-          option: "Operation Expense",
+          name: rule.invoice.line_items.tracking[1].name,
+          option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
         },
       ],
     });
