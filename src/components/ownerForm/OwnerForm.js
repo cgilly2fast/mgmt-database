@@ -1,13 +1,11 @@
 import React, { Component } from "react";
 import { Form, Button, Col, Row } from "react-bootstrap";
-import { getUnits, getOwnerById } from "../../store/actions/dbActions";
-import { connect } from "react-redux";
 import { Alert } from "bootstrap";
 import axios from "axios";
 import ApiUrl from "../../globalVariables";
 import { Multiselect } from "multiselect-react-dropdown";
-import { withRouter } from "react-router-dom";
 import BackButton from "../../img/BackButton.svg";
+import { getTeammateById, getUnits } from "../../API";
 
 export class OwnerForm extends Component {
   //const [loading, setLoading] = this.useState(true)
@@ -92,20 +90,18 @@ export class OwnerForm extends Component {
       form,
     });
   };
-  componentDidMount() {
+  async componentDidMount() {
     const { ownerId } = this.props.match.params;
     let options = [];
-    this.props.getUnits().then(() => {
-      const { units } = this.props;
-      for (let i = 0; i < units.length; i++) {
-        options.push({
-          id: units[i].id,
-          name: units[i].name,
-          picture: units[i].picture,
-        });
-      }
-      this.setState({ options: options });
-    });
+    const units = await getUnits();
+    for (let i = 0; i < units.length; i++) {
+      options.push({
+        id: units[i].id,
+        name: units[i].name,
+        picture: units[i].picture,
+      });
+    }
+    this.setState({ options: options });
     if (
       this.props.location &&
       this.props.location.state &&
@@ -120,9 +116,8 @@ export class OwnerForm extends Component {
       owner.units = arrayUnits;
       this.setState({ form: owner });
     } else if (ownerId !== undefined) {
-      this.props.getTeammateById(ownerId).then(() => {
-        this.setState({ form: this.props.owner });
-      });
+      const teammateById = await getTeammateById(ownerId);
+      this.setState({ form: teammateById });
     }
   }
 
@@ -383,12 +378,5 @@ export class OwnerForm extends Component {
     );
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    owner: state.db.owner,
-    units: state.db.units,
-  };
-};
-export default withRouter(
-  connect(mapStateToProps, { getUnits, getOwnerById })(OwnerForm)
-);
+
+export default OwnerForm;

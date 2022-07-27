@@ -1,8 +1,7 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { getTeammateById } from "../../store/actions/dbActions";
 import { Container, Button } from "react-bootstrap";
-import { Link, withRouter } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { getTeammateById } from "../../API";
 import BackButton from "../../img/BackButton.svg";
 
 export class Teammate extends Component {
@@ -12,7 +11,7 @@ export class Teammate extends Component {
       teammate: "",
     };
   }
-  componentDidMount() {
+  async componentDidMount() {
     const { teammateId } = this.props.match.params;
     if (
       this.props.location &&
@@ -21,13 +20,11 @@ export class Teammate extends Component {
     ) {
       this.setState({ teammate: this.props.location.state.teammate });
     } else {
-      this.props.getTeammateById(teammateId).then(() => {
-        this.setState({ teammate: this.props.teammate });
-      });
+      const teammatedata = await getTeammateById(teammateId);
+      this.setState({ teammate: teammatedata });
     }
   }
   render() {
-    //const owner = this.props.location.state.owner;
     const { teammate } = this.state;
     const address = teammate.address === undefined ? {} : teammate.address;
 
@@ -80,12 +77,4 @@ export class Teammate extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  return {
-    teammate: state.db.teammate,
-  };
-};
-
-export default withRouter(
-  connect(mapStateToProps, { getTeammateById })(Teammate)
-);
+export default Teammate;

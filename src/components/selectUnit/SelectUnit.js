@@ -1,20 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import "./SelectUnit.css";
-import { useHistory, withRouter } from "react-router-dom";
-import { getActiveUnits } from "../../store/actions/dbActions";
-import { connect, useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import BackButton from "../../img/BackButton.svg";
+import { getActiveUnits } from "../../API";
 
 const SelectUnit = (props) => {
-  const dispatch = useDispatch();
   const history = useHistory();
   const { id } = useParams();
+  const [units, setUnits] = useState();
 
-  const unitsdata = useSelector(({ db }) => db?.units);
   useEffect(() => {
-    dispatch(getActiveUnits());
+    const activeUnitsGet = async () => {
+      const activeUnits = await getActiveUnits();
+      setUnits(activeUnits);
+    };
+    activeUnitsGet();
   }, []);
 
   const handleSelect = (e) => {
@@ -45,7 +47,7 @@ const SelectUnit = (props) => {
               <option selected disabled>
                 Select Units
               </option>
-              {unitsdata?.map((item) => (
+              {units?.map((item) => (
                 <option value={item?.id} key={item?.id}>
                   {item?.name} {item?.address?.city}
                 </option>
@@ -58,13 +60,4 @@ const SelectUnit = (props) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    units: state.db.units,
-  };
-};
-export default withRouter(
-  connect(mapStateToProps, {
-    getActiveUnits,
-  })(SelectUnit)
-);
+export default SelectUnit;

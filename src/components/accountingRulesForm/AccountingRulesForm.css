@@ -9,9 +9,15 @@
   padding: 20px;
 }
 
-.save-button{
-    border: none;
-    color: white;
-    background: #007bff;
-    padding: 5px 40px;
+.save-button {
+  border: none;
+  color: white;
+  background: #007bff;
+  padding: 5px 40px;
+}
+
+.invoice-div {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 10px 20px;
 }

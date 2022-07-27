@@ -1,12 +1,10 @@
 import React, { Component } from "react";
 import { Form, Button, Col, Row } from "react-bootstrap";
-import { connect } from "react-redux";
 import { Alert } from "bootstrap";
 import axios from "axios";
 import ApiUrl from "../../globalVariables";
-import { getTeammateById } from "../../store/actions/dbActions";
-import { withRouter } from "react-router-dom";
 import BackButton from "../../img/BackButton.svg";
+import { getTeammateById } from "../../API";
 
 export class TeammateForm extends Component {
   //const [loading, setLoading] = this.useState(true)
@@ -69,7 +67,7 @@ export class TeammateForm extends Component {
       form,
     });
   };
-  componentDidMount() {
+  async componentDidMount() {
     const { teammateId } = this.props.match.params;
 
     if (
@@ -79,9 +77,8 @@ export class TeammateForm extends Component {
     ) {
       this.setState({ form: this.props.location.state.teammate });
     } else if (teammateId !== undefined) {
-      this.props.getTeammateById(teammateId).then(() => {
-        this.setState({ form: this.props.teammate });
-      });
+      const teammateById = await getTeammateById(teammateId);
+      this.setState({ form: teammateById });
     }
   }
 
@@ -239,11 +236,5 @@ export class TeammateForm extends Component {
     );
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    teammate: state.db.teammate,
-  };
-};
-export default withRouter(
-  connect(mapStateToProps, { getTeammateById })(TeammateForm)
-);
+
+export default TeammateForm;

@@ -1,14 +1,12 @@
 import React, { Component } from "react";
 import { Form, Button, Col, Row } from "react-bootstrap";
-import { getUnitById, getOwners } from "../../store/actions/dbActions";
-import { connect } from "react-redux";
 import { Alert } from "bootstrap";
 import axios from "axios";
 import ApiUrl from "../../globalVariables";
 import { Multiselect } from "multiselect-react-dropdown";
 import TimePicker from "react-bootstrap-time-picker";
-import { withRouter } from "react-router-dom";
 import BackButton from "../../img/BackButton.svg";
+import { getOwners, getTeammateById } from "../../API";
 
 export class UnitForm extends Component {
   //const [loading, setLoading] = this.useState(true)
@@ -132,23 +130,21 @@ export class UnitForm extends Component {
       form,
     });
   };
-  componentDidMount() {
+  async componentDidMount() {
     const { unitId } = this.props.match.params;
     let options = [];
-    this.props.getOwners().then(() => {
-      const { owners } = this.props;
-      for (let i = 0; i < owners.length; i++) {
-        options.push({
-          uuid: owners[i].uuid,
-          first_name: owners[i].first_name,
-          last_name: owners[i].last_name,
-          phone: owners[i].phone,
-          email: owners[i].email,
-          picture: owners[i].picture,
-        });
-      }
-      this.setState({ options: options });
-    });
+    const owners = await getOwners();
+    for (let i = 0; i < owners.length; i++) {
+      options.push({
+        uuid: owners[i].uuid,
+        first_name: owners[i].first_name,
+        last_name: owners[i].last_name,
+        phone: owners[i].phone,
+        email: owners[i].email,
+        picture: owners[i].picture,
+      });
+    }
+    this.setState({ options: options });
     if (
       this.props.location &&
       this.props.location.state &&
@@ -159,15 +155,13 @@ export class UnitForm extends Component {
       unit.owner = [unit.owner];
       this.setState({ form: unit });
     } else if (unitId !== undefined) {
-      this.props.getTeammateById(unitId).then(() => {
-        this.setState({ form: this.props.owner });
-      });
+      const teammateById = await getTeammateById(unitId);
+      this.setState({ form: teammateById });
     }
   }
 
   render() {
     const { error, loading, form } = this.state;
-
     return (
       <>
         <img
@@ -557,12 +551,5 @@ export class UnitForm extends Component {
     );
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    owners: state.db.owners,
-    unit: state.db.unit,
-  };
-};
-export default withRouter(
-  connect(mapStateToProps, { getOwners, getUnitById })(UnitForm)
-);
+
+export default UnitForm;

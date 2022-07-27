@@ -10,18 +10,14 @@ import {
   BsPersonCircle,
 } from "react-icons/bs";
 import moment from "moment-timezone";
-import { useHistory, withRouter } from "react-router-dom";
-import {
-  getActiveUnits,
-  getCalendar,
-  updateCalendar,
-  getReservationsDetail,
-} from "../../store/actions/dbActions";
-import { connect, useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
+import { updateCalendar } from "../../store/actions/dbActions";
+import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { ErrorMessage, Formik } from "formik";
 import * as Yup from "yup";
 import BackButton from "../../img/BackButton.svg";
+import { getActiveUnits, getCalendar, getReservationsDetail } from "../../API";
 
 function renderEventContent(eventInfo) {
   return (
@@ -66,6 +62,8 @@ const Calendar = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [reservationloading, setReservationLoading] = useState(false);
   const [eventsList, setEventsList] = useState([]);
   const [postsItems, setPostsItems] = useState([]);
   const [reservationItems, setReservationItems] = useState([]);
@@ -74,30 +72,36 @@ const Calendar = (props) => {
   const [reservationId, setReservationId] = useState();
   const [showCanvas, setShowCanvas] = useState(false);
   const [showModel, setShowModel] = useState(false);
+  const [units, setUnits] = useState();
+  const [calendar, setCalendar] = useState();
+  const [reservationDetail, setReservationDetail] = useState();
   const { id } = useParams();
 
-  const unitsdata = useSelector(({ db }) => db?.units);
-  const calendardata = useSelector(({ db }) => db?.calendar);
+  const calendarId = calendar?.id && calendar?.id;
 
-  const reservationDetail = useSelector(
-    ({ db }) => db?.reservationDetail?.data
-  );
-  const loading = useSelector(({ db }) => db?.reservationDetail?.loading);
-
-  const calendarId = calendardata?.data?.id && calendardata?.data?.id;
-
-  const unitData = calendardata?.data?.unit && calendardata?.data?.unit;
+  const unitData = calendar?.unit && calendar?.unit;
 
   useEffect(() => {
-    fetchData();
+    setLoading(true);
+    const activeUnitsGet = async () => {
+      const activeUnits = await getActiveUnits();
+      setUnits(activeUnits);
+    };
+    activeUnitsGet();
+    setLoading(false);
   }, []);
 
   useEffect(() => {
-    dispatch(getCalendar(id));
+    setLoading(true);
+    getCalendarlist();
+    setLoading(false);
   }, [id]);
 
-  const fetchData = () => {
-    dispatch(getActiveUnits());
+  const getCalendarlist = async () => {
+    setLoading(true);
+    const calendarList = await getCalendar(id);
+    setCalendar(calendarList);
+    setLoading(false);
   };
 
   const handleClick = (arg) => {
@@ -136,17 +140,20 @@ const Calendar = (props) => {
   };
 
   useEffect(() => {
-    if (calendardata?.loading === false && calendardata?.data) {
-      if (calendardata?.data?.days) {
-        setEventsList(Object?.values(calendardata?.data?.days));
+    setLoading(true);
+    if (calendar) {
+      if (calendar?.days) {
+        setEventsList(Object?.values(calendar?.days));
       }
-      if (calendardata?.data?.responce) {
-        setReservationList(Object?.values(calendardata?.data?.responce));
+      if (calendar?.responce) {
+        setReservationList(Object?.values(calendar?.responce));
       }
     }
-  }, [calendardata.data]);
+    setLoading(false);
+  }, [calendar]);
 
   useEffect(() => {
+    // setLoading(true);
     if (reservationList?.length) {
       const data = reservationList.map((value) => {
         return {
@@ -165,10 +172,12 @@ const Calendar = (props) => {
         };
       });
       setReservationItems(data);
+      // setLoading(false);
     }
   }, [reservationList]);
 
   useEffect(() => {
+    setLoading(true);
     if (eventsList?.length) {
       const data = eventsList
         ?.map((values) => {
@@ -187,13 +196,20 @@ const Calendar = (props) => {
         })
         .filter((res) => res);
       setPostsItems(data);
+      setLoading(false);
     }
   }, [eventsList, reservationList]);
 
   useEffect(() => {
-    if (reservationId) {
-      dispatch(getReservationsDetail(reservationId));
-    }
+    const reservationDetailGet = async () => {
+      if (reservationId) {
+        setReservationLoading(true);
+        const reservationDetail = await getReservationsDetail(reservationId);
+        setReservationDetail(reservationDetail);
+        setReservationLoading(false);
+      }
+    };
+    reservationDetailGet();
   }, [reservationId]);
 
   const validationSchema = Yup.object().shape({
@@ -221,7 +237,7 @@ const Calendar = (props) => {
       <>
         {/* Full calendar */}
         <div className="main-div">
-          {calendardata.loading ? (
+          {loading ? (
             <div className="loader" />
           ) : (
             <>
@@ -236,7 +252,7 @@ const Calendar = (props) => {
                   <option value="Select Units" selected disabled>
                     Select Units
                   </option>
-                  {unitsdata?.map((item) => (
+                  {units?.map((item) => (
                     <option value={item?.id} key={item?.id}>
                       {item?.name} {item?.address?.city}
                     </option>
@@ -281,7 +297,7 @@ const Calendar = (props) => {
               onSubmit={async (values, { setSubmitting }) => {
                 setSubmitting(true);
                 const reloadCalendar = () => {
-                  dispatch(getCalendar(id));
+                  getCalendarlist();
                 };
                 const data = await { ...values, calendarId, id };
                 dispatch(updateCalendar(data, reloadCalendar));
@@ -447,7 +463,7 @@ const Calendar = (props) => {
               onHide={handleCloseCanvas}
               placement="end"
             >
-              {!loading ? (
+              {!reservationloading ? (
                 <>
                   <Offcanvas.Header
                     closeButton
@@ -779,15 +795,4 @@ const Calendar = (props) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    units: state.db.units,
-  };
-};
-export default withRouter(
-  connect(mapStateToProps, {
-    getActiveUnits,
-    getCalendar,
-    getReservationsDetail,
-  })(Calendar)
-);
+export default Calendar;

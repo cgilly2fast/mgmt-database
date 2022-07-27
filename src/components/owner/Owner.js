@@ -1,11 +1,9 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { getOwnerById } from "../../store/actions/dbActions";
 import { Container, Row, Card, Button } from "react-bootstrap";
-import { NavLink, Link, withRouter } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import "./Owner.css";
 import BackButton from "../../img/BackButton.svg";
-// import "./Owner.css";
+import { getOwnerById } from "../../API";
 
 export class Owner extends Component {
   constructor(props) {
@@ -14,7 +12,7 @@ export class Owner extends Component {
       owner: "",
     };
   }
-  componentDidMount() {
+  async componentDidMount() {
     if (
       this.props.location &&
       this.props.location.state &&
@@ -23,9 +21,8 @@ export class Owner extends Component {
       this.setState({ owner: this.props.location.state.owner });
     } else {
       const { ownerId } = this.props.match.params;
-      this.props.getOwnerById(ownerId).then(() => {
-        this.setState({ owner: this.props.owner });
-      });
+      const ownerDataById = await getOwnerById(ownerId);
+      this.setState({ owner: ownerDataById });
     }
   }
   render() {
@@ -108,10 +105,4 @@ export class Owner extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  return {
-    owner: state.db.owner,
-  };
-};
-
-export default withRouter(connect(mapStateToProps, { getOwnerById })(Owner));
+export default Owner;

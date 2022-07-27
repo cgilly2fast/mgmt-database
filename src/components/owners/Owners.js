@@ -1,16 +1,22 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { getOwners } from "../../store/actions/dbActions";
 import { Container, Button } from "react-bootstrap";
 import OwnersRow from "../ownersRow/OwnersRow";
 import { Link } from "react-router-dom";
+import { getOwners } from "../../API";
 
 export class Owners extends Component {
-  componentDidMount() {
-    this.props.getOwners();
+  constructor(props) {
+    super(props);
+    this.state = {
+      owners: [],
+    };
+  }
+  async componentDidMount() {
+    const owner = await getOwners();
+    this.setState({ owners: owner });
   }
   render() {
-    const { owners } = this.props;
+    const { owners } = this.state;
     return (
       <div>
         <Container fluid>
@@ -25,10 +31,5 @@ export class Owners extends Component {
     );
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    owners: state.db.owners,
-  };
-};
 
-export default connect(mapStateToProps, { getOwners })(Owners);
+export default Owners;

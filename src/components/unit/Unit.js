@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { getUnitById } from "../../store/actions/dbActions";
 import { Container, Row, Nav, Card, Button, Col } from "react-bootstrap";
-import { NavLink, Link, withRouter } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import moment from "moment-timezone";
 import BackButton from "../../img/BackButton.svg";
 
 import "./Unit.css";
+import { getUnitById } from "../../API";
 
 export class Unit extends Component {
   constructor(props) {
@@ -15,7 +14,7 @@ export class Unit extends Component {
       unit: "",
     };
   }
-  componentDidMount() {
+  async componentDidMount() {
     if (
       this.props.location &&
       this.props.location.state &&
@@ -24,9 +23,8 @@ export class Unit extends Component {
       this.setState({ unit: this.props.location.state.unit });
     } else {
       const { unitId } = this.props.match.params;
-      this.props.getUnitById(unitId).then(() => {
-        this.setState({ unit: this.props.unit });
-      });
+      const unitById = await getUnitById(unitId);
+      this.setState({ unit: unitById });
     }
   }
 
@@ -252,10 +250,4 @@ export class Unit extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  return {
-    unit: state.db.unit,
-  };
-};
-
-export default withRouter(connect(mapStateToProps, { getUnitById })(Unit));
+export default Unit;

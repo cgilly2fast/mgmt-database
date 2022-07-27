@@ -1,16 +1,22 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { getTeam } from "../../store/actions/dbActions";
 import { Container, Button } from "react-bootstrap";
 import TeamRow from "../teamRow/TeamRow";
 import { Link } from "react-router-dom";
+import { getTeam } from "../../API";
 
 export class Team extends Component {
-  componentDidMount() {
-    this.props.getTeam();
+  constructor(props) {
+    super(props);
+    this.state = {
+      team: [],
+    };
+  }
+  async componentDidMount() {
+    const team = await getTeam();
+    this.setState({ team: team });
   }
   render() {
-    const { team } = this.props;
+    const { team } = this.state;
 
     return (
       <div>
@@ -26,10 +32,5 @@ export class Team extends Component {
     );
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    team: state.db.team,
-  };
-};
 
-export default connect(mapStateToProps, { getTeam })(Team);
+export default Team;

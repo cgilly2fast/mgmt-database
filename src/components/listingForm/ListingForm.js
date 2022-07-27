@@ -1,11 +1,9 @@
 import React, { Component } from "react";
 import { Form, Button, Col, Row, Alert } from "react-bootstrap";
-import { connect } from "react-redux";
 import axios from "axios";
 import ApiUrl from "../../globalVariables";
-import { getUnitById } from "../../store/actions/dbActions";
-import { withRouter } from "react-router-dom";
 import BackButton from "../../img/BackButton.svg";
+import { getUnitById } from "../../API";
 
 export class ListingForm extends Component {
   constructor(props) {
@@ -121,7 +119,7 @@ export class ListingForm extends Component {
     });
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     const { unitId, provider } = this.props.match.params;
     if (
       this.props.location &&
@@ -139,11 +137,10 @@ export class ListingForm extends Component {
     ) {
       this.setState({ form: this.props.location.state.listing });
     } else if (unitId !== undefined) {
-      this.props.getUnitById(unitId).then(() => {
-        this.setState({
-          unit: this.props.unit,
-          form: this.props.unit.listing[provider],
-        });
+      const unitDataById = await getUnitById(unitId);
+      this.setState({
+        unit: unitDataById,
+        form: unitDataById.listing[provider],
       });
     }
   }
@@ -268,11 +265,5 @@ export class ListingForm extends Component {
     );
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    unit: state.db.unit,
-  };
-};
-export default withRouter(
-  connect(mapStateToProps, { getUnitById })(ListingForm)
-);
+
+export default ListingForm;

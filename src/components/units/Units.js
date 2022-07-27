@@ -1,16 +1,22 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { getActiveUnits } from "../../store/actions/dbActions";
 import { Container, Button } from "react-bootstrap";
 import UnitRow from "../unitsRow/UnitsRow";
 import { Link } from "react-router-dom";
+import { getActiveUnits } from "../../API";
 
 export class Units extends Component {
-  componentDidMount() {
-    this.props.getActiveUnits();
+  constructor(props) {
+    super(props);
+    this.state = {
+      units: [],
+    };
+  }
+  async componentDidMount() {
+    const activeUnits = await getActiveUnits();
+    this.setState({ units: activeUnits });
   }
   render() {
-    const { units } = this.props;
+    const { units } = this.state;
     return (
       <div>
         <Container fluid>
@@ -25,10 +31,5 @@ export class Units extends Component {
     );
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    units: state.db.units,
-  };
-};
 
-export default connect(mapStateToProps, { getActiveUnits })(Units);
+export default Units;
