@@ -52,6 +52,17 @@ module.exports = class TemplateEngine{
                     return parseInt(this.data[3])
                 }
                 return (parseFloat(this.data[7])*100/parseFloat(this.data[6])*100)/10000 
+            },
+            mirror_account_code: () => {
+                const billable_to_codes = {
+                    "5552": "6000",
+                    "5553": "6285",
+                    "5554": "6540",
+                    "5555": "6320",
+                    "5556": "6640",
+                    "5559": "8400",
+                }
+                return billable_to_codes[this.data.accountCode]
             }
         }
     }

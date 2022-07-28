@@ -947,8 +947,10 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
   //   const rule = req.query
   //   let xeroInvioceResponse = {}
     let invoices = {}
+    let linkedTxnsIds = {}
+    let linkedLineItems = {}
 
-    const rulesDoc = await db.collection('accounting-rules').doc("VteS4polyi9lLTlWqlTf").get()
+    const rulesDoc = await db.collection('accounting-rules').doc(req.query.rule_id).get()
 
     if (!rulesDoc.exists) {
       res.send('No cleaner for id');
@@ -962,25 +964,102 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
     } else if(rule.type === "CLEANING") {
       const rawCleanings = await getUnpaidCleaningSheetData(rule.source_data)
       invoices = parseAccountingRuleInvoices(rule, rawCleanings);
+    } else if( rule.type === "BILLABLE_EXPENSE") {
+      const ownerDoc = await db.collection('owners').doc(req.query.owner_id).get()
+
+      if (!ownerDoc.exists) {
+        res.send('No owner for id');
+        return;
+      }  
+      const owner = ownerDoc.data()
+      let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(rule.account.account_id, undefined, undefined, undefined, owner.xero_id, 'APPROVED')
+      const linkedTxns = linkedTxnsResponse.body.linkedTransactions
+      const linkedInvoicesIds = listUniqueInvoicesIds(linkedTxnsResponse.body.linkedTransactions)
+      const getInvoicesResponse = await xero.accountingApi.getInvoices(rule.account.account_id, undefined, undefined, undefined, linkedInvoicesIds)
+      linkedLineItems = listLinkedLineItems(getInvoicesResponse.body.invoices, linkedTxns)
+      const invoices = parseBillableExpenseInvoice(linkedLineItems, owner.company_name)
+
+      for(let i = 0; i < linkedTxns.length; i++) {
+        if(linkedTxnsIds[linkedTxns[i].sourceLineItemID] === undefined) {
+          linkedTxnsIds[linkedTxns[i].sourceLineItemID] = linkedTxns[i]
+        }
+      }
     }
 
     // const newInvoices = new Invoices();
     // newInvoices.invoices = invoices;
 
     // const inviocesRes = await xero.accountingApi.createInvoices(
-    //   xeroTenantId,
+    //   rule.account.account_id,
     //   newInvoices,
     //   false,
     //   4
     // );
-    // xeroInvioceResponse = inviocesRes.response.body.Invoices;
-      // get source data
-      // parse invoice(data, AccountingRule)
-      //send invoice to xero
+    // xeroInvioces = inviocesRes.response.body.Invoices;
     
-    // if billable create linked transactions in invoice
+    if(rule.billable) {
+      for (let i = 0; i < xeroInvioces.length; i++) {
+        const invoiceId = xeroInvioces[i].InvoiceID;
+        const lineItems = xeroInvioces[i].LineItems;
 
-    // else if mirror 
+        for (let j = 0; j < lineItems.length; j++) {
+          const unitName = lineItems[j].Tracking[0].Option;
+
+          if (rule.units_billable[unitName] !== undefined) {
+    
+            const linkedRes = await xero.accountingApi.createLinkedTransaction(
+              rule.account.account_id,
+              {
+                sourceTransactionID: invoiceId,
+                sourceLineItemID: lineItems[j].LineItemID,
+                contactID: rule.units_billable[unitName].bill_to,
+              }
+            );
+            //console.log("linkedRes", linkedRes.response.statusCode);
+          }
+        }
+      }
+    } else if( rule.type === "BILLABLE_EXPENSE") {
+      for (let k = 0; k < xeroInvioces.length; k++) {
+        for (let j = 0; j < xeroInvioces[k].LineItems.length; j++) {    
+          for (let i = 0; i < linkedLineItems.length; i++) {
+            if(linkedLineItems[i].description === xeroInvioces[k].LineItems[j].Description 
+              && linkedLineItems[i].quantity === xeroInvioces[k].LineItems[j].Quantity 
+              && linkedLineItems[i].unitAmount === xeroInvioces[k].LineItems[j].UnitAmount) {
+                const linkedTransactions = [{
+                  targetTransactionID: xeroInvioces[k].InvoiceID,
+                  targetLineItemID: xeroInvioces[k].LineItems[j].LineItemID}]
+                  console.log(linkedTransactions)
+                const linkedRes = await xero.accountingApi.updateLinkedTransaction(
+                  xeroTenantId,
+                  linkedTxnsIds[linkedLineItems[i].lineItemID].linkedTransactionID,
+                  {linkedTransactions:linkedTransactions}
+                );
+            }
+          }
+        }
+      }
+    }
+
+    if(rule.mirror ) {
+      const mirror_invoice = []
+      try {
+        if( rule.type === "BILLABLE_EXPENSE") {
+          mirror_invoice = await parseMirrorInvoices(rule, linkedLineItems)
+        }
+
+        const newInvoices = new Invoices();
+        newInvoices.invoices = invoices;
+
+        const inviocesRes = await xero.accountingApi.createInvoices(
+          rule.mirror_account.account_id,
+          newInvoices,
+          false,
+          4
+        );
+        xeroInvioces = inviocesRes.response.body.Invoices;
+      } catch (e) {}
+    } 
       // create mirror transactions
 
     // if email reciept
@@ -992,13 +1071,6 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
 })
 
 function parseAccountingRuleInvoices(rule, data) {
-  // const teammateSnapshot = await db.collection('team').where("uuid", "==", rule.invoice.contact.id).get()
-
-  // if (teammateSnapshot.empty) {
-  //   res.send('No teammember for id');
-  //   return;
-  // }  
-  //const teammate = teammateSnapshot.docs[0].data()
   const TemplateEngine = require("./template-engine")
   const templateEngine = new TemplateEngine(rule)
 
@@ -1015,33 +1087,97 @@ function parseAccountingRuleInvoices(rule, data) {
     lineItems: [
     ],
   };
-  if(rule.type === "ACCPAY") {
+  if(rule.invoice.type === "ACCPAY") {
     jsonXeroData.invoiceNumber = templateEngine.exec(rule.invoice.reference,)
   } else {
     jsonXeroData.reference = templateEngine.exec(rule.invoice.reference)
   }
 
   for (let i = 0; i < data.length; i++) {
+    const unit_name = templateEngine.exec("<%unit_name%>", data[i])
+    if( !rule.filter || (rule.filter && rule.units_filter[unit_name] !== undefined) ) {
+      let accountCode = ""
+      if(rule.billable && rule.billable_units[unit_name] !== undefined) {
+        accountCode = rule.billable_units[unit_name].account_code
+      } else {
+        accountCode = rule.invoice.line_items.account_code
+      }
+      jsonXeroData.lineItems.push({
+        // item: data[i][14],
+        
+        description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
+        quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
+        unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+        accountCode: accountCode,
+        tracking: [
+          {
+            name: rule.invoice.line_items.tracking[0].name,
+            option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
+          },
+          {
+            name: rule.invoice.line_items.tracking[1].name,
+            option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
+          },
+        ],
+      });
+    }
     
-    jsonXeroData.lineItems.push({
-      // item: data[i][14],
-      
-      description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
-      quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
-      unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
-      accountCode: rule.invoice.line_items.account_code,
-      tracking: [
-        {
-          name: rule.invoice.line_items.tracking[0].name,
-          option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
-        },
-        {
-          name: rule.invoice.line_items.tracking[1].name,
-          option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
-        },
-      ],
-    });
-      
+  }
+
+  return [jsonXeroData];
+}
+
+function parseMirrorInvoices(rule, data) {
+  const TemplateEngine = require("./template-engine")
+  const templateEngine = new TemplateEngine(rule)
+
+  let jsonXeroData =  {
+    type: rule.mirror_invoice.type,
+    contact: {
+      name: rule.mirror_invoice.contact.name,
+    },
+    currencyCode: rule.mirror_invoice.currency,
+    status: "AUTHORISED", //DRAFT
+    lineAmountTypes: "NoTax",
+    date: templateEngine.exec(rule.mirror_invoice.date),
+    dueDate: templateEngine.exec(rule.mirror_invoice.due_date),
+    lineItems: [
+    ],
+  };
+  if(rule.mirror_invoice.type === "ACCPAY") {
+    jsonXeroData.invoiceNumber = templateEngine.exec(rule.mirror_invoice.reference,)
+  } else {
+    jsonXeroData.reference = templateEngine.exec(rule.mirror_invoice.reference)
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    // const unit_name = templateEngine.exec("<%unit_name%>", data[i])
+    //if( !rule.filter || (rule.filter && rule.units_filter[unit_name] !== undefined) ) {
+      // let accountCode = ""
+      // if(rule.billable && rule.billable_units[unit_name] !== undefined) {
+      //   accountCode = rule.billable_units[unit_name].account_code
+      // } else {
+      //   accountCode = rule.mirror_invoice.line_items.account_code
+      // }
+      jsonXeroData.lineItems.push({
+        // item: data[i][14],
+        
+        description: templateEngine.exec(rule.mirror_invoice.line_items.description, data[i]) ,
+        quantity: templateEngine.exec(rule.mirror_invoice.line_items.quantity, data[i]),
+        unitAmount: templateEngine.exec(rule.mirror_invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+        accountCode: rule.mirror_invoice.line_items.account_code,
+        tracking: [
+          {
+            name: rule.mirror_invoice.line_items.tracking[0].name,
+            option: templateEngine.exec(rule.mirror_invoice.line_items.tracking[0].option),
+          },
+          {
+            name: rule.mirror_invoice.line_items.tracking[1].name,
+            option: templateEngine.exec(rule.mirror_invoice.line_items.tracking[1].option),
+          },
+        ],
+      });
+    //}
     
   }
 
@@ -1072,13 +1208,13 @@ exports.createBillableExpenseInvoice  = functions.https.onRequest(async (req, re
   } 
   try {
       
-      const ownerSnapshot = await db.collection('owners').where("uuid", "==", req.query.owner_id).get()
+      const ownerDoc = await db.collection('owners').doc(req.query.owner_id).get()
 
-      if (ownerSnapshot.empty) {
+      if (!ownerDoc.exists) {
         res.send('No owner for id');
         return;
       }  
-      const owner = ownerSnapshot.docs[0].data()
+      const owner = ownerDoc.data()
       
       
       let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(xeroTenantId, undefined, undefined, undefined, owner.xero_id, 'APPROVED')
@@ -1127,13 +1263,11 @@ exports.createBillableExpenseInvoice  = functions.https.onRequest(async (req, re
                 linkedTxnsIds[linkedLineItems[i].lineItemID].linkedTransactionID,
                 {linkedTransactions:linkedTransactions}
               );
-              console.log(linkedRes.body)
-              
           }
         }
       }
 
-      res.send(linkedTxns);
+      res.send(linkedLineItems);
       //res.send(invoices)
       
     } catch (err) {
@@ -1215,7 +1349,7 @@ exports.templatingTest = functions.https.onRequest(async (req, res) => {
   const TemplateEngine = require("./template-engine")
   
 
-  const rulesDoc = await db.collection('accounting-rules').doc("NOnwEZ1q3FjqIvytzXzs").get()
+  const rulesDoc = await db.collection('variables').doc("segment-codes").get()
 
   if (!rulesDoc.exists) {
     res.send('No cleaner for id');
@@ -1223,8 +1357,6 @@ exports.templatingTest = functions.https.onRequest(async (req, res) => {
   }  
   const rule = rulesDoc.data()
   
-  const rawHours = await getHoursSheetData(rule.source_data)
-  let templateEngine = new TemplateEngine(rule, rawHours)
 
-  res.send(templateEngine.exec("Cleaning on <%work_date%> at <%work_description%>"))
+  res.send(rule[10])
 })
