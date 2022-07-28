@@ -11,13 +11,16 @@ import {
 } from "react-icons/bs";
 import moment from "moment-timezone";
 import { useHistory } from "react-router-dom";
-import { updateCalendar } from "../../store/actions/dbActions";
-import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { ErrorMessage, Formik } from "formik";
 import * as Yup from "yup";
 import BackButton from "../../img/BackButton.svg";
-import { getActiveUnits, getCalendar, getReservationsDetail } from "../../API";
+import {
+  getActiveUnits,
+  getCalendar,
+  getReservationsDetail,
+  updateCalendar,
+} from "../../API";
 
 function renderEventContent(eventInfo) {
   return (
@@ -59,7 +62,6 @@ function renderEventContent(eventInfo) {
 }
 
 const Calendar = (props) => {
-  const dispatch = useDispatch();
   const history = useHistory();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -92,16 +94,16 @@ const Calendar = (props) => {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
+    // setLoading(true);
     getCalendarlist();
-    setLoading(false);
+    // setLoading(false);
   }, [id]);
 
   const getCalendarlist = async () => {
-    setLoading(true);
+    // setLoading(true);
     const calendarList = await getCalendar(id);
     setCalendar(calendarList);
-    setLoading(false);
+    // setLoading(false);
   };
 
   const handleClick = (arg) => {
@@ -300,7 +302,7 @@ const Calendar = (props) => {
                   getCalendarlist();
                 };
                 const data = await { ...values, calendarId, id };
-                dispatch(updateCalendar(data, reloadCalendar));
+                updateCalendar(data, reloadCalendar);
                 setShow(false);
                 setSubmitting(false);
               }}

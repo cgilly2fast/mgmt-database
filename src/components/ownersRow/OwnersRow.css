@@ -1,6 +1,21 @@
 .profile_icon {
   width: 40px;
-  height: 40px;
+  height: 30px;
   border-radius: 2px;
   margin-right: 8px;
+}
+
+.owners-list-div {
+  display: flex;
+  max-width: 50%;
+  justify-content: space-between;
+}
+
+.owners-row :hover {
+  background: #adadad;
+  border-radius: 5px;
+}
+
+.owners-pic-name-div:hover {
+  text-decoration: none;
 }

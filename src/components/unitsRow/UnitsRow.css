@@ -10,3 +10,18 @@
   border-radius: 2px;
   margin-right: 8px;
 }
+
+.units-div {
+  display: flex;
+  max-width: 50%;
+  justify-content: space-between;
+}
+
+.units-row :hover {
+  background: #adadad;
+  border-radius: 5px;
+}
+
+.units-pic-name-div:hover {
+  text-decoration: none;
+}

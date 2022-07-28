@@ -276,10 +276,10 @@ exports.checkSignup = functions.https.onRequest(async (req, res) => {
 exports.getConnections = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
-      const snapshot = await db.collection("connections").get();
+      const snapshot = await db.collection("accounts").get();
       let data = [];
       snapshot.forEach((doc) => {
-        data.push(doc.data());
+        data.push({ ...doc.data(), id: doc.id });
       });
       res.send(data);
     } catch (err) {
