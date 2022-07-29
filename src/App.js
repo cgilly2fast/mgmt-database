@@ -24,6 +24,8 @@ import Map from "./components/map/Map";
 import Accounting from "./components/accounting/Accounting";
 import Rules from "./components/rules/Rules";
 import AccountingRulesForm from "./components/accountingRulesForm/AccountingRulesForm";
+import AllMessages from "./components/allMessages/AllMessages";
+import Chat from "./components/chat/Chat";
 
 export default class App extends Component {
   render() {
@@ -47,6 +49,12 @@ export default class App extends Component {
                 path="/accounting-connections"
                 component={Accounting}
               />
+              <PrivateRoute
+                exact
+                path="/inbox/segments"
+                component={AllMessages}
+              />
+              <PrivateRoute exact path="/inbox/thread/:id" component={Chat} />
               <PrivateRoute exact path="/unit/create" component={UnitForm} />
               <PrivateRoute exact path="/unit/:unitId" component={Unit} />
               <PrivateRoute

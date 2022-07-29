@@ -20,6 +20,7 @@ import {
   BsTextIndentRight,
   BsXLg,
   BsCalculator,
+  BsEnvelope,
 } from "react-icons/bs";
 import "react-pro-sidebar/dist/css/styles.css";
 
@@ -111,6 +112,38 @@ export default function Sidebar({ menuCollapse, setMenuCollapse }) {
               <MenuItem>
                 <Link to="/rules" style={{ color: "#000" }}>
                   Rules
+                </Link>
+              </MenuItem>
+            </SubMenu>
+
+            <SubMenu title="Inbox" icon={<BsEnvelope />}>
+              <MenuItem className="dropdown-menu-list mb-3">
+                <Link to="/inbox/segments" style={{ color: "#000" }}>
+                  All Messages
+                </Link>
+              </MenuItem>
+
+              <MenuItem>
+                <Link to="/rules" style={{ color: "#000" }}>
+                  Unread Messages
+                </Link>
+              </MenuItem>
+
+              <MenuItem>
+                <Link to="/rules" style={{ color: "#000" }}>
+                  Awaiting Reply
+                </Link>
+              </MenuItem>
+
+              <MenuItem>
+                <Link to="/rules" style={{ color: "#000" }}>
+                  Resovled
+                </Link>
+              </MenuItem>
+
+              <MenuItem>
+                <Link to="/rules" style={{ color: "#000" }}>
+                  Starred
                 </Link>
               </MenuItem>
             </SubMenu>
