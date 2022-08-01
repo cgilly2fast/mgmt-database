@@ -59,10 +59,15 @@
   .pro-sidebar-header {
   margin-bottom: 30px;
 }
-@media (max-width: 320px) {
+@media (max-width: 768px) {
   #header .pro-sidebar {
     width: 80px !important;
     min-width: 80px !important;
+  }
+}
+@media (max-width: 425px) {
+  #header .pro-sidebar {
+    display: none;
   }
 }
 

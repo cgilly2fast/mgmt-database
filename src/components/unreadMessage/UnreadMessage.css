@@ -5,12 +5,6 @@
   margin: 0;
 }
 
-@media (max-width: 425px) {
-  .all-message {
-    margin-bottom: 10px !important;
-  }
-}
-
 .search-bar {
   display: flex;
   justify-content: flex-start;
@@ -18,40 +12,10 @@
   width: 25%;
 }
 
-@media (max-width: 1440px) {
-  .search-bar {
-    width: 30% !important;
-  }
-}
-
-@media (max-width: 1024px) {
-  .search-bar {
-    width: 45% !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .search-bar {
-    width: 50% !important;
-  }
-}
-
-@media (max-width: 425px) {
-  .search-bar {
-    width: 100% !important;
-  }
-}
-
 .main-div {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
-}
-
-@media (max-width: 425px) {
-  .main-div {
-    display: block !important;
-  }
 }
 
 .inbox-list-row {

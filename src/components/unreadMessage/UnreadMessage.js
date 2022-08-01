@@ -1,8 +1,8 @@
 import React from "react";
 import { Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
-import "./AllMessages.css";
 import { BsSearch } from "react-icons/bs";
 import { Link } from "react-router-dom";
+import "./UnreadMessage.css";
 
 const mailList = [
   {
@@ -31,11 +31,11 @@ const mailList = [
   },
 ];
 
-const AllMessages = () => {
+const UnreadMessage = () => {
   return (
     <>
       <div className="main-div">
-        <h4 className="all-message">All Messages</h4>
+        <h4 className="all-message">Unread Messages</h4>
         <div className="search-bar">
           <Form.Control
             placeholder="Search for reservation code or guest name..."
@@ -98,7 +98,6 @@ const AllMessages = () => {
                       <p style={{ margin: "11px 0px" }}>an hour ago</p>
                     </OverlayTrigger>
                   </div>
-                  {/* </div> */}
                 </Link>
               </div>
             </Row>
@@ -109,4 +108,4 @@ const AllMessages = () => {
   );
 };
 
-export default AllMessages;
+export default UnreadMessage;

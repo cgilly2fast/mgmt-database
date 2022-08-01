@@ -26,6 +26,7 @@ import Rules from "./components/rules/Rules";
 import AccountingRulesForm from "./components/accountingRulesForm/AccountingRulesForm";
 import AllMessages from "./components/allMessages/AllMessages";
 import Chat from "./components/chat/Chat";
+import UnreadMessage from "./components/unreadMessage/UnreadMessage";
 
 export default class App extends Component {
   render() {
@@ -38,6 +39,11 @@ export default class App extends Component {
               <PrivateRoute exact path="/units" component={Units} />
               <PrivateRoute exact path="/calendar" component={SelectUnit} />
               <PrivateRoute exact path="/rules" component={Rules} />
+              <PrivateRoute
+                exact
+                path="/inbox/segments/unreadmessage"
+                component={UnreadMessage}
+              />
               <PrivateRoute
                 exact
                 path="/accounting-rules"

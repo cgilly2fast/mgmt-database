@@ -53,7 +53,7 @@
   overflow: hidden;
   white-space: nowrap;
   display: block;
-  margin-bottom: 4px;
+  /* margin-bottom: 4px; */
   padding: 0 24px;
   position: relative;
   top: 70px;
@@ -87,9 +87,45 @@
   place-content: flex-start;
   align-items: flex-start;
   width: 1180px;
-  /* margin-top: 24px; */
   top: 90%;
-  position: absolute;
+  position: fixed;
+}
+
+@media (max-width: 1440px) {
+  .text-message-input {
+    width: 835px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .text-message-input {
+    width: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .text-message-input {
+    width: 550px;
+  }
+}
+
+@media (max-width: 425px) {
+  .text-message-input {
+    width: 340px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .reservation-col {
+    display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .chat-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 .text-message-input-inner {
@@ -112,6 +148,81 @@
 }
 
 .send-button {
-  background: #d0cdd4 !important;
   border: none !important;
+}
+
+.chat-message-div {
+  margin-top: 30px;
+  padding: 0px;
+  margin-bottom: 150px;
+  height: auto;
+}
+
+.iMessage-div {
+  padding: 20px;
+  flex-direction: row;
+  box-sizing: border-box;
+  display: flex;
+  place-content: flex-start flex-end;
+  flex: 1 1 100%;
+  margin-right: 16px;
+}
+
+.senderMessage-div {
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  place-content: flex-start;
+  align-items: flex-start;
+  flex: 1 1 100%;
+  max-width: 75%;
+}
+
+@media (max-width: 425px) {
+  .senderMessage-div {
+    max-width: 100%;
+  }
+}
+
+.senderMessage-li {
+  background: #f8f7f9;
+  padding: 16px;
+  border-radius: 8px;
+  line-height: 24px;
+  transition: max-height 0.3s;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  display: flex;
+  padding: 10px;
+  width: auto;
+}
+
+.iMessage-li {
+  padding: 16px;
+  border-radius: 8px;
+  line-height: 24px;
+  transition: max-height 0.3s;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  border: 1px solid #e5e2e9;
+  display: flex;
+  padding: 10px;
+  max-width: 75%;
+}
+
+.sender-img {
+  margin-right: 16px;
+  flex: 1 1 40px;
+  box-sizing: border-box;
+  max-width: 40px;
+  min-width: 40px;
+}
+
+.i-img {
+  flex: 1 1 40px;
+  box-sizing: border-box;
+  max-width: 40px;
+  min-width: 40px;
+  order: 9;
+  margin-left: 16px;
 }

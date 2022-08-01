@@ -124,7 +124,10 @@ export default function Sidebar({ menuCollapse, setMenuCollapse }) {
               </MenuItem>
 
               <MenuItem>
-                <Link to="/rules" style={{ color: "#000" }}>
+                <Link
+                  to="/inbox/segments/unreadmessage"
+                  style={{ color: "#000" }}
+                >
                   Unread Messages
                 </Link>
               </MenuItem>

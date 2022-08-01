@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   Card,
@@ -21,11 +21,111 @@ import {
 import { FcAbout } from "react-icons/fc";
 import moment from "moment-timezone";
 
+const chat = {
+  results: [
+    {
+      sender_name: "Devan",
+      reciever_name: "Colby Gilbert",
+      message:
+        "hello 1fdsffdsfsfdfdsgffdfasfashhdsdsdgdsddi eedjdsjdlkkl dadjkhasdkjshdkdhkdfhf ddkjsadklsjkljd dljkdljdlaj djkfljfdk",
+    },
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message:
+        "hello 2 hello 1fdsffdsfsfdfdsgffdfasfashhdsdsdgdsddi eedjdsjdlkkl dadjkhasdkjshdkdhkdfhf sdsadasdasdasd dasd wdasd adas dd   dsdsddddsd dad d asddadsadas",
+    },
+
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "message to Devan",
+    },
+    {
+      sender_name: "Devan",
+      reciever_name: "Colby Gilbert",
+      message: "message to Colby Gilbert",
+    },
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "message to Devan",
+    },
+    {
+      sender_name: "Devan",
+      reciever_name: "Colby Gilbert",
+      message: "hello 1",
+    },
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "hello 2",
+    },
+
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "message to Devan",
+    },
+    {
+      sender_name: "Devan",
+      reciever_name: "Colby Gilbert",
+      message: "message to Colby Gilbert",
+    },
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "message to Devan",
+    },
+    {
+      sender_name: "Devan",
+      reciever_name: "Colby Gilbert",
+      message: "hello 1",
+    },
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "hello 2",
+    },
+
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "message to Devan",
+    },
+    {
+      sender_name: "Devan",
+      reciever_name: "Colby Gilbert",
+      message: "message to Colby Gilbert",
+    },
+    {
+      sender_name: "Colby Gilbert",
+      reciever_name: "Devan",
+      message: "message to Devan",
+    },
+  ],
+};
+
 const Chat = (props) => {
+  const [value, setValue] = useState();
+  const sender_name1 = "Devan";
+  const sender_name2 = "Colby Gilbert";
+
+  const reciever_name1 = "Devan";
+  const reciever_name2 = "Colby Gilbert";
+
+  const record = chat.results.filter(
+    (rec) =>
+      (rec.sender_name === sender_name1 &&
+        rec.reciever_name === sender_name2) ||
+      (rec.sender_name === reciever_name2 &&
+        rec.reciever_name === reciever_name1)
+  );
+
   return (
     <>
       <Row>
-        <Col lg={2} style={{ padding: "0px" }}>
+        <Col lg={2} style={{ padding: "0px" }} className="reservation-col">
           <div className="reservation-detail-main-div">
             <div className="back-button" onClick={() => props.history.goBack()}>
               <img
@@ -174,6 +274,7 @@ const Chat = (props) => {
               <textarea
                 rows={3}
                 placeholder="Add a note for this conversation"
+                style={{ width: "100%" }}
               />
             </div>
 
@@ -186,25 +287,70 @@ const Chat = (props) => {
                   width: "100%",
                 }}
               >
-                <FcAbout />&nbsp;&nbsp;
-                Report a problem
+                <FcAbout />
+                &nbsp;&nbsp; Report a problem
               </Button>
             </div>
           </div>
         </Col>
-        <Col lg={10}>
+        <Col lg={10} className="chat-col">
           <div className="chat-main-div">
             <div>
               <Row>
                 <div className="d-flex">
                   <img
                     src="https://a0.muscache.com/im/pictures/user/727a7667-cf00-46ff-a030-a52f04d2961c.jpg?aki_policy=profile_x_medium"
+                    alt="owner"
                     className="owner-image"
                   />
                   <h2>Devan</h2>
                 </div>
               </Row>
             </div>
+
+            <div className="chat-message-div">
+              {record.map((obj, i) => {
+                return (
+                  (obj.sender_name === sender_name1 && (
+                    <div className="senderMessage-div" key={i}>
+                      <div className="sender-img">
+                        <img
+                          src="https://a0.muscache.com/im/pictures/user/727a7667-cf00-46ff-a030-a52f04d2961c.jpg?aki_policy=profile_x_medium"
+                          alt="owner"
+                          style={{
+                            maxWidth: "40px",
+                            maxHeight: "40px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      </div>
+                      <li className="senderMessage-li" key={i}>
+                        {obj.message}
+                      </li>
+                    </div>
+                  )) ||
+                  (obj.sender_name === sender_name2 && (
+                    <div className="iMessage-div">
+                      <div className="i-img">
+                        <img
+                          src="https://a0.muscache.com/im/pictures/user/c1569b4e-8b69-4425-9ddf-67a15df6f5c3.jpg?aki_policy=profile_x_medium"
+                          alt="owner"
+                          style={{
+                            maxWidth: "40px",
+                            maxHeight: "40px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      </div>
+                      <li key={i} className="iMessage-li">
+                        {obj.message}
+                      </li>
+                    </div>
+                  ))
+                );
+              })}
+            </div>
+
             <div>
               <Row className="text-message-input">
                 <div className="text-message-input-inner">
@@ -212,8 +358,14 @@ const Chat = (props) => {
                     placeholder="Write a message or select a canned response"
                     style={{ border: "none", width: "70%" }}
                     className="send-message-input"
+                    onChange={(e) => setValue(e.target.value)}
                   />
-                  <Button className="send-button">Send</Button>
+                  <Button
+                    className="send-button"
+                    disabled={!value ? true : false}
+                  >
+                    Send
+                  </Button>
                 </div>
               </Row>
             </div>
