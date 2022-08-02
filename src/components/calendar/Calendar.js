@@ -238,7 +238,7 @@ const Calendar = (props) => {
       />
       <>
         {/* Full calendar */}
-        <div className="main-div">
+        <div className="main-div-calendar">
           {loading ? (
             <div className="loader" />
           ) : (
@@ -480,7 +480,7 @@ const Calendar = (props) => {
                               reservationDetail?.reservation?.guest?.picture
                             }
                             alt="guest_pic"
-                            className="guest-image"
+                            className="guest-image-calendar"
                           />
                         ) : (
                           <>
@@ -506,7 +506,7 @@ const Calendar = (props) => {
                         <img
                           src={unitData?.picture}
                           alt="property"
-                          className="property-image"
+                          className="property-image-calendar"
                         />
                       ) : null}
 

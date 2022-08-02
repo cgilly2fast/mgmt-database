@@ -3,10 +3,12 @@ import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import "./Login.css";
+import { auth } from "../../firebase";
+
 export default function Login() {
   const emailRef = useRef();
   const passwordRef = useRef();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const history = useHistory();
@@ -18,7 +20,14 @@ export default function Login() {
       setError("");
       setLoading(true);
       await login(emailRef.current.value, passwordRef.current.value);
-      history.push("/");
+      const data = await auth.currentUser?.getIdTokenResult();
+      if (data?.claims?.isAdmin === false) {
+        await logout();
+        history.push("/login");
+        setError("Only Admin allowed!");
+      } else {
+        history.push("/");
+      }
     } catch {
       setError("Failed to log in");
     }

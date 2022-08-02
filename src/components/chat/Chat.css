@@ -121,6 +121,10 @@
   }
 }
 
+.reservation-col{
+  background: #f8f7f9;
+} 
+
 @media (max-width: 1024px) {
   .chat-col {
     flex: 0 0 100% !important;

@@ -52,7 +52,7 @@ const UnreadMessage = () => {
                 <Form.Check
                   style={{ margin: "0px 10px", padding: "11px 0px" }}
                 />
-                <Link
+                {/* <Link
                   to={`/inbox/thread/${item.id}`}
                   style={{
                     color: "black",
@@ -60,45 +60,45 @@ const UnreadMessage = () => {
                     display: "flex",
                     width: "100%",
                   }}
-                >
-                  {/* <div className="d-flex" style={{width:"100%"}}> */}
-                  <div className="d-flex image-div">
-                    <img
-                      src={item?.guest_img}
-                      alt="owner"
-                      className="guest-image"
-                    />
-                  </div>
-                  <div className="guest-name-div">
-                    <Row className="guest-name-row">
-                      <span>{item?.guest_name}</span>
-                    </Row>
-                    {/* <br /> */}
-                    <span className="descripation">{item?.descripation}</span>
-                  </div>
-                  <div className="d-flex image-div">
-                    <img
-                      src={item?.property_image}
-                      alt="owner"
-                      className="property-image"
-                    />
-                  </div>
-                  <div className="guest-name-div">
-                    <span>{item?.filter_data}</span>
-                    <br />
-                    <span className="descripation">{item?.unit_name}</span>
-                  </div>
-                  <div>
-                    <OverlayTrigger
-                      placement="bottom"
-                      overlay={
-                        <Tooltip id="tooltip-disabled">July 29 2022</Tooltip>
-                      }
-                    >
-                      <p style={{ margin: "11px 0px" }}>an hour ago</p>
-                    </OverlayTrigger>
-                  </div>
-                </Link>
+                > */}
+                {/* <div className="d-flex" style={{width:"100%"}}> */}
+                <div className="d-flex image-div">
+                  <img
+                    src={item?.guest_img}
+                    alt="owner"
+                    className="guest-image"
+                  />
+                </div>
+                <div className="guest-name-div">
+                  <Row className="guest-name-row">
+                    <span>{item?.guest_name}</span>
+                  </Row>
+                  {/* <br /> */}
+                  <span className="descripation">{item?.descripation}</span>
+                </div>
+                <div className="d-flex image-div">
+                  <img
+                    src={item?.property_image}
+                    alt="owner"
+                    className="property-image"
+                  />
+                </div>
+                <div className="guest-name-div">
+                  <span>{item?.filter_data}</span>
+                  <br />
+                  <span className="descripation">{item?.unit_name}</span>
+                </div>
+                <div>
+                  <OverlayTrigger
+                    placement="bottom"
+                    overlay={
+                      <Tooltip id="tooltip-disabled">July 29 2022</Tooltip>
+                    }
+                  >
+                    <p style={{ margin: "11px 0px" }}>an hour ago</p>
+                  </OverlayTrigger>
+                </div>
+                {/* </Link> */}
               </div>
             </Row>
           );
