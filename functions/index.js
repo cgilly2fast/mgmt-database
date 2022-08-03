@@ -21,6 +21,9 @@ const {
   midnightSchedule,
   staticData,
   getConnections,
+  getThread,
+  getThreadById,
+  addMessages,
 } = require("./mgmt-functions");
 
 const {
@@ -72,3 +75,6 @@ exports.getReservationsDetail = getReservationsDetail;
 exports.midnightSchedule = midnightSchedule;
 exports.staticData = staticData;
 exports.getConnections = getConnections;
+exports.getThread = getThread;
+exports.getThreadById = getThreadById;
+exports.addMessages = addMessages;
