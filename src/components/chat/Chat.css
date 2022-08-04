@@ -89,6 +89,7 @@
   width: 1180px;
   top: 90%;
   position: fixed;
+  margin: 0px !important;
 }
 
 @media (max-width: 1440px) {
@@ -121,9 +122,9 @@
   }
 }
 
-.reservation-col{
+.reservation-col {
   background: #f8f7f9;
-} 
+}
 
 @media (max-width: 1024px) {
   .chat-col {
@@ -153,13 +154,29 @@
 
 .send-button {
   border: none !important;
+  width: 100px;
+  color: #fff;
+  background: #007bff;
+  border-radius: 24px;
+  padding: 10px;
 }
 
 .chat-message-div {
   margin-top: 30px;
   padding: 0px;
-  margin-bottom: 150px;
+  /* margin-bottom: 150px; */
   height: auto;
+  /* overflow-y: scroll; */
+  /* max-height: 750px; */
+}
+
+.chat-detail-message-div {
+  max-height: 850px;
+  overflow-y: scroll;
+}
+
+.chat-detail-message-div::-webkit-scrollbar {
+  display: none;
 }
 
 .iMessage-div {
@@ -229,4 +246,8 @@
   min-width: 40px;
   order: 9;
   margin-left: 16px;
+}
+
+.message-input:focus {
+  box-shadow: none !important;
 }

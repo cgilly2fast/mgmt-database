@@ -5,6 +5,7 @@ import { BsPersonCircle, BsSearch } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { getThread } from "../../API";
 import Loader from "../loader/Loader";
+import moment from "moment-timezone";
 
 // const mailList = [
 //   {
@@ -100,12 +101,12 @@ const AllMessages = () => {
                         </Row>
                         {/* <br /> */}
                         <span className="descripation">
-                          {item?.descripation
-                            ? item?.descripation
+                          {item?.last_message?.content
+                            ? item?.last_message?.content
                             : "Hi Addison! I hope that you have settled, and begun to unwind. Let me know if there is anything you need"}
                         </span>
                       </div>
-                      <div className="d-flex image-div">
+                      {/* <div className="d-flex image-div">
                         <img
                           src="https://a0.muscache.com/im/pictures/miso/Hosting-608638625001646805/original/665a5bc7-bd4e-4a8d-92f9-def45af46d03.jpeg?aki_policy=small"
                           alt="owner"
@@ -122,18 +123,26 @@ const AllMessages = () => {
                         <span className="descripation">
                           {item?.unit_name ? item?.unit_name : "KV905A"}
                         </span>
-                      </div>
+                      </div> */}
                       <div>
-                        <OverlayTrigger
+                        {/* <OverlayTrigger
                           placement="bottom"
                           overlay={
                             <Tooltip id="tooltip-disabled">
-                              July 29 2022
+                              {item?.last_message?.created_at &&
+                                moment(item?.last_message?.created_at)
+                                  // .utc()
+                                  .format()}
                             </Tooltip>
                           }
-                        >
-                          <p style={{ margin: "11px 0px" }}>an hour ago</p>
-                        </OverlayTrigger>
+                        > */}
+                        <p style={{ margin: "11px 0px" }}>
+                          {item?.last_message?.created_at &&
+                            moment(item?.last_message?.created_at)
+                              .utc()
+                              .format("YYYY-MM-DD HH:mm")}
+                        </p>
+                        {/* </OverlayTrigger> */}
                       </div>
                       {/* </div> */}
                     </Link>

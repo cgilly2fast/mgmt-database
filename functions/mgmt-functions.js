@@ -320,9 +320,22 @@ exports.getThreadById = functions.https.onRequest(async (req, res) => {
 exports.addMessages = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
-      const { id, value, currentUserId } = req.body;
+      const { id, message, currentUserId } = req.body;
+      await db
+        .collection("threads")
+        .doc(id)
+        .set(
+          {
+            last_message: {
+              content: message,
+              created_at: admin.firestore.FieldValue.serverTimestamp(),
+              user_id: currentUserId,
+            },
+          },
+          { merge: true }
+        );
       await db.collection("threads").doc(id).collection("messages").add({
-        content: value,
+        content: message,
         created_at: admin.firestore.FieldValue.serverTimestamp(),
         user_id: currentUserId,
       });

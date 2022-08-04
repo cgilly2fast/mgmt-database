@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   Card,
   Col,
   Form,
+  FormControl,
   OverlayTrigger,
   Row,
   Tooltip,
@@ -26,6 +27,7 @@ import { addMessages, getThreadById } from "../../API";
 import { useAuth } from "../../context/AuthContext";
 import Loader from "../loader/Loader";
 import db from "../../admin";
+import { Formik } from "formik";
 
 // const chat = {
 //   results: [
@@ -113,7 +115,6 @@ import db from "../../admin";
 // };
 
 const Chat = (props) => {
-  const [value, setValue] = useState();
   const [threadById, setThreadById] = useState();
   const [threadMessage, setThreadMessage] = useState([]);
   const [loading, setLoading] = useState();
@@ -148,19 +149,17 @@ const Chat = (props) => {
     getThreadData();
   }, []);
 
-  const handleSubmit = async () => {
-    try {
-      const currentUserId = currentUser.uid;
-      const data = { id, value, currentUserId };
-      const reloadCalendar = () => {
-        getThreadById(id);
-      };
-      setValue(null);
-      await addMessages(data);
-    } catch (error) {
-      console.log("error");
+  const messageRef = useRef();
+
+  useEffect(() => {
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+        inline: "nearest",
+      });
     }
-  };
+  }, [threadMessage]);
 
   return (
     <>
@@ -341,36 +340,37 @@ const Chat = (props) => {
           </Col>
 
           <Col lg={10} className="chat-col">
-            <div className="chat-main-div">
-              <div>
-                <Row>
-                  <div className="d-flex">
-                    {/* <img
+            <div className="chat-detail-message-div">
+              <div className="chat-main-div">
+                <div>
+                  <Row>
+                    <div className="d-flex">
+                      {/* <img
                       src="https://a0.muscache.com/im/pictures/user/727a7667-cf00-46ff-a030-a52f04d2961c.jpg?aki_policy=profile_x_medium"
                       alt="owner"
                       className="owner-image"
                     /> */}
-                    <BsPersonCircle
-                      style={{
-                        fontSize: "35px",
-                        marginRight: "20px",
-                      }}
-                    />
-                    <h2>
-                      {threadById?.guest?.first_name}{" "}
-                      {threadById?.guest?.last_name}
-                    </h2>
-                  </div>
-                </Row>
-              </div>
+                      <BsPersonCircle
+                        style={{
+                          fontSize: "35px",
+                          marginRight: "20px",
+                        }}
+                      />
+                      <h2>
+                        {threadById?.guest?.first_name}{" "}
+                        {threadById?.guest?.last_name}
+                      </h2>
+                    </div>
+                  </Row>
+                </div>
 
-              <div className="chat-message-div">
-                {threadMessage?.map((obj, i) => {
-                  return (
-                    (obj.user_id === id && (
-                      <div className="senderMessage-div" key={i}>
-                        <div className="sender-img">
-                          {/* <img
+                <div className="chat-message-div">
+                  {threadMessage?.map((obj, i) => {
+                    return (
+                      (obj.user_id === id && (
+                        <div className="senderMessage-div" key={i}>
+                          <div className="sender-img">
+                            {/* <img
                             src="https://a0.muscache.com/im/pictures/user/727a7667-cf00-46ff-a030-a52f04d2961c.jpg?aki_policy=profile_x_medium"
                             alt="owner"
                             style={{
@@ -379,21 +379,21 @@ const Chat = (props) => {
                               borderRadius: "50%",
                             }}
                           /> */}
-                          <BsPersonCircle
-                            style={{
-                              fontSize: "25px",
-                            }}
-                          />
+                            <BsPersonCircle
+                              style={{
+                                fontSize: "25px",
+                              }}
+                            />
+                          </div>
+                          <li className="senderMessage-li" key={i}>
+                            {obj.content}
+                          </li>
                         </div>
-                        <li className="senderMessage-li" key={i}>
-                          {obj.content}
-                        </li>
-                      </div>
-                    )) ||
-                    (obj.user_id === currentUser.uid && (
-                      <div className="iMessage-div">
-                        <div className="i-img">
-                          {/* <img
+                      )) ||
+                      (obj.user_id === currentUser.uid && (
+                        <div className="iMessage-div">
+                          <div className="i-img">
+                            {/* <img
                             src="https://a0.muscache.com/im/pictures/user/c1569b4e-8b69-4425-9ddf-67a15df6f5c3.jpg?aki_policy=profile_x_medium"
                             alt="owner"
                             style={{
@@ -402,37 +402,69 @@ const Chat = (props) => {
                               borderRadius: "50%",
                             }}
                           /> */}
-                          <BsPersonCircle
-                            style={{
-                              fontSize: "25px",
-                            }}
-                          />
+                            <BsPersonCircle
+                              style={{
+                                fontSize: "25px",
+                              }}
+                            />
+                          </div>
+                          <li key={i} className="iMessage-li">
+                            {obj.content}
+                          </li>
                         </div>
-                        <li key={i} className="iMessage-li">
-                          {obj.content}
-                        </li>
-                      </div>
-                    ))
-                  );
-                })}
+                      ))
+                    );
+                  })}
+                </div>
+                <div ref={messageRef} />
               </div>
-
+              
               <div>
                 <Row className="text-message-input">
                   <div className="text-message-input-inner">
-                    <Form.Control
-                      placeholder="Write a message or select a canned response"
-                      style={{ border: "none", width: "70%" }}
-                      className="send-message-input"
-                      onChange={(e) => setValue(e.target.value)}
-                    />
-                    <Button
-                      className="send-button"
-                      disabled={!value ? true : false}
-                      onClick={() => handleSubmit()}
+                    <Formik
+                      initialValues={{ message: "" }}
+                      onSubmit={async (values, { resetForm }) => {
+                        const currentUserId = currentUser.uid;
+                        const message = values?.message;
+                        const data = { id, message, currentUserId };
+                        await addMessages(data);
+                        resetForm({
+                          values: {
+                            message: "",
+                          },
+                        });
+                      }}
                     >
-                      Send
-                    </Button>
+                      {({
+                        values,
+                        isSubmitting,
+                        handleSubmit,
+                        handleChange,
+                        handleBlur,
+                      }) => (
+                        <Form onSubmit={handleSubmit} className="d-flex w-100">
+                          <FormControl
+                            type="input"
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            name="message"
+                            value={values.message}
+                            placeholder="Write a message or select a canned response"
+                            style={{ border: "none", width: "100%" }}
+                            className="message-input"
+                            autoComplete="off"
+                          />
+                          <button
+                            type="submit"
+                            className="send-button"
+                            disabled={isSubmitting}
+                          >
+                            Send
+                          </button>
+                        </Form>
+                      )}
+                    </Formik>
                   </div>
                 </Row>
               </div>

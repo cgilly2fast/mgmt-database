@@ -21,7 +21,7 @@ export default function Login() {
       setLoading(true);
       await login(emailRef.current.value, passwordRef.current.value);
       const data = await auth.currentUser?.getIdTokenResult();
-      if (data?.claims?.isAdmin === false) {
+      if (!data.claims.isAdmin) {
         await logout();
         history.push("/login");
         setError("Only Admin allowed!");
@@ -41,7 +41,11 @@ export default function Login() {
         <Card.Body>
           <h2 className="text-center mb-4">Log In</h2>
           {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
+          <Form
+            onSubmit={(e) => {
+              handleSubmit(e);
+            }}
+          >
             <Form.Group id="email">
               <Form.Label>Email</Form.Label>
               <Form.Control type="email" ref={emailRef} required />
