@@ -48,6 +48,27 @@ const AllMessages = () => {
     getThreadsData();
   }, []);
 
+  moment.updateLocale("en", {
+    relativeTime: {
+      future: "in %s",
+      past: "%s ago",
+      s: " %ds",
+      ss: "%d seconds",
+      m: "%dm",
+      mm: "%dm",
+      h: "an h",
+      hh: "%dh",
+      d: "a day",
+      dd: "%d days",
+      w: "a week",
+      ww: "%d weeks",
+      M: "a month",
+      MM: "%d months",
+      y: "a year",
+      yy: "%d years",
+    },
+  });
+
   return (
     <>
       {loading ? (
@@ -138,9 +159,7 @@ const AllMessages = () => {
                         > */}
                         <p style={{ margin: "11px 0px" }}>
                           {item?.last_message?.created_at &&
-                            moment(item?.last_message?.created_at)
-                              .utc()
-                              .format("YYYY-MM-DD HH:mm")}
+                            moment(new Date(item?.last_message?.created_at._seconds*1000)).fromNow()}
                         </p>
                         {/* </OverlayTrigger> */}
                       </div>
