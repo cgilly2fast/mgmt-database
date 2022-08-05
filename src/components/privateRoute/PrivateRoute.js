@@ -27,7 +27,7 @@ export default function PrivateRoute({ component: Component, ...rest }) {
                 width: !menuCollapse ? "80%" : "90%",
               }}
             >
-              <div style={{ paddingTop: "20px" }}>
+              <div style={{ }}>
                 <Component {...props} />
               </div>
             </div>

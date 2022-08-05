@@ -28,96 +28,15 @@ import { useAuth } from "../../context/AuthContext";
 import Loader from "../loader/Loader";
 import db from "../../admin";
 import { Formik } from "formik";
-
-// const chat = {
-//   results: [
-//     {
-//       sender_name: "Devan",
-//       reciever_name: "Colby Gilbert",
-//       message:
-//         "hello 1fdsffdsfsfdfdsgffdfasfashhdsdsdgdsddi eedjdsjdlkkl dadjkhasdkjshdkdhkdfhf ddkjsadklsjkljd dljkdljdlaj djkfljfdk",
-//     },
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message:
-//         "hello 2 hello 1fdsffdsfsfdfdsgffdfasfashhdsdsdgdsddi eedjdsjdlkkl dadjkhasdkjshdkdhkdfhf sdsadasdasdasd dasd wdasd adas dd   dsdsddddsd dad d asddadsadas",
-//     },
-
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "message to Devan",
-//     },
-//     {
-//       sender_name: "Devan",
-//       reciever_name: "Colby Gilbert",
-//       message: "message to Colby Gilbert",
-//     },
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "message to Devan",
-//     },
-//     {
-//       sender_name: "Devan",
-//       reciever_name: "Colby Gilbert",
-//       message: "hello 1",
-//     },
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "hello 2",
-//     },
-
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "message to Devan",
-//     },
-//     {
-//       sender_name: "Devan",
-//       reciever_name: "Colby Gilbert",
-//       message: "message to Colby Gilbert",
-//     },
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "message to Devan",
-//     },
-//     {
-//       sender_name: "Devan",
-//       reciever_name: "Colby Gilbert",
-//       message: "hello 1",
-//     },
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "hello 2",
-//     },
-
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "message to Devan",
-//     },
-//     {
-//       sender_name: "Devan",
-//       reciever_name: "Colby Gilbert",
-//       message: "message to Colby Gilbert",
-//     },
-//     {
-//       sender_name: "Colby Gilbert",
-//       reciever_name: "Devan",
-//       message: "message to Devan",
-//     },
-//   ],
-// };
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Chat = (props) => {
   const [threadById, setThreadById] = useState();
   const [threadMessage, setThreadMessage] = useState([]);
   const [loading, setLoading] = useState();
+  const [length, setLength] = useState({
+    items: Array.from({ length: 10 }),
+  });
   const { id } = useParams();
 
   useEffect(() => {
@@ -129,23 +48,56 @@ const Chat = (props) => {
     };
     getThreadDataById();
   }, []);
+
   const { currentUser } = useAuth();
 
-  useEffect(() => {
-    const getThreadData = async () => {
+  const getThreadData = async () => {
+    await db
+      .collection("threads")
+      .doc(id)
+      .collection("messages")
+      .orderBy("created_at", "desc")
+      .limit(length.items.length)
+      .onSnapshot((doc) => {
+        let tempData = [];
+        doc.forEach((item) => {
+          tempData.push(item.data());
+        });
+        setThreadMessage(tempData);
+        setLength({
+          items: length.items.concat(
+            Array.from({
+              length: 10,
+            })
+          ),
+        });
+      });
+    if (
+      !threadById?.last_message?.isRead &&
+      threadById?.last_message?.user_id !== currentUser?.uid
+    ) {
       await db
         .collection("threads")
         .doc(id)
-        .collection("messages")
-        .orderBy("created_at")
-        .onSnapshot((doc) => {
-          let tempData = [];
-          doc.forEach((item) => {
-            tempData.push(item.data());
-          });
-          setThreadMessage(tempData);
-        });
-    };
+        .set(
+          {
+            last_message: {
+              isRead: true,
+            },
+          },
+          { merge: true }
+        );
+    }
+  };
+
+  const fetchMoreData = async () => {
+    console.log("SDFsdf");
+    await setTimeout(() => {
+      getThreadData();
+    }, 1500);
+  };
+
+  useEffect(() => {
     getThreadData();
   }, []);
 
@@ -167,7 +119,11 @@ const Chat = (props) => {
         <Loader />
       ) : (
         <Row>
-          <Col lg={2} style={{ padding: "0px" }} className="reservation-col">
+          <Col
+            lg={2}
+            style={{ padding: "0px", height: "100vh", overflow: "auto" }}
+            className="reservation-col"
+          >
             <div className="reservation-detail-main-div">
               <div
                 className="back-button"
@@ -364,61 +320,72 @@ const Chat = (props) => {
                   </Row>
                 </div>
 
-                <div className="chat-message-div">
-                  {threadMessage?.map((obj, i) => {
-                    return (
-                      (obj.user_id === id && (
-                        <div className="senderMessage-div" key={i}>
-                          <div className="sender-img">
-                            {/* <img
-                            src="https://a0.muscache.com/im/pictures/user/727a7667-cf00-46ff-a030-a52f04d2961c.jpg?aki_policy=profile_x_medium"
-                            alt="owner"
-                            style={{
-                              maxWidth: "40px",
-                              maxHeight: "40px",
-                              borderRadius: "50%",
-                            }}
-                          /> */}
-                            <BsPersonCircle
-                              style={{
-                                fontSize: "25px",
-                              }}
-                            />
+                <div
+                  className="chat-message-div"
+                  id="scrollableDiv"
+                  style={{
+                    height: "calc(100vh - 215px)",
+                    overflow: "auto",
+                    display: "flex",
+                    flexDirection: "column-reverse",
+                  }}
+                  onScroll={(e) => {
+                    console.log("SDfsdf");
+                    if (
+                      e.target.scrollHeight ===
+                      Math.abs(e.target.scrollTop) + e.target.clientHeight
+                    ) {
+                      fetchMoreData();
+                    }
+                  }}
+                >
+                  <div 
+                    // dataLength={length?.items?.length}
+                    // next={fetchMoreData}
+                    style={{ display: "flex", flexDirection: "column-reverse" }}
+                    // inverse={false}
+                   
+                    // hasMore={true}
+                    // loader={<h4>Loading...</h4>}
+                    // scrollableTarget="scrollableDiv"
+                  >
+                    {threadMessage?.map((obj, i) => {
+                      return (
+                        (obj?.user_id === id && (
+                          <div className="senderMessage-div" key={i}>
+                            <div className="sender-img">
+                              <BsPersonCircle
+                                style={{
+                                  fontSize: "25px",
+                                }}
+                              />
+                            </div>
+                            <li className="senderMessage-li" key={i}>
+                              {obj.content}
+                            </li>
                           </div>
-                          <li className="senderMessage-li" key={i}>
-                            {obj.content}
-                          </li>
-                        </div>
-                      )) ||
-                      (obj.user_id === currentUser.uid && (
-                        <div className="iMessage-div">
-                          <div className="i-img">
-                            {/* <img
-                            src="https://a0.muscache.com/im/pictures/user/c1569b4e-8b69-4425-9ddf-67a15df6f5c3.jpg?aki_policy=profile_x_medium"
-                            alt="owner"
-                            style={{
-                              maxWidth: "40px",
-                              maxHeight: "40px",
-                              borderRadius: "50%",
-                            }}
-                          /> */}
-                            <BsPersonCircle
-                              style={{
-                                fontSize: "25px",
-                              }}
-                            />
+                        )) ||
+                        (obj?.user_id === currentUser?.uid && (
+                          <div className="iMessage-div">
+                            <div className="i-img">
+                              <BsPersonCircle
+                                style={{
+                                  fontSize: "25px",
+                                }}
+                              />
+                            </div>
+                            <li key={i} className="iMessage-li">
+                              {obj.content}
+                            </li>
                           </div>
-                          <li key={i} className="iMessage-li">
-                            {obj.content}
-                          </li>
-                        </div>
-                      ))
-                    );
-                  })}
+                        ))
+                      );
+                    })}
+                  </div>
                 </div>
                 <div ref={messageRef} />
               </div>
-              
+
               <div>
                 <Row className="text-message-input">
                   <div className="text-message-input-inner">

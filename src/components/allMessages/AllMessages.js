@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Form, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import { Form, Row } from "react-bootstrap";
 import "./AllMessages.css";
 import { BsPersonCircle, BsSearch } from "react-icons/bs";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { getThread } from "../../API";
 import Loader from "../loader/Loader";
 import moment from "moment-timezone";
+import db from "../../admin";
 
 // const mailList = [
 //   {
@@ -34,40 +35,36 @@ import moment from "moment-timezone";
 //   },
 // ];
 
-const AllMessages = () => {
+const AllMessages = (props) => {
+  const history = useHistory();
   const [thread, setThread] = useState();
   const [loading, setLoading] = useState();
 
-  useEffect(() => {
-    const getThreadsData = async () => {
-      setLoading(true);
-      const threadRef = await getThread();
-      setThread(threadRef);
-      setLoading(false);
-    };
-    getThreadsData();
-  }, []);
+  // useEffect(() => {
+  //   const getThreadsData = async () => {
+  //     setLoading(true);
+  //     const threadRef = await getThread();
+  //     setThread(threadRef);
+  //     setLoading(false);
+  //   };
+  //   getThreadsData();
+  // }, []);
 
-  moment.updateLocale("en", {
-    relativeTime: {
-      future: "in %s",
-      past: "%s ago",
-      s: " %ds",
-      ss: "%d seconds",
-      m: "%dm",
-      mm: "%dm",
-      h: "an h",
-      hh: "%dh",
-      d: "a day",
-      dd: "%d days",
-      w: "a week",
-      ww: "%d weeks",
-      M: "a month",
-      MM: "%d months",
-      y: "a year",
-      yy: "%d years",
-    },
-  });
+  useEffect(() => {
+    const getThreadDataOnSnapShot = async () => {
+      await db
+        .collection("threads")
+        .orderBy("last_message.created_at", "desc")
+        .onSnapshot((doc) => {
+          let tempData = [];
+          doc.forEach((item) => {
+            tempData.push({ ...item.data(), id: item?.id });
+          });
+          setThread(tempData);
+        });
+    };
+    getThreadDataOnSnapShot();
+  }, []);
 
   return (
     <>
@@ -88,83 +85,71 @@ const AllMessages = () => {
           <div>
             {thread?.map((item) => {
               return (
-                <Row className="inbox-list-row">
+                <Row
+                  className="inbox-list-row"
+                  onClick={() => {
+                    history.push(`/inbox/thread/${item.id}`, {
+                      id: item?.id,
+                      content: item?.last_message?.content,
+                      created_at: moment(
+                        new Date(item?.last_message?.created_at._seconds * 1000)
+                      ).fromNow(),
+                    });
+                  }}
+                  style={{
+                    background: !item?.last_message?.isRead
+                      ? "#eaf4ff"
+                      : "#fff",
+                  }}
+                >
                   <div className="inbox-list-inner-div">
                     <Form.Check
                       style={{ margin: "0px 10px", padding: "11px 0px" }}
                     />
-                    <Link
-                      to={`/inbox/thread/${item.id}`}
-                      style={{
-                        color: "black",
-                        textDecoration: "none",
-                        display: "flex",
-                        width: "100%",
-                      }}
-                    >
-                      {/* <div className="d-flex" style={{width:"100%"}}> */}
-                      <div className="d-flex image-div">
-                        {/* <img
-                          src="https://a0.muscache.com/im/pictures/user/727a7667-cf00-46ff-a030-a52f04d2961c.jpg?aki_policy=profile_x_medium"
-                          alt="owner"
-                          className="guest-image"
-                        /> */}
-                        <BsPersonCircle
-                          style={{
-                            fontSize: "30px",
-                            marginTop: "10px",
-                          }}
-                        />
-                      </div>
-                      <div className="guest-name-div">
-                        <Row className="guest-name-row">
+                    <div className="d-flex image-div">
+                      <BsPersonCircle
+                        style={{
+                          fontSize: "30px",
+                          marginTop: "10px",
+                        }}
+                      />
+                    </div>
+                    <div className="guest-name-div">
+                      <Row className="guest-name-row">
+                        {!item?.last_message?.isRead ? (
+                          <span>
+                            <b> {item?.guest?.first_name}</b>
+                          </span>
+                        ) : (
                           <span>{item?.guest?.first_name}</span>
-                        </Row>
-                        {/* <br /> */}
-                        <span className="descripation">
-                          {item?.last_message?.content
-                            ? item?.last_message?.content
-                            : "Hi Addison! I hope that you have settled, and begun to unwind. Let me know if there is anything you need"}
-                        </span>
-                      </div>
-                      {/* <div className="d-flex image-div">
-                        <img
-                          src="https://a0.muscache.com/im/pictures/miso/Hosting-608638625001646805/original/665a5bc7-bd4e-4a8d-92f9-def45af46d03.jpeg?aki_policy=small"
-                          alt="owner"
-                          className="property-image"
-                        />
-                      </div>
-                      <div className="guest-name-div">
-                        <span>
-                          {item?.filter_data
-                            ? item?.filter_data
-                            : "Check-in today"}
-                        </span>
-                        <br />
-                        <span className="descripation">
-                          {item?.unit_name ? item?.unit_name : "KV905A"}
-                        </span>
-                      </div> */}
-                      <div>
-                        {/* <OverlayTrigger
-                          placement="bottom"
-                          overlay={
-                            <Tooltip id="tooltip-disabled">
-                              {item?.last_message?.created_at &&
-                                moment(item?.last_message?.created_at)
-                                  // .utc()
-                                  .format()}
-                            </Tooltip>
-                          }
-                        > */}
-                        <p style={{ margin: "11px 0px" }}>
-                          {item?.last_message?.created_at &&
-                            moment(new Date(item?.last_message?.created_at._seconds*1000)).fromNow()}
-                        </p>
-                        {/* </OverlayTrigger> */}
-                      </div>
-                      {/* </div> */}
-                    </Link>
+                        )}
+                      </Row>
+                      <span className="descripation">
+                        {!item?.last_message?.isRead ? (
+                          <span>
+                            <b>
+                              {item?.last_message?.content &&
+                                item?.last_message?.content}
+                            </b>
+                          </span>
+                        ) : (
+                          <span>
+                            {item?.last_message?.content &&
+                              item?.last_message?.content}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div>
+                      <p style={{ margin: "11px 0px" }}>
+                        {item?.last_message?.created_at &&
+                          moment(
+                            new Date(
+                              item?.last_message?.created_at.seconds * 1000
+                            )
+                          ).fromNow()}
+                      </p>
+                    </div>
                   </div>
                 </Row>
               );
