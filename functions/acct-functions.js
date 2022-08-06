@@ -4,6 +4,9 @@ const { credentials } = require("./development_credentials");
 const { google } = require("googleapis");
 const segmentCodes = require("./segmentCodes");
 const { db } = require("./admin");
+const BigNumber = require('bignumber.js');
+const { composer } = require("googleapis/build/src/apis/composer");
+const { link } = require("fs/promises");
 
 const LOCAL = true;
 let unitsHash = {};
@@ -16,7 +19,7 @@ const redirectUrl = LOCAL
 
 const xeroTenantId = credentials.xero_tennat_id;
 const scopes =
-  "openid profile email accounting.contacts.read accounting.settings accounting.transactions offline_access";
+  "openid profile email accounting.contacts.read accounting.settings accounting.transactions offline_access accounting.reports.read";
 
   
 
@@ -61,8 +64,8 @@ exports.getAllXeroContacts  = functions.https.onRequest(async (req, res) => {
         // const newInvoices = new Invoices();
         // newInvoices.invoices = invoices;
   
-        //const contactsRes = await xero.accountingApi.getContacts(xeroTenantId)
-        const contactsRes = await xero.accountingApi.getLinkedTransactions(xeroTenantId)
+        const contactsRes = await xero.accountingApi.getContacts(xeroTenantId)
+        //const contactsRes = await xero.accountingApi.getReportsList(xeroTenantId)
         res.send(contactsRes);
         //res.send(invoices)
         
@@ -162,7 +165,8 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
       const rawXeroData = await getXeroAmazonData();
 
       const invoices = parseAmazonBills(rawXeroData);
-
+      
+      
       const newInvoices = new Invoices();
       newInvoices.invoices = invoices;
 
@@ -218,103 +222,6 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
   
 });
 
-function getXeroInvoiceData() {
-  return new Promise(function (resolve, reject) {
-    const jwt = new google.auth.JWT(
-      credentials.service_account.client_email,
-      null,
-      credentials.service_account.private_key,
-      ["https://www.googleapis.com/auth/spreadsheets"]
-    );
-
-    const request = {
-      // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
-
-      // The A1 notation of the values to retrieve.
-      range: "Xero Export!A2:AA", // TODO: Update placeholder value.
-      auth: jwt,
-      key: credentials.api_key,
-    };
-
-    const sheets = google.sheets("v4");
-    sheets.spreadsheets.values.get(request, (err, res) => {
-      if (err) {
-        console.log("Rejecting because of error");
-        reject(err);
-      } else {
-        console.log("Request successful");
-        resolve(res.data.values);
-      }
-    });
-  });
-}
-
-function parseXeroData(data) {
-  let checkExists = {};
-  let jsonXeroData = [];
-  for (let i = 0; i < data.length; i++) {
-    if (checkExists[data[i][10]] === undefined) {
-      checkExists[data[i][10]] = i;
-      jsonXeroData[i] = {
-        type: data[i][17] >= 0 ? "ACCREC" : "ACCPAY",
-        contact: {
-          name: data[i][0],
-        },
-
-        invoiceNumber: data[i][10],
-        reference: data[i][11],
-        url: "https://stinsonbeachpm.com",
-        currencyCode: "USD",
-        status: "DRAFT", //AUTHORISED
-        lineAmountTypes: "NoTax",
-        date: moment(data[i][12]).format("YYYY-MM-DD"),
-        dueDate: moment(data[i][13]).format("YYYY-MM-DD"),
-        lineItems: [
-          {
-            item: data[i][14],
-            description: data[i][15],
-            quantity: data[i][16],
-            unitAmount:
-              data[i][17] >= 0 ? data[i][17] : data[i][17].substring(1),
-            accountCode: data[i][19],
-            tracking: [
-              {
-                name: data[i][21],
-                option: data[i][22],
-              },
-              {
-                name: data[i][23],
-                option: data[i][24],
-              },
-            ],
-          },
-        ],
-      };
-    } else {
-      jsonXeroData[checkExists[data[i][10]]].lineItems.push({
-        item: data[i][14],
-        description: data[i][15],
-        quantity: data[i][16],
-        unitAmount: data[i][17],
-        accountCode: data[i][19],
-        tracking: [
-          {
-            name: data[i][21],
-            option: data[i][22],
-          },
-          {
-            name: data[i][23],
-            option: data[i][24],
-          },
-        ],
-      });
-    }
-  }
-
-  return jsonXeroData;
-}
-
 function getXeroAmazonData() {
   return new Promise(function (resolve, reject) {
     const jwt = new google.auth.JWT(
@@ -356,7 +263,6 @@ function parseAmazonBills(data) {
       data[i][10] !== "1252" &&
       data[i][6] !== "Cancelled"
     ) {
-      data[i][7] = "AMZN-" + data[i][7].substring(0, 8);
       data[i][11] = getAmazonAccountCode(data[i][17], data[i][11]);
       if (checkExists[data[i][7]] === undefined) {
         checkExists[data[i][7]] = i;
@@ -366,11 +272,11 @@ function parseAmazonBills(data) {
             name: "Amazon",
           },
 
-          invoiceNumber: data[i][7],
-          reference: "PO-" + data[i][2] + " " + data[i][17],
+          
+          invoiceNumber: "AMZN-" + data[i][7].substring(0, 8) +": " + data[i][18] +" PO-" + data[i][2] + " " + data[i][17],
           url: "https://stinsonbeachpm.com",
           currencyCode: "USD",
-          status: "DRAFT", //AUTHORISED
+          status: "AUTHORISED", //DRAFT
           lineAmountTypes: "NoTax",
           date: moment(data[i][0]).format("YYYY-MM-DD"),
           dueDate: moment(data[i][0]).add(15, "days").format("YYYY-MM-DD"),
@@ -379,7 +285,7 @@ function parseAmazonBills(data) {
               //item: data[i][14],
               description: data[i][12],
               quantity: data[i][14],
-              unitAmount: parseFloat(data[i][16]) / parseInt(data[i][14]),
+              unitAmount: BigNumber(data[i][16]).div(data[i][14]).toString(),
               accountCode: data[i][11],
               tracking: [
                 {
@@ -399,7 +305,7 @@ function parseAmazonBills(data) {
           // item: data[i][14],
           description: data[i][12],
           quantity: data[i][14],
-          unitAmount: parseFloat(data[i][16]) / parseInt(data[i][14]),
+          unitAmount: BigNumber(data[i][16]).div(data[i][14]).toString(),
           accountCode: data[i][11],
           tracking: [
             {
@@ -423,152 +329,13 @@ function getAmazonAccountCode(property, unspsc) {
   if (
     property === "11 Sierra" ||
     property === "Mouse Hole" ||
-    property === "Casita Azul"
+    property === "Casita Azul" || property === "IM1483" ||
+    property === "RA1503" || property === "IM1491" ||
+    property === "KV905A" 
   ) {
     return "5556";
   }
   return segmentCodes[unspsc.substring(0, 2)];
-}
-
-exports.uploadCleaningBills  = functions.https.onRequest(async (req, res) => {
-  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
-  const { XeroClient, Invoices } = require("xero-node");
-  const { TokenSet } = require("openid-client");
-  const xero = new XeroClient({
-    clientId: client_id,
-    clientSecret: client_secret,
-    redirectUris: [redirectUrl],
-    scopes: scopes.split(" "),
-  });
-
-  await xero.initialize();
-  
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").get()
-  // sessionSnapshot.forEach(doc => {
-  //   console.log(doc.id, '=>', doc.data().created);
-  // });
-  
-  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  let tokenSet = await xero.readTokenSet();
-
-  if (tokenSet.expired()) {
-    const validTokenSet = await xero.refreshToken();
-    await saveXeroToken(validTokenSet)
-    tokenSet = validTokenSet
-  } 
-  try {
-      const ownerSnapshot = await db.collection("owners").where("mgmt_take_cleaning_fee", "==", false).get() 
-      
-      let ownerUnitsMap = {};
-      ownerSnapshot.forEach(doc => {
-        const owner = doc.data()
-        ownerUnitsMap = {...ownerUnitsMap, ...owner.units}
-      });
-
-      const cleanerSnapshot = await db.collection('team').where("uuid", "==", req.query.cleaner_id).get()
-
-      if (cleanerSnapshot.empty) {
-        res.send('No cleaner for id');
-        return;
-      }  
-      const cleaner = cleanerSnapshot.docs[0].data()
-      const cleanerName = cleaner.first_name + " " + cleaner.last_name
-
-      const rawCleanings = await getUnpaidCleaningSheetData(cleaner.hours_sheet)
-      const invoices = parseCleaningBills(cleanerName, rawCleanings, ownerUnitsMap);
-     // const invoices = parseCleaningBills(cleanerName, req.body.cleanings, ownerUnitsMap);
-
-      const newInvoices = new Invoices();
-      newInvoices.invoices = invoices;
-
-      const inviocesRes = await xero.accountingApi.createInvoices(
-        xeroTenantId,
-        newInvoices,
-        false,
-        4
-      );
-      const xeroInvioces = inviocesRes.response.body.Invoices;
-      // // console.log("invoice length");
-      // // console.log(invoices.length);
-      
-
-      for (let i = 0; i < xeroInvioces.length; i++) {
-        const invoiceId = xeroInvioces[i].InvoiceID;
-        const lineItems = xeroInvioces[i].LineItems;
-
-        for (let j = 0; j < lineItems.length; j++) {
-          const unitName = lineItems[j].Tracking[0].Option;
-
-          if (ownerUnitsMap[unitName] !== undefined) {
-    
-            const linkedRes = await xero.accountingApi.createLinkedTransaction(
-              xeroTenantId,
-              {
-                sourceTransactionID: invoiceId,
-                sourceLineItemID: lineItems[j].LineItemID,
-                contactID: ownerUnitsMap[unitName].xero_id,
-              }
-            );
-            //console.log("linkedRes", linkedRes.response.statusCode);
-          }
-        }
-      }
-
-      res.send(inviocesRes);
-      //res.send(invoices)
-      
-    } catch (err) {
-      console.log(err);
-      res.send(err);
-    
-    }
-  
-});
-
-exports.getCleaningSheetById = functions.https.onRequest(async (req, res) => {
-  const cleanerSnapshot = await db.collection('team').where("uuid", "==", req.query).get()
-
-  if (cleanerSnapshot.empty) {
-    res.send('No cleaner for id');
-    return;
-  }  
-  const cleaner = cleanerSnapshot.docs[0].data()
-  
-  const rawCleanings = await getCleaningSheetData(cleaner.hours_sheet)
-  res.send(rawCleanings)
-})
-
-function getCleaningSheetData(hours_sheet) {
-  return new Promise(function (resolve, reject) {
-    const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(hours_sheet)[1]
-    const jwt = new google.auth.JWT(
-      credentials.service_account.client_email,
-      null,
-      credentials.service_account.private_key,
-      ["https://www.googleapis.com/auth/spreadsheets"]
-    );
-
-    const request = {
-      // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: spreadsheetId, // TODO: Update placeholder value.
-
-      // The A1 notation of the values to retrieve.
-      range: "Completed Cleanings!A2:F", // TODO: Update placeholder value.
-      auth: jwt,
-      key: credentials.api_key,
-    };
-
-    const sheets = google.sheets("v4");
-    sheets.spreadsheets.values.get(request, (err, res) => {
-      if (err) {
-        console.log("Rejecting because of error");
-        reject(err);
-      } else {
-        console.log("Request successful");
-        resolve(res.data.values);
-      }
-    });
-  });
 }
 
 function getUnpaidCleaningSheetData(hours_sheet) {
@@ -610,181 +377,6 @@ function getUnpaidCleaningSheetData(hours_sheet) {
   });
 }
 
-function parseCleaningBills(cleanerName, data, ownerUnitsMap) {
-  let jsonXeroData =  {
-    type: "ACCPAY",
-    contact: {
-      name: cleanerName,
-    },
-    invoiceNumber: "Cleaner PMT: " + cleanerName + " on " + moment(data[data.length -1][1]).format("YYYY-MM-DD"),
-    url: "https://stinsonbeachpm.com",
-    currencyCode: "USD",
-    status: "AUTHORISED", //DRAFT
-    lineAmountTypes: "NoTax",
-    date: moment(data[data.length -1][1]).format("YYYY-MM-DD"),
-    dueDate: moment(data[data.length -1][1]).add(15, "days").format("YYYY-MM-DD"),
-    lineItems: [
-    ],
-  };
-  
-  for (let i = 0; i < data.length; i++) {
-      
-    jsonXeroData.lineItems.push({
-      // item: data[i][14],
-      
-      description: "Cleaning on " + data[i][1] + " at " + data[i][2] ,
-      quantity: 1,
-      unitAmount: parseInt(data[i][3]),
-      accountCode: ownerUnitsMap[data[i][2]] == undefined? "5010": "5555",
-      tracking: [
-        {
-          name: "Property",
-          option: data[i][2],
-        },
-        {
-          name: "Channel",
-          option: "Operation Expense",
-        },
-      ],
-    });
-      
-    
-  }
-
-  return [jsonXeroData];
-}
-
-exports.uploadHoursBills  = functions.https.onRequest(async (req, res) => {
-  
-  const { XeroClient, Invoices } = require("xero-node");
-  const { TokenSet } = require("openid-client");
-  const xero = new XeroClient({
-    clientId: client_id,
-    clientSecret: client_secret,
-    redirectUris: [redirectUrl],
-    scopes: scopes.split(" "),
-  });
-
-  await xero.initialize();
-  
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
-  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  let tokenSet = await xero.readTokenSet();
-
-  if (tokenSet.expired()) {
-    const validTokenSet = await xero.refreshToken();
-    await saveXeroToken(validTokenSet)
-    tokenSet = validTokenSet
-  } 
-  try {
-
-      const teammateSnapshot = await db.collection('team').where("uuid", "==", req.query.teammate_id).get()
-
-      if (teammateSnapshot.empty) {
-        res.send('No teammate for id');
-        return;
-      }  
-      const teammate = teammateSnapshot.docs[0].data()
-      const teammateName = teammate.first_name + " " + teammate.last_name
-
-      
-      const rawHours = await getUnpaidHoursSheetData(teammate.hours_sheet)
-      const invoices = parseHoursBills(teammateName, rawHours, teammate.rate);
-     // const invoices = parseHoursBills(teammateName, req.body.cleanings, ownerUnitsMap);
-
-      const newInvoices = new Invoices();
-      newInvoices.invoices = invoices;
-
-      const inviocesRes = await xero.accountingApi.createInvoices(
-        xeroTenantId,
-        newInvoices,
-        false,
-        4
-      );
-      const xeroInvioces = inviocesRes.response.body.Invoices;
-      // // console.log("invoice length");
-      // // console.log(invoices.length);
-      
-
-      // for (let i = 0; i < xeroInvioces.length; i++) {
-      //   const invoiceId = xeroInvioces[i].InvoiceID;
-      //   const lineItems = xeroInvioces[i].LineItems;
-
-      //   for (let j = 0; j < lineItems.length; j++) {
-      //     const unitName = lineItems[j].Tracking[0].Option;
-
-      //     if (ownerUnitsMap[unitName] !== undefined) {
-    
-      //       const linkedRes = await xero.accountingApi.createLinkedTransaction(
-      //         xeroTenantId,
-      //         {
-      //           sourceTransactionID: invoiceId,
-      //           sourceLineItemID: lineItems[j].LineItemID,
-      //           contactID: ownerUnitsMap[unitName].xero_id,
-      //         }
-      //       );
-      //       //console.log("linkedRes", linkedRes.response.statusCode);
-      //     }
-      //   }
-      // }
-
-      res.send(inviocesRes);
-      //res.send(invoices)
-      
-    } catch (err) {
-      console.log(err);
-      res.send(err);
-    
-    }
-  
-});
-
-exports.getHoursSheetById = functions.https.onRequest(async (req, res) => {
-  const teammateSnapshot = await db.collection('team').where("uuid", "==", req.query.cleaner_id).get()
-
-  if (teammateSnapshot.empty) {
-    res.send('No cleaner for id');
-    return;
-  }  
-  const teammate = teammateSnapshot.docs[0].data()
-  const rawHours = await getHoursSheetData(teammate.hours_sheet)
-  res.send(rawHours)
-})
-
-function getHoursSheetData(hoursSheet) {
-  return new Promise(function (resolve, reject) {
-    const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(hoursSheet)[1]
-    const jwt = new google.auth.JWT(
-      credentials.service_account.client_email,
-      null,
-      credentials.service_account.private_key,
-      ["https://www.googleapis.com/auth/spreadsheets"]
-    );
-
-    const request = {
-      // The ID of the spreadsheet to retrieve data from.
-      spreadsheetId: spreadsheetId, // TODO: Update placeholder value.
-
-      // The A1 notation of the values to retrieve.
-      range: "Hours Log!A3:I", // TODO: Update placeholder value.
-      auth: jwt,
-      key: credentials.api_key,
-    };
-
-    const sheets = google.sheets("v4");
-    sheets.spreadsheets.values.get(request, (err, res) => {
-      if (err) {
-        console.log("Rejecting because of error");
-        reject(err);
-      } else {
-        console.log("Request successful");
-        resolve(res.data.values);
-      }
-    });
-  });
-}
-
-
 function getUnpaidHoursSheetData(hoursSheet) {
   return new Promise(function (resolve, reject) {
     const spreadsheetId = new RegExp("/spreadsheets/d/([a-zA-Z0-9-_]+)").exec(hoursSheet)[1]
@@ -822,51 +414,6 @@ function getUnpaidHoursSheetData(hoursSheet) {
       }
     });
   });
-}
-
-function parseHoursBills(teammateName, data, rate) {
-  let jsonXeroData =  {
-    type: "ACCPAY",
-    contact: {
-      name: teammateName,
-    },
-
-    invoiceNumber: "Contractor PMT: " + teammateName + " on " + moment(data[data.length -1][2]).format("YYYY-MM-DD"),
-    url: "https://stinsonbeachpm.com",
-    currencyCode: "USD",
-    status: "AUTHORISED", //DRAFT
-    lineAmountTypes: "NoTax",
-    date: moment(data[data.length -1][2]).format("YYYY-MM-DD"),
-    dueDate: moment(data[data.length -1][2]).add(15, "days").format("YYYY-MM-DD"),
-    lineItems: [
-    ],
-  };
-  
-  for (let i = 0; i < data.length; i++) {
-      
-    jsonXeroData.lineItems.push({
-      // item: data[i][14],
-      
-      description: teammateName + " on " + data[i][2] + ": " + data[i][1] ,
-      quantity: data[i][6],
-      unitAmount: (parseFloat(data[i][7])*100/parseFloat(data[i][6])*100)/10000, //GET FROM DATABASE
-      accountCode: "6110",
-      tracking: [
-        {
-          name: "Property",
-          option: "General",
-        },
-        {
-          name: "Channel",
-          option: "Operation Expense",
-        },
-      ],
-    });
-      
-    
-  }
-
-  return [jsonXeroData];
 }
 
 exports.refreshXeroConnection = functions.https.onRequest(async (req, res) => {
@@ -919,160 +466,217 @@ function saveXeroToken(xeroToken) {
 }
 
 exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
-  // const { XeroClient } = require("xero-node");
-  // const { TokenSet } = require("openid-client");
-  // const xero = new XeroClient({
-  //   clientId: client_id,
-  //   clientSecret: client_secret,
-  //   redirectUris: [redirectUrl],
-  //   scopes: scopes.split(" "),
-  // });
-
-  // await xero.initialize();
-  
-  // const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
-  // // sessionSnapshot.forEach(doc => {
-  // //   console.log(doc.id, '=>', doc.data().created);
-  // // });
-  
-  // await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  // const tokenSet = await xero.readTokenSet();
-  
-  // if (tokenSet.expired()) {
-  //   const validTokenSet = await xero.refreshToken();
-  //   await saveXeroToken(validTokenSet)
-  //   tokenSet = validTokenSet
-  // } 
-  // try {
-  //   const rule = req.query
-  //   let xeroInvioceResponse = {}
-    let invoices = {}
-    let linkedTxnsIds = {}
-    let linkedLineItems = {}
+  const { XeroClient, Invoices } = require("xero-node");
+  const { TokenSet } = require("openid-client");
+  const xero = new XeroClient({
+    clientId: client_id,
+    clientSecret: client_secret,
+    redirectUris: [redirectUrl],
+    scopes: scopes.split(" "),
+  });
+  let rule  = {}
+  try {
+    await xero.initialize();
+    
+    const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+    // sessionSnapshot.forEach(doc => {
+    //   console.log(doc.id, '=>', doc.data().created);
+    // });
+    
+    await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+    let tokenSet = await xero.readTokenSet();
+    if (tokenSet.expired()) {
+      const validTokenSet = await xero.refreshToken();
+      await saveXeroToken(validTokenSet)
+      tokenSet = validTokenSet
+    } 
 
     const rulesDoc = await db.collection('accounting-rules').doc(req.query.rule_id).get()
-
     if (!rulesDoc.exists) {
-      res.send('No cleaner for id');
+      res.send('No rule for id');
       return;
     }  
-    const rule = rulesDoc.data()
+    rule = rulesDoc.data()
+  } catch(e) {
+    console.log("Fail in init", e)
+    res.send(e)
+  }
+  let invoices = {}
+  let linkedTxnsIds = {}
+  let linkedLineItems = {}
+  try {
     if(rule.type === "HOURS"){
-      const rawHours = await getUnpaidHoursSheetData(rule.source_data)
-      invoices = parseAccountingRuleInvoices(rule, rawHours);
 
+        const rawHours = await getUnpaidHoursSheetData(rule.source_data)
+        invoices = parseAccountingRuleInvoices(rule, rawHours);
     } else if(rule.type === "CLEANING") {
-      const rawCleanings = await getUnpaidCleaningSheetData(rule.source_data)
-      invoices = parseAccountingRuleInvoices(rule, rawCleanings);
+
+        const rawCleanings = await getUnpaidCleaningSheetData(rule.source_data)
+        invoices = parseAccountingRuleInvoices(rule, rawCleanings);
+      
+      
     } else if( rule.type === "BILLABLE_EXPENSE") {
-      const ownerDoc = await db.collection('owners').doc(req.query.owner_id).get()
-
-      if (!ownerDoc.exists) {
-        res.send('No owner for id');
-        return;
-      }  
-      const owner = ownerDoc.data()
-      let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(rule.account.account_id, undefined, undefined, undefined, owner.xero_id, 'APPROVED')
-      const linkedTxns = linkedTxnsResponse.body.linkedTransactions
-      const linkedInvoicesIds = listUniqueInvoicesIds(linkedTxnsResponse.body.linkedTransactions)
-      const getInvoicesResponse = await xero.accountingApi.getInvoices(rule.account.account_id, undefined, undefined, undefined, linkedInvoicesIds)
-      linkedLineItems = listLinkedLineItems(getInvoicesResponse.body.invoices, linkedTxns)
-      const invoices = parseBillableExpenseInvoice(linkedLineItems, owner.company_name)
-
-      for(let i = 0; i < linkedTxns.length; i++) {
-        if(linkedTxnsIds[linkedTxns[i].sourceLineItemID] === undefined) {
-          linkedTxnsIds[linkedTxns[i].sourceLineItemID] = linkedTxns[i]
+      
+        let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(rule.account.account_id, undefined, undefined, undefined, rule.invoice.contact.xero_id, 'APPROVED')
+        const linkedTxns = linkedTxnsResponse.body.linkedTransactions
+        
+        const linkedTxnIds = listUniqueInvoicesIds(linkedTxnsResponse.body.linkedTransactions)
+        const getBankTxnsResponse = await getBankTxns(linkedTxnIds.bankTxnIds, rule.account.account_id, xero)
+        const getInvoicesResponse = await xero.accountingApi.getInvoices(rule.account.account_id, undefined, undefined, undefined, linkedTxnIds.invoicesIds)
+        
+        const txnLineItems = getBankTxnsResponse.concat(getInvoicesResponse.body.invoices)
+        linkedLineItems = listLinkedLineItems(txnLineItems, linkedTxns)
+        invoices = parseAccountingRuleInvoices(rule, linkedLineItems)
+      
+        for(let i = 0; i < linkedTxns.length; i++) {
+          if(linkedTxnsIds[linkedTxns[i].sourceLineItemID] === undefined) {
+            linkedTxnsIds[linkedTxns[i].sourceLineItemID] = linkedTxns[i]
+          }
         }
+      
+      } else if(rule.type === "COMMISSION") {
+        const parsedReports = await getCommissionData(rule, xero)
+        invoices = parseAccountingRuleInvoices(rule, parsedReports)
+      } else if(rule.type === "AMAZON") {
+        const rawAmazonData = await getXeroAmazonData();
+        invoices = parseAmazonBills(rawAmazonData);
+      } else if(rule.type === "CLEANING_FEES_TO_MANAGER"){
+        const parsedReports = await getCleaningRevenue(rule, xero)
+        invoices = parseAccountingRuleInvoices(rule, parsedReports)
+      } else if(rule.type === "OWNER_PAYOUT") {
+        const parsedReports = await getOnwerGrossProfit(rule, xero)
+        invoices = parseAccountingRuleInvoices(rule, parsedReports)
       }
-    }
+  } catch (e) {
+    console.log("Fail in invoice parse", e)
+    res.send(e)
+  }
+  
+  try {
+  
+    const newInvoices = new Invoices();
+    newInvoices.invoices = invoices;
 
-    // const newInvoices = new Invoices();
-    // newInvoices.invoices = invoices;
-
-    // const inviocesRes = await xero.accountingApi.createInvoices(
-    //   rule.account.account_id,
-    //   newInvoices,
-    //   false,
-    //   4
-    // );
-    // xeroInvioces = inviocesRes.response.body.Invoices;
+    const inviocesRes = await xero.accountingApi.createInvoices(
+      rule.account.account_id,
+      newInvoices,
+      false,
+      4
+      );
+    xeroInvioces = inviocesRes.response.body.Invoices;
     
-    if(rule.billable) {
-      for (let i = 0; i < xeroInvioces.length; i++) {
-        const invoiceId = xeroInvioces[i].InvoiceID;
-        const lineItems = xeroInvioces[i].LineItems;
-
-        for (let j = 0; j < lineItems.length; j++) {
-          const unitName = lineItems[j].Tracking[0].Option;
-
-          if (rule.units_billable[unitName] !== undefined) {
     
+  } catch (e) {
+    console.log("fail in creating invoice", e)
+    res.send(e)
+  }
+  
+  if(rule.billable) {
+    for (let i = 0; i < xeroInvioces.length; i++) {
+      const invoiceId = xeroInvioces[i].InvoiceID;
+      const lineItems = xeroInvioces[i].LineItems;
+
+      for (let j = 0; j < lineItems.length; j++) {
+        const unitName = lineItems[j].Tracking[0].Option;
+
+        if (rule.billable_units[unitName] !== undefined) {
+          try {
             const linkedRes = await xero.accountingApi.createLinkedTransaction(
               rule.account.account_id,
               {
                 sourceTransactionID: invoiceId,
                 sourceLineItemID: lineItems[j].LineItemID,
-                contactID: rule.units_billable[unitName].bill_to,
+                contactID: rule.billable_units[unitName].bill_to,
               }
             );
-            //console.log("linkedRes", linkedRes.response.statusCode);
+          } catch (e) {
+            console.log("Fail in billing line item",e)
+            res.send(e)
           }
+          //console.log("linkedRes", linkedRes.response.statusCode);
         }
       }
-    } else if( rule.type === "BILLABLE_EXPENSE") {
-      for (let k = 0; k < xeroInvioces.length; k++) {
-        for (let j = 0; j < xeroInvioces[k].LineItems.length; j++) {    
-          for (let i = 0; i < linkedLineItems.length; i++) {
-            if(linkedLineItems[i].description === xeroInvioces[k].LineItems[j].Description 
-              && linkedLineItems[i].quantity === xeroInvioces[k].LineItems[j].Quantity 
-              && linkedLineItems[i].unitAmount === xeroInvioces[k].LineItems[j].UnitAmount) {
-                const linkedTransactions = [{
-                  targetTransactionID: xeroInvioces[k].InvoiceID,
-                  targetLineItemID: xeroInvioces[k].LineItems[j].LineItemID}]
-                  console.log(linkedTransactions)
-                const linkedRes = await xero.accountingApi.updateLinkedTransaction(
-                  xeroTenantId,
-                  linkedTxnsIds[linkedLineItems[i].lineItemID].linkedTransactionID,
-                  {linkedTransactions:linkedTransactions}
-                );
-            }
+    }
+  } else if( rule.type === "BILLABLE_EXPENSE") {
+    for (let k = 0; k < xeroInvioces.length; k++) {
+      for (let j = 0; j < xeroInvioces[k].LineItems.length; j++) {    
+        for (let i = 0; i < linkedLineItems.length; i++) {
+          if(linkedLineItems[i].description === xeroInvioces[k].LineItems[j].Description 
+            && linkedLineItems[i].quantity === xeroInvioces[k].LineItems[j].Quantity 
+            && linkedLineItems[i].unitAmount === xeroInvioces[k].LineItems[j].UnitAmount) {
+              const linkedTransactions = [{
+                targetTransactionID: xeroInvioces[k].InvoiceID,
+                targetLineItemID: xeroInvioces[k].LineItems[j].LineItemID}]
+                try {
+                 
+                  const linkedRes = await xero.accountingApi.updateLinkedTransaction(
+                    xeroTenantId,
+                    linkedTxnsIds[linkedLineItems[i].lineItemID].linkedTransactionID,
+                    {linkedTransactions:linkedTransactions}
+                  );
+                  
+                  
+                } catch (e) {
+                  //console.log(e.response.body.Elements[0].ValidationErrors)
+                  console.log("Fail in connecting billable expense target",e)
+                  res.send(e)
+                }
           }
         }
       }
     }
-
-    if(rule.mirror ) {
-      const mirror_invoice = []
+  }
+  
+    if(rule.mirror) {
+      let mirror_invoice = []
+      
       try {
         if( rule.type === "BILLABLE_EXPENSE") {
-          mirror_invoice = await parseMirrorInvoices(rule, linkedLineItems)
+        
+          mirror_invoice = parseMirrorInvoices(rule, linkedLineItems)
+          console.log(mirror_invoice)
+            
+        } else {
+          
+          mirror_invoice = parseMirrorInvoices(rule, invoices[0].lineItems )
         }
-
-        const newInvoices = new Invoices();
-        newInvoices.invoices = invoices;
-
-        const inviocesRes = await xero.accountingApi.createInvoices(
+        
+        const newMirrorInvoices = new Invoices();
+        newMirrorInvoices.invoices = mirror_invoice;
+        
+        const mirrorInviocesRes = await xero.accountingApi.createInvoices(
           rule.mirror_account.account_id,
-          newInvoices,
+          newMirrorInvoices,
           false,
           4
         );
-        xeroInvioces = inviocesRes.response.body.Invoices;
-      } catch (e) {}
+        xeroInvioces = mirrorInviocesRes.response.body.Invoices;
+        res.send(mirrorInviocesRes)
+      } catch (e) {
+        if(e.response !== undefined) {
+          console.log(e.response.body);
+        }else {
+          console.log(e)
+        }
+        
+        res.send(e)
+      }
     } 
-      // create mirror transactions
+    
+    res.send("complete")
+    //   create mirror transactions
 
     // if email reciept
-      // create email receipt
-  // } catch (e) {
-    
-  // }
-  res.send(invoices)
+    //   create email receipt
+      
+  
+    //   res.send(rule) 
 })
 
 function parseAccountingRuleInvoices(rule, data) {
   const TemplateEngine = require("./template-engine")
   const templateEngine = new TemplateEngine(rule)
+  
 
   let jsonXeroData =  {
     type: rule.invoice.type,
@@ -1088,13 +692,19 @@ function parseAccountingRuleInvoices(rule, data) {
     ],
   };
   if(rule.invoice.type === "ACCPAY") {
-    jsonXeroData.invoiceNumber = templateEngine.exec(rule.invoice.reference,)
+    jsonXeroData.invoiceNumber = templateEngine.exec(rule.invoice.reference)
   } else {
     jsonXeroData.reference = templateEngine.exec(rule.invoice.reference)
   }
-
+  
   for (let i = 0; i < data.length; i++) {
     const unit_name = templateEngine.exec("<%unit_name%>", data[i])
+    // console.log(i)
+    // console.log( data[i].description)
+    // console.log("Total1: ", !rule.filter || (rule.filter && rule.units_filter[unit_name] !== undefined))
+    // console.log(" !rule.filter ",  !rule.filter )
+    // console.log("(rule.filter &&", (rule.filter && rule.units_filter[unit_name] !== undefined))
+    // console.log("")
     if( !rule.filter || (rule.filter && rule.units_filter[unit_name] !== undefined) ) {
       let accountCode = ""
       if(rule.billable && rule.billable_units[unit_name] !== undefined) {
@@ -1145,27 +755,19 @@ function parseMirrorInvoices(rule, data) {
     ],
   };
   if(rule.mirror_invoice.type === "ACCPAY") {
-    jsonXeroData.invoiceNumber = templateEngine.exec(rule.mirror_invoice.reference,)
+    jsonXeroData.invoiceNumber = templateEngine.exec(rule.mirror_invoice.reference)
   } else {
     jsonXeroData.reference = templateEngine.exec(rule.mirror_invoice.reference)
   }
 
-  for (let i = 0; i < data.length; i++) {
-    // const unit_name = templateEngine.exec("<%unit_name%>", data[i])
-    //if( !rule.filter || (rule.filter && rule.units_filter[unit_name] !== undefined) ) {
-      // let accountCode = ""
-      // if(rule.billable && rule.billable_units[unit_name] !== undefined) {
-      //   accountCode = rule.billable_units[unit_name].account_code
-      // } else {
-      //   accountCode = rule.mirror_invoice.line_items.account_code
-      // }
+  for (let i = 0; i < data.length; i++) {      
       jsonXeroData.lineItems.push({
         // item: data[i][14],
         
         description: templateEngine.exec(rule.mirror_invoice.line_items.description, data[i]) ,
         quantity: templateEngine.exec(rule.mirror_invoice.line_items.quantity, data[i]),
         unitAmount: templateEngine.exec(rule.mirror_invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
-        accountCode: rule.mirror_invoice.line_items.account_code,
+        accountCode: templateEngine.exec(rule.mirror_invoice.line_items.account_code, data[i]),
         tracking: [
           {
             name: rule.mirror_invoice.line_items.tracking[0].name,
@@ -1184,110 +786,23 @@ function parseMirrorInvoices(rule, data) {
   return [jsonXeroData];
 }
 
-exports.createBillableExpenseInvoice  = functions.https.onRequest(async (req, res) => {
-  
-  const { XeroClient, Invoices } = require("xero-node");
-  const { TokenSet } = require("openid-client");
-  const xero = new XeroClient({
-    clientId: client_id,
-    clientSecret: client_secret,
-    redirectUris: [redirectUrl],
-    scopes: scopes.split(" "),
-  });
-
-  await xero.initialize();
-  
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
-  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  let tokenSet = await xero.readTokenSet();
-
-  if (tokenSet.expired()) {
-    const validTokenSet = await xero.refreshToken();
-    await saveXeroToken(validTokenSet)
-    tokenSet = validTokenSet
-  } 
-  try {
-      
-      const ownerDoc = await db.collection('owners').doc(req.query.owner_id).get()
-
-      if (!ownerDoc.exists) {
-        res.send('No owner for id');
-        return;
-      }  
-      const owner = ownerDoc.data()
-      
-      
-      let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(xeroTenantId, undefined, undefined, undefined, owner.xero_id, 'APPROVED')
-
-      const linkedTxns = linkedTxnsResponse.body.linkedTransactions
-      
-      const linkedInvoicesIds = listUniqueInvoicesIds(linkedTxnsResponse.body.linkedTransactions)
-
-      const getInvoicesResponse = await xero.accountingApi.getInvoices(xeroTenantId, undefined, undefined, undefined, linkedInvoicesIds)
-
-      const linkedLineItems = listLinkedLineItems(getInvoicesResponse.body.invoices, linkedTxns)
-
-      const invoices = parseBillableExpenseInvoice(linkedLineItems, owner.company_name)
-
-      const newInvoices = new Invoices();
-      newInvoices.invoices = invoices;
-
-      const inviocesRes = await xero.accountingApi.createInvoices(
-        xeroTenantId,
-        newInvoices,
-        false,
-        4
-      );
-      const xeroInvioces = inviocesRes.response.body.Invoices[0];
-
-      let linkedTxnsIds = {}
-      
-      for(let i = 0; i < linkedTxns.length; i++) {
-        if(linkedTxnsIds[linkedTxns[i].sourceLineItemID] === undefined) {
-          linkedTxnsIds[linkedTxns[i].sourceLineItemID] = linkedTxns[i]
-        }
-      }
-      
-      
-    for (let j = 0; j < xeroInvioces.LineItems.length; j++) {    
-      for (let i = 0; i < linkedLineItems.length; i++) {
-          if(linkedLineItems[i].description === xeroInvioces.LineItems[j].Description 
-            && linkedLineItems[i].quantity === xeroInvioces.LineItems[j].Quantity 
-            && linkedLineItems[i].unitAmount === xeroInvioces.LineItems[j].UnitAmount) {
-              const linkedTransactions = [{
-                targetTransactionID: xeroInvioces.InvoiceID,
-                targetLineItemID: xeroInvioces.LineItems[j].LineItemID}]
-                console.log(linkedTransactions)
-              const linkedRes = await xero.accountingApi.updateLinkedTransaction(
-                xeroTenantId,
-                linkedTxnsIds[linkedLineItems[i].lineItemID].linkedTransactionID,
-                {linkedTransactions:linkedTransactions}
-              );
-          }
-        }
-      }
-
-      res.send(linkedLineItems);
-      //res.send(invoices)
-      
-    } catch (err) {
-      console.log(err);
-      res.send(err);
-    
-    }
-  
-});
-
 function listUniqueInvoicesIds(linkedTxns){
   let LinkedInvoices = []
-  let LinkedInvoicesIds = []
+  let LinkedTxnIds = {
+    invoicesIds: [],
+    bankTxnIds: []
+  }
   for( let i =0; i < linkedTxns.length; i++) {
     if(LinkedInvoices[linkedTxns[i].sourceTransactionID] === undefined) {
+      if(linkedTxns[i].sourceTransactionTypeCode === "ACCPAY"){
+        LinkedTxnIds.invoicesIds.push(linkedTxns[i].sourceTransactionID)
+      } else {
+        LinkedTxnIds.bankTxnIds.push(linkedTxns[i].sourceTransactionID)
+      }
       LinkedInvoices[linkedTxns[i].sourceTransactionID] = linkedTxns[i]
-      LinkedInvoicesIds.push(linkedTxns[i].sourceTransactionID)
-    }
+    } 
   }
-  return LinkedInvoicesIds
+  return LinkedTxnIds
 }
 
 const listLinkedLineItems = function(invoices, linkedTxns) {
@@ -1297,9 +812,9 @@ const listLinkedLineItems = function(invoices, linkedTxns) {
   for(let i = 0; i < linkedTxns.length; i++) {
     if(linkedTxnsIds[linkedTxns[i].sourceLineItemID] === undefined) {
       linkedTxnsIds[linkedTxns[i].sourceLineItemID] = true
-    }
+    } 
   }
- 
+
   for(let i = 0; i < invoices.length; i++) {
     for(let j = 0; j < invoices[i].lineItems.length;j++){
       let curId = invoices[i].lineItems[j].lineItemID
@@ -1311,52 +826,268 @@ const listLinkedLineItems = function(invoices, linkedTxns) {
   return lineItems
 }
 
-const parseBillableExpenseInvoice = function(listLinkedLineItems, ownerName) {
-  let jsonXeroData =  {
-    type: "ACCREC",
-    contact: {
-      name: ownerName,
-    },
-    currencyCode: "USD",
-    status: "AUTHORISED", //DRAFT
-    lineAmountTypes: "NoTax",
-    date: moment().subtract(1,'months').endOf('month').format('YYYY-MM-DD'),
-    dueDate: moment().subtract(1,'months').endOf('month').add(15, "days").format('YYYY-MM-DD'),
-    reference: ownerName + " Billable Expenses " +moment().subtract(1,'months').endOf('month').format('MM-YYYY'),
-    lineItems: [
-    ],
-  };
-  
+exports.templatingTest = functions.https.onRequest(async (req, res) => {
+  const { XeroClient } = require("xero-node");
+  const { TokenSet } = require("openid-client");
+  const xero = new XeroClient({
+    clientId: client_id,
+    clientSecret: client_secret,
+    redirectUris: [redirectUrl],
+    scopes: scopes.split(" "),
+  });
 
-  for (let i = 0; i < listLinkedLineItems.length; i++) {
+  await xero.initialize();
+  
+  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
+  // sessionSnapshot.forEach(doc => {
+  //   console.log(doc.id, '=>', doc.data().created);
+  // });
+  
+  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
+  let tokenSet = await xero.readTokenSet();
+  if (tokenSet.expired()) {
+    const validTokenSet = await xero.refreshToken();
+    await saveXeroToken(validTokenSet)
+    tokenSet = validTokenSet
+  } 
+
+  const rulesDoc = await db.collection('accounting-rules').doc(req.query.rule_id).get()
+
+    if (!rulesDoc.exists) {
+      res.send('No rule for id');
+      return;
+    }  
+    const rule = rulesDoc.data()
+    const trackingCatagoriesResponse = await xero.accountingApi.getBankTransaction(rule.account.account_id, "4ff81c87-20ee-4add-a638-bda3cd954f27")
+    
+    res.send(trackingCatagoriesResponse)
+})
+
+function getOnwerGrossProfit(rule, xero){
+  return new Promise(async function (resolve, reject) {
+    let trackingCatagoriesResponse = {}
+    try {
+      trackingCatagoriesResponse = await xero.accountingApi.getTrackingCategories(rule.account.account_id)
+    } catch(err) {
+      console.log(err)
+      reject("Error: getOnwerGrossProfit(): can not get tracking catagories")
+    }
+    const trackingCatagories = trackingCatagoriesResponse.body.trackingCategories
+    let searchCatagories = []
+    let catagoryId =""
+
+      for(let i = 0; i < trackingCatagories.length; i++){
+        if(trackingCatagories[i].name === "Property") {
+          catagoryId = trackingCatagories[i].trackingCategoryID
+          for(let j =0; j < trackingCatagories[i].options.length; j++) {
+            if(rule.units_filter[trackingCatagories[i].options[j].name] !== undefined){
+              searchCatagories.push(trackingCatagories[i].options[j])
+            }
+          }
+        }
+      }
       
-    jsonXeroData.lineItems.push({
-      // item: ,
-      description: listLinkedLineItems[i].description ,
-      quantity: listLinkedLineItems[i].quantity,
-      unitAmount: listLinkedLineItems[i].unitAmount, //GET FROM DATABASE
-      accountCode: "4500",
-      tracking: [
-        listLinkedLineItems[i].tracking[0],
-        
-      ],
-    });
-  }
-  return [jsonXeroData]
+      let reports = []
+      for(let i = 0; i < searchCatagories.length; i++) {
+        try {
+          
+          const plResponse = await xero.accountingApi.getReportProfitAndLoss(rule.account.account_id, moment().subtract(1,'months').startOf('month').format('YYYY-MM-DD'), moment().subtract(1,'months').endOf('month').format('YYYY-MM-DD'), undefined, undefined, catagoryId, undefined, searchCatagories[i].trackingOptionID);
+          plResponse.body.reports[0].unit_name = searchCatagories[i].name
+          reports.push(plResponse.body.reports[0])
+        } catch (err) {
+          console.log(err)
+          reject("Error: getOnwerGrossProfit(): cannot get profit and loss report")
+        }
+       
+      }
+
+      let parsedReports = []
+      for(let i = 0; i < reports.length; i++) {
+        let summary ={unit_name: reports[i].unit_name,
+                      }
+        for(let j = 0; j <reports[i].rows.length; j++){
+          let subRow1 = reports[i].rows[j]
+          if(subRow1.rowType === "Section") {
+            for(let k = 0; k < subRow1.rows.length; k++){
+              let subRow2 = subRow1.rows[k]
+              if( subRow2.cells[0].value === "Net Income") {
+                summary.profit = subRow2.cells[1].value
+              }
+            }
+            
+          }
+            
+        }
+        parsedReports.push(summary) 
+      }
+      resolve(parsedReports)
+    })
+
 }
 
-exports.templatingTest = functions.https.onRequest(async (req, res) => {
-  const TemplateEngine = require("./template-engine")
-  
+function getCleaningRevenue(rule, xero){
+  return new Promise(async function (resolve, reject) {
+    let trackingCatagoriesResponse = {}
+    try {
+      trackingCatagoriesResponse = await xero.accountingApi.getTrackingCategories(rule.account.account_id)
+    } catch(err) {
+      console.log(err)
+      reject("Error: getCommisionData(): can not get tracking catagories")
+    }
+    const trackingCatagories = trackingCatagoriesResponse.body.trackingCategories
+    let searchCatagories = []
+    let catagoryId =""
 
-  const rulesDoc = await db.collection('variables').doc("segment-codes").get()
+      for(let i = 0; i < trackingCatagories.length; i++){
+        if(trackingCatagories[i].name === "Property") {
+          catagoryId = trackingCatagories[i].trackingCategoryID
+          for(let j =0; j < trackingCatagories[i].options.length; j++) {
+            if(rule.units_filter[trackingCatagories[i].options[j].name] !== undefined){
+              searchCatagories.push(trackingCatagories[i].options[j])
+            }
+          }
+        }
+      }
+      
+      let reports = []
+      for(let i = 0; i < searchCatagories.length; i++) {
+        try {
+          
+          const plResponse = await xero.accountingApi.getReportProfitAndLoss(rule.account.account_id, moment().subtract(1,'months').startOf('month').format('YYYY-MM-DD'), moment().subtract(1,'months').endOf('month').format('YYYY-MM-DD'), undefined, undefined, catagoryId, undefined, searchCatagories[i].trackingOptionID);
+          plResponse.body.reports[0].unit_name = searchCatagories[i].name
+          reports.push(plResponse.body.reports[0])
+        } catch (err) {
+          console.log(err)
+          reject("Error: getCommisionData(): cannot get profit and loss report")
+        }
+       
+      }
 
-  if (!rulesDoc.exists) {
-    res.send('No cleaner for id');
-    return;
-  }  
-  const rule = rulesDoc.data()
-  
+      let parsedReports = []
+      for(let i = 0; i < reports.length; i++) {
+        let summary ={unit_name: reports[i].unit_name,
+                      cleaning_revenue: "0"}
+        for(let j = 0; j <reports[i].rows.length; j++){
+          let subRow1 = reports[i].rows[j]
+          if(subRow1.rowType === "Section" && subRow1.title === "Revenue") {
+            for(let k = 0; k < subRow1.rows.length; k++){
+              let subRow2 = subRow1.rows[k]
+              if( subRow2.cells[0].value === "Cleaning Fee Revenue") {
+                summary.cleaning_revenue = subRow2.cells[1].value
+              }
+            }
+            
+          }
+            
+        }
+        parsedReports.push(summary)
+        
+      }
+      // for(let i = 0; i < parsedReports.length; i++){
+      //   parsedReports[i].payout = BigNumber(parsedReports[i].revenue).minus(parsedReports[i].costs)
+      //   parsedReports[i].commission = BigNumber(parsedReports[i].payout).times(rule.commission_rate).decimalPlaces(2, 4)
+      // }
+      resolve(parsedReports)
+    })
 
-  res.send(rule[10])
-})
+}
+
+function getCommissionData(rule, xero) {
+  return new Promise(async function (resolve, reject) {
+    let trackingCatagoriesResponse = {}
+    try {
+      trackingCatagoriesResponse = await xero.accountingApi.getTrackingCategories(rule.account.account_id)
+    } catch(err) {
+      console.log(err)
+      reject("Error: getCommisionData(): can not get tracking catagories")
+    }
+    const trackingCatagories = trackingCatagoriesResponse.body.trackingCategories
+    let searchCatagories = []
+    let catagoryId =""
+
+      for(let i = 0; i < trackingCatagories.length; i++){
+        if(trackingCatagories[i].name === "Property") {
+          catagoryId = trackingCatagories[i].trackingCategoryID
+          for(let j =0; j < trackingCatagories[i].options.length; j++) {
+            if(rule.units_filter[trackingCatagories[i].options[j].name] !== undefined){
+              searchCatagories.push(trackingCatagories[i].options[j])
+            }
+          }
+        }
+      }
+      
+      let reports = []
+      for(let i = 0; i < searchCatagories.length; i++) {
+        try {
+          
+          const plResponse = await xero.accountingApi.getReportProfitAndLoss(rule.account.account_id, moment().subtract(1,'months').startOf('month').format('YYYY-MM-DD'), moment().subtract(1,'months').endOf('month').format('YYYY-MM-DD'), undefined, undefined, catagoryId, undefined, searchCatagories[i].trackingOptionID);
+          plResponse.body.reports[0].unit_name = searchCatagories[i].name
+          reports.push(plResponse.body.reports[0])
+        } catch (err) {
+          console.log(err)
+          reject("Error: getCommisionData(): cannot get profit and loss report")
+        }
+       
+      }
+
+      let parsedReports = []
+      for(let i = 0; i < reports.length; i++) {
+        let summary ={unit_name: reports[i].unit_name,
+                      revenue: "0",
+                      costs: "0"}
+        for(let j = 0; j <reports[i].rows.length; j++){
+          let subRow1 = reports[i].rows[j]
+          if(subRow1.rowType === "Section" && subRow1.title === "Revenue") {
+            summary.revenue = subRow1.rows[subRow1.rows.length-1].cells[1].value
+          }
+          if(subRow1.rowType === "Section" && subRow1.title === "Less Cost of Sales") {
+            for(let k = 0; k < subRow1.rows.length; k++){
+              let subRow2 = subRow1.rows[k]
+              if( subRow2.cells[0].value === "Rental Costs - Airbnb Service Fee") {
+                summary.costs = BigNumber(summary.costs).plus(subRow2.cells[1].value).toString()
+              }
+              // if( subRow2.cells[0].value === "Rental Costs - Vrbo Base Commission Fee") {
+              //   summary.costs = BigNumber(summary.costs).plus(subRow2.cells[1].value).toString()
+              // }
+              if( subRow2.cells[0].value === "Rental Costs - Vrbo Payment Processor Fee") {
+                summary.costs = BigNumber(summary.costs).plus(subRow2.cells[1].value).toString()
+              }
+              if( subRow2.cells[0].value === "Payment Processing Fees") {
+                summary.costs = BigNumber(summary.costs).plus(subRow2.cells[1].value).toString()
+              }
+            }
+            
+          }
+        }
+        parsedReports.push(summary)
+        
+      }
+      for(let i = 0; i < parsedReports.length; i++){
+        parsedReports[i].payout = BigNumber(parsedReports[i].revenue).minus(parsedReports[i].costs)
+        parsedReports[i].commission = BigNumber(parsedReports[i].payout).times(rule.commission_rate).decimalPlaces(2, 4)
+      }
+      resolve(parsedReports)
+    })
+
+}
+
+function getBankTxns(bankTxnIds, tennat_id, xero) {
+  return new Promise(async function (resolve, reject) {
+      let sourceTxns = []
+      for(let i = 0; i < bankTxnIds.length; i++) {
+        try {
+          
+          const getBankTransactionResponse = await xero.accountingApi.getBankTransaction(tennat_id, bankTxnIds[i])
+          
+          sourceTxns.push(getBankTransactionResponse.body.bankTransactions[0])
+        } catch (err) {
+          console.log(err)
+          reject("Error: getBankTxns(): cannot get bank transaction")
+        }
+       
+      }
+
+      
+      resolve(sourceTxns)
+    })
+}

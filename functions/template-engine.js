@@ -24,8 +24,15 @@ module.exports = class TemplateEngine{
             unit_name: () => {
                 if(this.rule.type === "CLEANING") {
                     return this.data[2]
-                } 
-                return this.data.tracking[0].name
+                } else if(this.rule.type === "HOURS" ) {
+                    return ""
+                } else if(  this.rule.type === "COMMISSION" && this.data.tracking === undefined 
+                            || this.rule.type === "CLEANING_FEES_TO_MANAGER" && this.data.tracking === undefined 
+                            || this.rule.type === "OWNER_PAYOUT") {
+                    return this.data.unit_name
+                }
+                
+                return this.data.tracking[0].option
             },
             work_date: () => {
                 
@@ -35,34 +42,83 @@ module.exports = class TemplateEngine{
                 return this.data[2]
             },
             work_description: () => {
+                if(this.rule.type === "BILLABLE_EXPENSE") {
+                    return this.data.description
+                }
                 return this.data[1]
             },
             hourly_rate: () => {
-                console.log(this.data)
                 return (parseFloat(this.data[7])*100/parseFloat(this.data[6])*100)/10000
             },
             quantity: () => {
-                if(this.rule.type === "CLEANING") {
+                if(this.rule.type === "CLEANING" || this.rule.type === "COMMISSION" || this.rule.type === "CLEANING_FEES_TO_MANAGER") {
                     return 1
-                } 
+                } else if(this.rule.type === "BILLABLE_EXPENSE") {
+                    return this.data.quantity
+                }  
                 return this.data[6]
             },
             unit_amount: () => {
                 if(this.rule.type === "CLEANING") {
                     return parseInt(this.data[3])
-                }
+                } else if(this.rule.type === "BILLABLE_EXPENSE" || this.rule.type === "COMMISSION" || this.rule.type === "CLEANING_FEES_TO_MANAGER") {
+                    return this.data.unitAmount
+                } 
                 return (parseFloat(this.data[7])*100/parseFloat(this.data[6])*100)/10000 
             },
+            commission_amount: () => {
+                return this.data.commission
+                
+            },
+            mirror_description: () => {
+                return this.data.description
+            },
+            cleanings_revenue: () => {
+                return this.data.cleaning_revenue
+            },
             mirror_account_code: () => {
+                
                 const billable_to_codes = {
+                    "5551": "5010",
                     "5552": "6000",
                     "5553": "6285",
                     "5554": "6540",
                     "5555": "6320",
                     "5556": "6640",
                     "5559": "8400",
+                    "5030": "4200",
+                    "4200": "5030",
+                    "5010": "4100",
+                    // "6900": "6640",
+                    // "6905": "6640",
+
                 }
+                
                 return billable_to_codes[this.data.accountCode]
+            },
+            mirror_contact_name: () => {
+                return this.rule.mirror_invoice.contact.name
+            },
+            end_of_last_month_m: () => {
+                return moment().subtract(1,'months').endOf('month').format('MM-YYYY')
+            },
+            last_month: () => {
+                return moment().subtract(1,'months').format('MMMM')
+            },
+            last_month_year: () => {
+                return moment().subtract(1,'months').format('YYYY')
+            },
+            commission_payout_total: () => {
+                return "$"+this.data.payout
+            },
+            commission_rate: () => {
+                return  (this.rule.commission_rate *100) + "%"
+            },
+            base_account_name: () => {
+                return this.rule.account.account
+            },
+            owner_payout: ()=> {
+                return this.data.profit
             }
         }
     }
@@ -73,6 +129,7 @@ module.exports = class TemplateEngine{
         if(data !==undefined) {
             this.setData(data)   
         }
+        template += ""
         const flags = template.match(/<%(.*?)%>/gm)
         const split = template.split(/<%(.*?)%>/gm)
         // console.log(flags[0].substring(2,flags[0].length -2))
