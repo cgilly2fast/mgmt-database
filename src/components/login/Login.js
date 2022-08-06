@@ -21,6 +21,7 @@ export default function Login() {
       setLoading(true);
       await login(emailRef.current.value, passwordRef.current.value);
       const data = await auth.currentUser?.getIdTokenResult();
+      console.log(data)
       if (!data.claims.isAdmin) {
         await logout();
         history.push("/login");

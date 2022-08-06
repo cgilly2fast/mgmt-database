@@ -143,11 +143,11 @@ export const getThreadById = async (id) => {
   }
 };
 
-// export const getConnections = async () => {
-//   try {
-//     const connection = await axios.get(ApiUrl + "/getConnections");
-//     return connection.data;
-//   } catch (error) {
-//     return error;
-//   }
-// };
+export const executeAccountingRule = async (id) => {
+  try {
+    const rule = await axios.get(ApiUrl + "/executeAccountingRule?rule_id="+ id);
+    return rule.data;
+  } catch (error) {
+    return error;
+  }
+};

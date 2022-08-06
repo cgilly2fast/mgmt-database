@@ -1,78 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Form, Modal, Table } from "react-bootstrap";
 import "./Accounting.css";
 import { BsPencil, BsArrowRight } from "react-icons/bs";
+import db from "../../admin";
+import {executeAccountingRule} from "../../API";
 
-const accountList = [
-  {
-    type: "Listing Platform",
-    platform: "Airbnb",
-    account: "colby@dipseapm.com",
-  },
-  {
-    type: "Listing Platform",
-    platform: "Vrbo",
-    account: "colby@stinsonpm.com",
-  },
-  {
-    type: "Accounting Platform",
-    platform: "Xero",
-    account: "Stinson Beach PM",
-  },
-  {
-    type: "Listing Platform",
-    platform: "Airbnb",
-    account: "colby@dipseapm.com",
-  },
-  {
-    type: "Listing Platform",
-    platform: "Vrbo",
-    account: "colby@stinsonpm.com",
-  },
-  {
-    type: "Accounting Platform",
-    platform: "Xero",
-    account: "Stinson Beach PM",
-  },
-];
 
-const connectionList = [
-  {
-    platform: "Airbnb",
-    listing_account: "colby@dipseapm.com",
-    accounting_platform: "Xero",
-    accounting_account: "Surfwood Hospitality LLC",
-  },
-  {
-    platform: "Vrbo",
-    listing_account: "colby@stinsonpm.com",
-    accounting_platform: "Xero",
-    accounting_account: "Stinson Beach PM",
-  },
-  {
-    platform: "Airbnb",
-    listing_account: "Stinson Beach PM",
-    accounting_platform: "Xero",
-    accounting_account: "Surfwood Hospitality LLC",
-  },
-  {
-    platform: "Airbnb",
-    listing_account: "colby@dipseapm.com",
-    accounting_platform: "Xero",
-    accounting_account: "Stinson Beach PM - Trust Account",
-  },
-  {
-    platform: "Airbnb",
-    listing_account: "colby@stinsonpm.com",
-    accounting_platform: "Xero",
-    accounting_account: "Stinson Beach PM",
-  },
-  {
-    platform: "Airbnb",
-    listing_account: "Stinson Beach PM",
-    accounting_platform: "Xero",
-    accounting_account: "Stinson Beach PM - Trust Account",
-  },
+const rulesList = [
+  // {
+  //   platform: "Airbnb",
+  //   listing_account: "colby@dipseapm.com",
+  //   accounting_platform: "Xero",
+  //   accounting_account: "Surfwood Hospitality LLC",
+  // },
+  // {
+  //   platform: "Vrbo",
+  //   listing_account: "colby@stinsonpm.com",
+  //   accounting_platform: "Xero",
+  //   accounting_account: "Stinson Beach PM",
+  // },
+  // {
+  //   platform: "Airbnb",
+  //   listing_account: "Stinson Beach PM",
+  //   accounting_platform: "Xero",
+  //   accounting_account: "Surfwood Hospitality LLC",
+  // },
+  // {
+  //   platform: "Airbnb",
+  //   listing_account: "colby@dipseapm.com",
+  //   accounting_platform: "Xero",
+  //   accounting_account: "Stinson Beach PM - Trust Account",
+  // },
+  // {
+  //   platform: "Airbnb",
+  //   listing_account: "colby@stinsonpm.com",
+  //   accounting_platform: "Xero",
+  //   accounting_account: "Stinson Beach PM",
+  // },
+  // {
+  //   platform: "Airbnb",
+  //   listing_account: "Stinson Beach PM",
+  //   accounting_platform: "Xero",
+  //   accounting_account: "Stinson Beach PM - Trust Account",
+  // },
 ];
 
 const Accounting = () => {
@@ -81,6 +51,35 @@ const Accounting = () => {
   const [value, setValue] = useState();
   const [model1value, setModel1Value] = useState();
   const [model2value, setModel2Value] = useState();
+  const [accountList, setAccountList] = useState();
+  const [rulesList, setRulesList] = useState()
+
+  useEffect(() => {
+    const getAccountDataOnSnapShot = async () => {
+      await db
+        .collection("accounts")
+        .onSnapshot((doc) => {
+          let tempData = [];
+          doc.forEach((item) => {
+            tempData.push({ ...item.data(), id: item?.id });
+          });
+          setAccountList(tempData);
+        });
+    };
+    const getRulesDataOnSnapShot = async () => {
+      await db
+        .collection("accounting-rules")
+        .onSnapshot((doc) => {
+          let tempData = [];
+          doc.forEach((item) => {
+            tempData.push({ ...item.data(), id: item?.id });
+          });
+          setRulesList(tempData);
+        });
+    };
+    getRulesDataOnSnapShot();
+    getAccountDataOnSnapShot();
+  }, []);
   return (
     <>
       <div>
@@ -107,6 +106,7 @@ const Accounting = () => {
             </thead>
             <tbody>
               {accountList?.map((item) => {
+  
                 return (
                   <tr>
                     <td>{item?.type}</td>
@@ -114,7 +114,7 @@ const Accounting = () => {
                     <td>{item?.account}</td>
                     <td>
                       <button type="submit" className="active-button">
-                        Active
+                      {item?.status}
                       </button>
                     </td>
                     <td>
@@ -129,46 +129,51 @@ const Accounting = () => {
       </div>
 
       <div className="account-div mb-2">
-        <h3 className="account-title">Connections</h3>
+        <h3 className="account-title">Accounting Rules</h3>
         <button
           type="submit"
           className="account-button"
           onClick={() => setStep(1)}
         >
-          +Create Connection
+          +Create Rule
         </button>
       </div>
       <div>
         <Table className="table">
           <thead>
             <tr>
-              <th>LISTING PLATFORM</th>
+              <th>STARTING PLATFORM</th>
+              <th>TYPE</th>
               <th></th>
-              <th>ACCOUNTING PLATFORM</th>
-              <th>Status</th>
+              <th>END PLATFORM</th>
+              <th></th>
               <th>Edit</th>
             </tr>
           </thead>
           <tbody>
-            {connectionList?.map((item) => {
+            {rulesList?.map((item) => {
               return (
                 <tr>
                   <td>
-                    <span>{item?.platform}</span>
+                    <span>{item?.account.account}</span>
                     <br />
-                    <span>{item?.listing_account}</span>
+                    <span>{item?.invoice.contact.name}</span>
+                  </td>
+                  <td>
+                  <span>{item?.type}</span>
+                    
                   </td>
                   <td>
                     <BsArrowRight />
                   </td>
                   <td>
-                    <span>{item?.accounting_platform}</span>
+                    <span>{item?.mirror_account?.account}</span>
                     <br />
-                    <span>{item?.accounting_account}</span>
+                    <span>{item?.mirror_invoice?.contact.name}</span>
                   </td>
                   <td>
-                    <button type="submit" className="active-button">
-                      COMPLETE
+                    <button type="submit" className="active-button" onClick={() => executeAccountingRule(item?.id)}>
+                      EXECUTE
                     </button>
                   </td>
                   <td>

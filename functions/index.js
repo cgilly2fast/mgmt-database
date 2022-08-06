@@ -38,6 +38,7 @@ const {
   refreshXeroConnection,
   createBillableExpenseInvoice,
   templatingTest,
+  executeAccountingRule
 } = require("./acct-functions");
 //const format = require("./format-functions");
 
@@ -52,6 +53,7 @@ exports.getAllXeroContacts = getAllXeroContacts;
 exports.refreshXeroConnection = refreshXeroConnection;
 exports.createBillableExpenseInvoice = createBillableExpenseInvoice;
 exports.templatingTest = templatingTest;
+exports.executeAccountingRule = executeAccountingRule
 
 exports.updateUnit = updateUnit;
 exports.createOauth = createOauth;
