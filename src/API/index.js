@@ -93,11 +93,61 @@ export const getReservationsDetail = async (id) => {
 
 export const getConnections = async () => {
   try {
-    const connection = await axios.get(
-      "http://localhost:5001/ghotels-development/us-central1/getConnections"
-    );
+    const connection = await axios.get(ApiUrl + "/getConnections");
     return connection.data;
   } catch (error) {
     return error;
   }
 };
+
+export const updateCalendar = async (data, reloadCalendar) => {
+  try {
+    const updateCalendarData = await axios.post(
+      ApiUrl + "/updateCalendar",
+      data
+    );
+    reloadCalendar();
+    return updateCalendarData.data;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const addMessages = async (data, reloadCalendar) => {
+  try {
+    const addMessagesData = await axios.post(ApiUrl + "/addMessages", data);
+    reloadCalendar();
+    return addMessagesData.data;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const getThread = async () => {
+  try {
+    const connection = await axios.get(ApiUrl + "/getThread");
+    return connection.data;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const getThreadById = async (id) => {
+  try {
+    const reservationDetail = await axios.get(
+      ApiUrl + "/getThreadById?id=" + id
+    );
+    return reservationDetail.data;
+  } catch (error) {
+    return error;
+  }
+};
+
+// export const getConnections = async () => {
+//   try {
+//     const connection = await axios.get(ApiUrl + "/getConnections");
+//     return connection.data;
+//   } catch (error) {
+//     return error;
+//   }
+// };

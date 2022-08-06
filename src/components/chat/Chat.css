@@ -1,0 +1,262 @@
+.chat-main-div {
+  /* border: 1px solid; */
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.reservation-detail-main-div {
+  /* border: 1px solid; */
+  background: #f8f7f9;
+  min-height: 100vh;
+}
+
+.back-button {
+  padding: 24px;
+  border-bottom: 1px solid #e5e2e9;
+  cursor: pointer;
+}
+
+.reservation-detail-div {
+  padding: 15px;
+  border-bottom: 1px solid #e5e2e9;
+}
+
+.note-div {
+  padding: 15px;
+  border-bottom: 1px solid #e5e2e9;
+}
+
+.reservation-detail-image {
+  background-image: url("https://a0.muscache.com/im/pictures/miso/Hosting-608638625001646805/original/665a5bc7-bd4e-4a8d-92f9-def45af46d03.jpeg?aki_policy=small");
+  height: 126px;
+  border-radius: 4px;
+  background-size: cover;
+  position: relative;
+}
+
+.image-inner-div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(
+    -180deg,
+    transparent 20%,
+    rgba(0, 0, 0, 0.8)
+  );
+  border-radius: 4px;
+}
+
+.unitname-span {
+  font-size: 1em;
+  font-family: Cera Headings, Helvetica Neue, sans-serif;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  /* margin-bottom: 4px; */
+  padding: 0 24px;
+  position: relative;
+  top: 70px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.status-span {
+  position: relative;
+  top: 70px;
+  padding: 0 24px;
+  color: #47c693;
+}
+
+.owner-image {
+  flex: 1 1 80px;
+  box-sizing: border-box;
+  max-width: 80px;
+  min-width: 80px;
+  height: 80px;
+  border-radius: 50px;
+  margin-right: 24px;
+  padding: 0px;
+}
+
+.text-message-input {
+  opacity: 1;
+  flex-direction: row;
+  box-sizing: border-box;
+  display: flex;
+  place-content: flex-start;
+  align-items: flex-start;
+  width: 1180px;
+  top: 90%;
+  position: fixed;
+  margin: 0px !important;
+}
+
+@media (max-width: 1440px) {
+  .text-message-input {
+    width: 835px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .text-message-input {
+    width: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .text-message-input {
+    width: 550px;
+  }
+}
+
+@media (max-width: 425px) {
+  .text-message-input {
+    width: 340px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .reservation-col {
+    display: none;
+  }
+}
+
+.reservation-col {
+  background: #f8f7f9;
+}
+
+@media (max-width: 1024px) {
+  .chat-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.text-message-input-inner {
+  flex-direction: row;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 0%;
+  place-content: stretch flex-start;
+  align-items: stretch;
+  box-shadow: 0 2px 8px 0 rgb(0 0 0 / 20%);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  background: #fff;
+  justify-content: space-between;
+}
+
+.send-message-input:focus {
+  box-shadow: none !important;
+}
+
+.send-button {
+  border: none !important;
+  width: 100px;
+  color: #fff;
+  background: #007bff;
+  border-radius: 24px;
+  padding: 10px;
+}
+
+.chat-message-div {
+  margin-top: 30px;
+  padding: 0px;
+  height: auto;
+}
+
+.chat-message-div::-webkit-scrollbar {
+  /* color: #007bff !important; */
+  /* background: #007bff; */
+  width: 5px;
+}
+
+.chat-message-div::-webkit-scrollbar-thumb {
+  background-color: #007bff;
+  border-right: none;
+  border-left: none;
+}
+
+.chat-detail-message-div {
+  max-height: 100vh;
+  /* overflow-y: scroll; */
+}
+
+/* .chat-detail-message-div::-webkit-scrollbar {
+  display: none;
+} */
+
+.iMessage-div {
+  padding: 20px;
+  flex-direction: row;
+  box-sizing: border-box;
+  display: flex;
+  place-content: flex-start flex-end;
+  flex: 1 1 100%;
+  margin-right: 16px;
+}
+
+.senderMessage-div {
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  place-content: flex-start;
+  align-items: flex-start;
+  flex: 1 1 100%;
+  max-width: 75%;
+}
+
+@media (max-width: 425px) {
+  .senderMessage-div {
+    max-width: 100%;
+  }
+}
+
+.senderMessage-li {
+  background: #f8f7f9;
+  padding: 16px;
+  border-radius: 8px;
+  line-height: 24px;
+  transition: max-height 0.3s;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  display: flex;
+  padding: 10px;
+  width: auto;
+}
+
+.iMessage-li {
+  padding: 16px;
+  border-radius: 8px;
+  line-height: 24px;
+  transition: max-height 0.3s;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  border: 1px solid #e5e2e9;
+  display: flex;
+  padding: 10px;
+  max-width: 75%;
+}
+
+.sender-img {
+  margin-right: 16px;
+  flex: 1 1 40px;
+  box-sizing: border-box;
+  max-width: 40px;
+  min-width: 40px;
+}
+
+.i-img {
+  flex: 1 1 40px;
+  box-sizing: border-box;
+  max-width: 40px;
+  min-width: 40px;
+  order: 9;
+  margin-left: 16px;
+}
+
+.message-input:focus {
+  box-shadow: none !important;
+}

@@ -1,0 +1,127 @@
+.all-message {
+  font-family: Cera Headings, Helvetica Neue, sans-serif;
+  color: #230b41;
+  font-weight: 400;
+  margin: 0;
+}
+
+@media (max-width: 425px) {
+  .all-message {
+    margin-bottom: 10px !important;
+  }
+}
+
+.search-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 25%;
+}
+
+@media (max-width: 1440px) {
+  .search-bar {
+    width: 30% !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .search-bar {
+    width: 45% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-bar {
+    width: 50% !important;
+  }
+}
+
+@media (max-width: 425px) {
+  .search-bar {
+    width: 100% !important;
+  }
+}
+
+.main-div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 425px) {
+  .main-div {
+    display: block !important;
+  }
+}
+
+.inbox-list-row {
+  flex-direction: row;
+  box-sizing: border-box;
+  display: flex;
+  place-content: center flex-start;
+  align-items: center;
+  background: #fff;
+  padding: 16px 20px 16px 12px;
+  /* border-top: 1px solid #e5e2e9; */
+  cursor: pointer;
+  transition: box-shadow 0.1s ease-in-out;
+  position: relative;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 10px 5px rgb(0 0 0 / 5%);
+}
+
+.inbox-list-row:hover {
+  box-shadow: 0 3px 10px 5px rgb(0 0 0 / 20%);
+  position: relative;
+}
+
+.guest-image {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+}
+
+.inbox-list-inner-div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.guest-name-div {
+  flex: 1 1 0%;
+  box-sizing: border-box;
+  margin-right: 12px;
+  min-width: 0px;
+}
+
+.image-div {
+  margin-right: 12px;
+  flex: 1 1 40px;
+  box-sizing: border-box;
+  max-width: 40px;
+}
+
+.descripation {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0px !important;
+  display: block;
+}
+
+.guest-name-row {
+  flex-direction: row;
+  box-sizing: border-box;
+  place-content: center flex-start;
+  align-items: center;
+}
+
+.property-image {
+  height: 32px;
+  width: 40px;
+  border-radius: 4px;
+}
+
+.search-bar-input:focus {
+  box-shadow: none !important;
+  border: 1px solid black !important;
+}

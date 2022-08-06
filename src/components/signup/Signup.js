@@ -3,6 +3,7 @@ import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
+import "./Signup.css";
 import ApiUrl from "../../globalVariables";
 
 export default function Signup() {
@@ -42,7 +43,7 @@ export default function Signup() {
 
   return (
     <>
-      <Card>
+      <Card className="signup">
         <Card.Body>
           <h2 className="text-center mb-4">Sign Up</h2>
           {error && <Alert variant="danger">{error}</Alert>}
@@ -59,7 +60,7 @@ export default function Signup() {
               <Form.Label>Password Confirmation</Form.Label>
               <Form.Control type="password" ref={passwordConfirmRef} required />
             </Form.Group>
-            <Button disabled={loading} className="w-100" type="submit">
+            <Button disabled={loading} className="w-100 mt-3" type="submit">
               Sign Up
             </Button>
           </Form>

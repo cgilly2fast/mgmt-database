@@ -1,0 +1,27 @@
+@media (max-width: 1440px) {
+  .main-div-detail {
+    margin-left: 21% !important;
+    width: 77% !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .main-div-detail {
+    margin-left: 30% !important;
+    width: 66% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-div-detail {
+    margin-left: 17% !important;
+    width: 77% !important;
+  }
+}
+
+@media (max-width: 425px) {
+    .main-div-detail {
+      margin-left: 7% !important;
+      width: 85% !important;
+    }
+  }

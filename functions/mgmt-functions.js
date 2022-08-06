@@ -3,6 +3,7 @@ const fs = require("fs");
 const { credentials } = require("./development_credentials");
 const { v4: uuidv4 } = require("uuid");
 const { db } = require("./admin");
+const admin = require("firebase-admin");
 const { google } = require("googleapis");
 const cors = require("cors")({ origin: true });
 const SCOPES = [
@@ -276,14 +277,71 @@ exports.checkSignup = functions.https.onRequest(async (req, res) => {
 exports.getConnections = functions.https.onRequest(async (req, res) => {
   cors(req, res, async () => {
     try {
-      const snapshot = await db.collection("connections").get();
+      const snapshot = await db.collection("accounts").get();
       let data = [];
       snapshot.forEach((doc) => {
-        data.push(doc.data());
+        data.push({ ...doc.data(), id: doc.id });
       });
       res.send(data);
     } catch (err) {
       res.send(err);
+    }
+  });
+});
+
+exports.getThread = functions.https.onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    try {
+      const snapshot = await db.collection("threads").get();
+      let data = [];
+      snapshot.forEach((doc) => {
+        data.push({ ...doc.data(), id: doc.id });
+      });
+      res.send(data);
+    } catch (err) {
+      res.send(err);
+    }
+  });
+});
+
+exports.getThreadById = functions.https.onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    try {
+      const id = req.query.id;
+      const doc = await db.collection("threads").doc(id).get();
+
+      res.send(doc.data());
+    } catch (error) {
+      res.send(error);
+    }
+  });
+});
+
+exports.addMessages = functions.https.onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    try {
+      const { id, message, currentUserId } = req.body;
+      await db
+        .collection("threads")
+        .doc(id)
+        .set(
+          {
+            last_message: {
+              content: message,
+              created_at: admin.firestore.FieldValue.serverTimestamp(),
+              user_id: currentUserId,
+            },
+          },
+          { merge: true }
+        );
+      await db.collection("threads").doc(id).collection("messages").add({
+        content: message,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        user_id: currentUserId,
+      });
+      res.send("message added");
+    } catch (error) {
+      res.send(error);
     }
   });
 });

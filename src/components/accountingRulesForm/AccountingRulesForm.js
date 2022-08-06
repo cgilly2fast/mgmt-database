@@ -4,10 +4,8 @@ import { Form } from "react-bootstrap";
 import { v4 as uuid } from "uuid";
 import { Multiselect } from "multiselect-react-dropdown";
 import "./AccountingRulesForm.css";
-import { useDispatch, useSelector } from "react-redux";
-import { getActiveUnits, getConnections } from "../../store/actions/dbActions";
 import * as Yup from "yup";
-// import { getActiveUnits, getConnections } from "../../API";
+import { getActiveUnits, getConnections } from "../../API";
 
 const typeOption = {
   options: [
@@ -37,8 +35,6 @@ const invoice_type = {
 };
 
 const AccountingRulesForm = () => {
-  const dispatch = useDispatch();
-
   const [billable, setBillable] = useState(false);
   const [filter, setFilter] = useState(false);
   const [emailReceipt, setEmailReceipt] = useState(false);
@@ -52,26 +48,18 @@ const AccountingRulesForm = () => {
   const [connectionValue, setConnectionValue] = useState();
   const [invoiceTypeValue, setInvoiceTypeValue] = useState();
   const [mirrorInvoiceTypeValue, setMirrorInvoiceTypeValue] = useState();
-  // const [units, setUnits] = useState();
-  // const [connections, setConnections] = useState();
-
-  const units = useSelector(({ db }) => db?.units);
-  const connections = useSelector(({ db }) => db?.connections);
+  const [units, setUnits] = useState([]);
+  const [connections, setConnections] = useState([]);
 
   useEffect(() => {
-    dispatch(getActiveUnits());
-    dispatch(getConnections());
+    const accountingRules = async () => {
+      const activeUnits = await getActiveUnits();
+      const connectionData = await getConnections();
+      setUnits(activeUnits);
+      setConnections(connectionData);
+    };
+    accountingRules();
   }, []);
-
-  // useEffect(() => {
-  //   const accountingRules = async () => {
-  //     const activeUnits = await getActiveUnits();
-  //     const connectionData = await getConnections();
-  //     setUnits(activeUnits);
-  //     setConnections(connectionData);
-  //   };
-  //   accountingRules();
-  // }, []);
 
   const unitlist = units.map((item) => {
     return {
@@ -93,7 +81,7 @@ const AccountingRulesForm = () => {
     return {
       account: item?.account,
       account_id: item?.account_id,
-      connection_id: item?.owner_id,
+      connection_id: item?.id,
       platfrom: item?.platfrom,
     };
   });

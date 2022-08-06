@@ -3,10 +3,12 @@ import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useHistory } from "react-router-dom";
 import "./Login.css";
+import { auth } from "../../firebase";
+
 export default function Login() {
   const emailRef = useRef();
   const passwordRef = useRef();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const history = useHistory();
@@ -18,7 +20,14 @@ export default function Login() {
       setError("");
       setLoading(true);
       await login(emailRef.current.value, passwordRef.current.value);
-      history.push("/");
+      const data = await auth.currentUser?.getIdTokenResult();
+      if (!data.claims.isAdmin) {
+        await logout();
+        history.push("/login");
+        setError("Only Admin allowed!");
+      } else {
+        history.push("/");
+      }
     } catch {
       setError("Failed to log in");
     }
@@ -32,7 +41,11 @@ export default function Login() {
         <Card.Body>
           <h2 className="text-center mb-4">Log In</h2>
           {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
+          <Form
+            onSubmit={(e) => {
+              handleSubmit(e);
+            }}
+          >
             <Form.Group id="email">
               <Form.Label>Email</Form.Label>
               <Form.Control type="email" ref={emailRef} required />
@@ -41,7 +54,7 @@ export default function Login() {
               <Form.Label>Password</Form.Label>
               <Form.Control type="password" ref={passwordRef} required />
             </Form.Group>
-            <Button disabled={loading} className="w-100" type="submit">
+            <Button disabled={loading} className="w-100 mt-3" type="submit">
               Log In
             </Button>
           </Form>

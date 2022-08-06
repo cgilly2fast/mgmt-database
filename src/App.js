@@ -24,18 +24,26 @@ import Map from "./components/map/Map";
 import Accounting from "./components/accounting/Accounting";
 import Rules from "./components/rules/Rules";
 import AccountingRulesForm from "./components/accountingRulesForm/AccountingRulesForm";
+import AllMessages from "./components/allMessages/AllMessages";
+import Chat from "./components/chat/Chat";
+import UnreadMessage from "./components/unreadMessage/UnreadMessage";
 
 export default class App extends Component {
   render() {
     return (
       <AuthProvider>
         <BrowserRouter>
-          <Container fluid className="p-0">
+          <Container fluid className="p-0 d-flex">
             <Switch>
               <PrivateRoute exact path="/" component={Units} />
               <PrivateRoute exact path="/units" component={Units} />
               <PrivateRoute exact path="/calendar" component={SelectUnit} />
               <PrivateRoute exact path="/rules" component={Rules} />
+              <PrivateRoute
+                exact
+                path="/inbox/segments/unreadmessage"
+                component={UnreadMessage}
+              />
               <PrivateRoute
                 exact
                 path="/accounting-rules"
@@ -47,6 +55,12 @@ export default class App extends Component {
                 path="/accounting-connections"
                 component={Accounting}
               />
+              <PrivateRoute
+                exact
+                path="/inbox/segments"
+                component={AllMessages}
+              />
+              <PrivateRoute exact path="/inbox/thread/:id" component={Chat} />
               <PrivateRoute exact path="/unit/create" component={UnitForm} />
               <PrivateRoute exact path="/unit/:unitId" component={Unit} />
               <PrivateRoute

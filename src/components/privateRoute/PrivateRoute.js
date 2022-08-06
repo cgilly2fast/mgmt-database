@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Route, Redirect } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Sidebar from "../menu/Sidebar";
+import "./PrivateRoute.css";
 
 export default function PrivateRoute({ component: Component, ...rest }) {
   const { currentUser } = useAuth();
@@ -20,12 +21,13 @@ export default function PrivateRoute({ component: Component, ...rest }) {
               />
             </div>
             <div
+              className="main-div-detail"
               style={{
                 marginLeft: !menuCollapse ? "18%" : "8%",
                 width: !menuCollapse ? "80%" : "90%",
               }}
             >
-              <div style={{ paddingTop: "20px" }}>
+              <div style={{ }}>
                 <Component {...props} />
               </div>
             </div>
