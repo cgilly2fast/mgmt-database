@@ -624,14 +624,17 @@ const Calendar = (props) => {
               <Modal.Title>
                 <div className="d-flex">
                   {reservationDetail?.reservation?.guest?.picture ? (
-                    <img
-                      src={
-                        reservationDetail?.reservation?.guest?.picture &&
-                        reservationDetail?.reservation?.guest?.picture
-                      }
-                      alt="guest_pic"
-                      className="guest-image"
-                    />
+                    <>
+                      <img
+                        src={
+                          reservationDetail?.reservation?.guest?.picture &&
+                          reservationDetail?.reservation?.guest?.picture
+                        }
+                        alt="guest_pic"
+                        className="guest-image"
+                      />
+                      &nbsp;&nbsp;
+                    </>
                   ) : (
                     <>
                       <BsPersonCircle
@@ -681,7 +684,7 @@ const Calendar = (props) => {
               )}
               {reservationDetail?.reservation?.occupancy?.guests && (
                 <>
-                  <p>
+                  <p style={{ fontFamily: "monospace" }}>
                     Guests : {reservationDetail?.reservation?.occupancy?.guests}
                   </p>
                   <hr />

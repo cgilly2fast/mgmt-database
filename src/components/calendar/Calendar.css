@@ -104,6 +104,7 @@
   color: #5c576a;
   cursor: pointer;
   text-decoration: underline;
+  align-self: end;
 }
 
 .head-image {

@@ -28,7 +28,6 @@ import { useAuth } from "../../context/AuthContext";
 import Loader from "../loader/Loader";
 import db from "../../admin";
 import { Formik } from "formik";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 const Chat = (props) => {
   const [threadById, setThreadById] = useState();
@@ -91,7 +90,6 @@ const Chat = (props) => {
   };
 
   const fetchMoreData = async () => {
-    console.log("SDFsdf");
     await setTimeout(() => {
       getThreadData();
     }, 1500);

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Modal, Table } from "react-bootstrap";
+import { Accordion, Button, Form, Modal, Table } from "react-bootstrap";
 import "./Accounting.css";
 import { BsPencil, BsArrowRight } from "react-icons/bs";
 import db from "../../admin";
-import {executeAccountingRule} from "../../API";
-
+import { executeAccountingRule } from "../../API";
+import Loader from "../loader/Loader";
 
 const rulesList = [
   // {
@@ -52,34 +52,31 @@ const Accounting = () => {
   const [model1value, setModel1Value] = useState();
   const [model2value, setModel2Value] = useState();
   const [accountList, setAccountList] = useState();
-  const [rulesList, setRulesList] = useState()
+  const [rulesList, setRulesList] = useState();
 
   useEffect(() => {
     const getAccountDataOnSnapShot = async () => {
-      await db
-        .collection("accounts")
-        .onSnapshot((doc) => {
-          let tempData = [];
-          doc.forEach((item) => {
-            tempData.push({ ...item.data(), id: item?.id });
-          });
-          setAccountList(tempData);
+      await db.collection("accounts").onSnapshot((doc) => {
+        let tempData = [];
+        doc.forEach((item) => {
+          tempData.push({ ...item.data(), id: item?.id });
         });
+        setAccountList(tempData);
+      });
     };
     const getRulesDataOnSnapShot = async () => {
-      await db
-        .collection("accounting-rules")
-        .onSnapshot((doc) => {
-          let tempData = [];
-          doc.forEach((item) => {
-            tempData.push({ ...item.data(), id: item?.id });
-          });
-          setRulesList(tempData);
+      await db.collection("accounting-rules").onSnapshot((doc) => {
+        let tempData = [];
+        doc.forEach((item) => {
+          tempData.push({ ...item.data(), id: item?.id });
         });
+        setRulesList(tempData);
+      });
     };
     getRulesDataOnSnapShot();
     getAccountDataOnSnapShot();
   }, []);
+
   return (
     <>
       <div>
@@ -106,7 +103,6 @@ const Accounting = () => {
             </thead>
             <tbody>
               {accountList?.map((item) => {
-  
                 return (
                   <tr>
                     <td>{item?.type}</td>
@@ -114,7 +110,7 @@ const Accounting = () => {
                     <td>{item?.account}</td>
                     <td>
                       <button type="submit" className="active-button">
-                      {item?.status}
+                        {item?.status}
                       </button>
                     </td>
                     <td>
@@ -160,8 +156,7 @@ const Accounting = () => {
                     <span>{item?.invoice.contact.name}</span>
                   </td>
                   <td>
-                  <span>{item?.type}</span>
-                    
+                    <span>{item?.type}</span>
                   </td>
                   <td>
                     <BsArrowRight />
@@ -172,7 +167,11 @@ const Accounting = () => {
                     <span>{item?.mirror_invoice?.contact.name}</span>
                   </td>
                   <td>
-                    <button type="submit" className="active-button" onClick={() => executeAccountingRule(item?.id)}>
+                    <button
+                      type="submit"
+                      className="active-button"
+                      onClick={() => executeAccountingRule(item?.id)}
+                    >
                       EXECUTE
                     </button>
                   </td>

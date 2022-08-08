@@ -38,7 +38,7 @@ export default class App extends Component {
               <PrivateRoute exact path="/" component={Units} />
               <PrivateRoute exact path="/units" component={Units} />
               <PrivateRoute exact path="/calendar" component={SelectUnit} />
-              <PrivateRoute exact path="/rules" component={Rules} />
+              {/* <PrivateRoute exact path="/rules" component={Rules} /> */}
               <PrivateRoute
                 exact
                 path="/inbox/segments/unreadmessage"

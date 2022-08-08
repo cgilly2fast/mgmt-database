@@ -109,11 +109,11 @@ export default function Sidebar({ menuCollapse, setMenuCollapse }) {
                 </Link>
               </MenuItem>
 
-              <MenuItem>
+              {/* <MenuItem>
                 <Link to="/rules" style={{ color: "#000" }}>
                   Rules
                 </Link>
-              </MenuItem>
+              </MenuItem> */}
             </SubMenu>
 
             <SubMenu title="Inbox" icon={<BsEnvelope />}>
