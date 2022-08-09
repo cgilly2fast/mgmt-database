@@ -46,7 +46,7 @@ export default class App extends Component {
               />
               <PrivateRoute
                 exact
-                path="/accounting-rules"
+                path="/create-rule"
                 component={AccountingRulesForm}
               />
               <PrivateRoute exact path="/calendar/:id" component={Calendar} />

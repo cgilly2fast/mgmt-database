@@ -5,6 +5,7 @@ import { BsPencil, BsArrowRight } from "react-icons/bs";
 import db from "../../admin";
 import { executeAccountingRule } from "../../API";
 import Loader from "../loader/Loader";
+import { Link } from "react-router-dom";
 
 const rulesList = [
   // {
@@ -126,12 +127,10 @@ const Accounting = () => {
 
       <div className="account-div mb-2">
         <h3 className="account-title">Accounting Rules</h3>
-        <button
-          type="submit"
-          className="account-button"
-          onClick={() => setStep(1)}
-        >
-          +Create Rule
+        <button type="submit" className="account-button">
+          <Link to="/create-rule" style={{ color: "#fff" }}>
+            +Add Rules
+          </Link>
         </button>
       </div>
       <div>
@@ -154,6 +153,8 @@ const Accounting = () => {
                     <span>{item?.account.account}</span>
                     <br />
                     <span>{item?.invoice.contact.name}</span>
+                    <br />
+                    <span>{item?.id}</span>
                   </td>
                   <td>
                     <span>{item?.type}</span>
