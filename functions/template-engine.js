@@ -1,4 +1,6 @@
 const moment = require("moment-timezone");
+const BigNumber = require('bignumber.js');
+const segmentCodes = require("./segmentCodes");
 
 module.exports = class TemplateEngine{
     constructor(rule) {
@@ -30,6 +32,10 @@ module.exports = class TemplateEngine{
                             || this.rule.type === "CLEANING_FEES_TO_MANAGER" && this.data.tracking === undefined 
                             || this.rule.type === "OWNER_PAYOUT") {
                     return this.data.unit_name
+                } else if(this.rule.type === "AMAZON_BILLS") {
+                    return this.data[18]
+                } else if(this.rule.type === "AMAZON_REFUNDS") {
+                    return this.data[36]
                 }
                 
                 return this.data.tracking[0].option
@@ -55,7 +61,9 @@ module.exports = class TemplateEngine{
                     return 1
                 } else if(this.rule.type === "BILLABLE_EXPENSE") {
                     return this.data.quantity
-                }  
+                }  else if(this.rule.type === "AMAZON_BILLS") {
+                    return this.data[14]
+                }
                 return this.data[6]
             },
             unit_amount: () => {
@@ -63,7 +71,11 @@ module.exports = class TemplateEngine{
                     return parseInt(this.data[3])
                 } else if(this.rule.type === "BILLABLE_EXPENSE" || this.rule.type === "COMMISSION" || this.rule.type === "CLEANING_FEES_TO_MANAGER") {
                     return this.data.unitAmount
-                } 
+                } else if(this.rule.type === "AMAZON_BILLS") {
+                    return BigNumber(this.data[16]).div(this.data[14]).toString()
+                }else if(this.rule.type === "AMAZON_REFUNDS") {
+                    return this.data[18]
+                }
                 return (parseFloat(this.data[7])*100/parseFloat(this.data[6])*100)/10000 
             },
             commission_amount: () => {
@@ -89,6 +101,7 @@ module.exports = class TemplateEngine{
                     "5030": "4200",
                     "4200": "5030",
                     "5010": "4100",
+                    "4900": "6640"
                     // "6900": "6640",
                     // "6905": "6640",
 
@@ -119,7 +132,61 @@ module.exports = class TemplateEngine{
             },
             owner_payout: ()=> {
                 return this.data.profit
+            },
+            amazon_order_number: () =>{
+                return this.data[1]
+            },
+            purchase_order_number: () =>{
+                if(this.rule.type === "AMAZON_REFUNDS") {
+                    return this.data[3]
+                }
+                return this.data[2]
+            },
+            transaction_date: () => {
+                return moment(this.data[0]).format("YYYY-MM-DD")
+            },
+            transaction_date_plus_15: () => {
+                return moment(this.data[0]).add(15, "days").format("YYYY-MM-DD")
+            }, 
+            item_description:() => {
+                if(this.rule.type === "AMAZON_REFUNDS") {
+                    return this.data[21]
+                }
+                return this.data[13] +": " +this.data[12]
+            },
+            purchase_qauntity: () => {
+                return  this.data[14]
+            },
+            channel_option: () =>{
+                if(this.rule.type === "AMAZON_REFUNDS") {
+                    return this.data[37]
+                }
+                return this.data[19]
+            },
+            amazon_account_code: () => {
+                let unspsc = this.data[11]
+                let unit_name = this.data[18]
+                if(this.rule.type === "AMAZON_REFUNDS") {
+                    
+                    unspsc = this.data[22]
+                    unit_name = this.data[36]
+                } 
+                const billable_unit = this.rule.billable_units[unit_name]
+                if (billable_unit) {
+                    
+                    return billable_unit.account_code;
+                }
+                
+                return segmentCodes[unspsc.substring(0, 2)];
+                
+            },
+            refund_date: () => {
+                return moment(this.data[6]).format("YYYY-MM-DD")
+            },
+            refund_date_plus_15: () => {
+                return moment(this.data[6]).add(15,"days").format("YYYY-MM-DD")
             }
+
         }
     }
     

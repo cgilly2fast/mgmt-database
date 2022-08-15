@@ -2,7 +2,7 @@ const functions = require("firebase-functions");
 const moment = require("moment-timezone");
 const { credentials } = require("./development_credentials");
 const { google } = require("googleapis");
-const segmentCodes = require("./segmentCodes");
+
 const { db } = require("./admin");
 const BigNumber = require('bignumber.js');
 const { composer } = require("googleapis/build/src/apis/composer");
@@ -162,7 +162,7 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
     tokenSet = validTokenSet
   } 
   try {
-      const rawXeroData = await getXeroAmazonData();
+      const rawXeroData = await getXeroAmazonBillData();
 
       const invoices = parseAmazonBills(rawXeroData);
       
@@ -170,15 +170,15 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
       const newInvoices = new Invoices();
       newInvoices.invoices = invoices;
 
-      const inviocesRes = await xero.accountingApi.createInvoices(
-        xeroTenantId,
-        newInvoices,
-        false,
-        4
-      );
-      const xeroInvioces = inviocesRes.response.body.Invoices;
-      console.log("invoice length");
-      console.log(invoices.length);
+      // const inviocesRes = await xero.accountingApi.createInvoices(
+      //   xeroTenantId,
+      //   newInvoices,
+      //   false,
+      //   4
+      // );
+      // const xeroInvioces = inviocesRes.response.body.Invoices;
+      // console.log("invoice length");
+      // console.log(invoices.length);
 
       for (let i = 0; i < xeroInvioces.length; i++) {
         const invoiceId = xeroInvioces[i].InvoiceID;
@@ -211,7 +211,7 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
         }
       }
 
-      res.send(xeroInvioces);
+      res.send(rawXeroData);
     } catch (err) {
       console.log(err);
       res.send(err);
@@ -222,7 +222,7 @@ exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
   
 });
 
-function getXeroAmazonData() {
+function getXeroAmazonBillData() {
   return new Promise(function (resolve, reject) {
     const jwt = new google.auth.JWT(
       credentials.service_account.client_email,
@@ -236,7 +236,7 @@ function getXeroAmazonData() {
       spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
 
       // The A1 notation of the values to retrieve.
-      range: "Amazon Data!A2:AA", // TODO: Update placeholder value.
+      range: "Amazon Bill Data!A2:AA", // TODO: Update placeholder value.
       auth: jwt,
       key: credentials.api_key,
     };
@@ -254,69 +254,122 @@ function getXeroAmazonData() {
   });
 }
 
-function parseAmazonBills(data) {
+function getXeroAmazonRefundData() {
+  return new Promise(function (resolve, reject) {
+    const jwt = new google.auth.JWT(
+      credentials.service_account.client_email,
+      null,
+      credentials.service_account.private_key,
+      ["https://www.googleapis.com/auth/spreadsheets"]
+    );
+
+    const request = {
+      // The ID of the spreadsheet to retrieve data from.
+      spreadsheetId: "1G9KgXCYGKI_fbo2w3iRJH5BQ_HsZRyjhbuLgkI4Yt-Y", // TODO: Update placeholder value.
+
+      // The A1 notation of the values to retrieve.
+      range: "Amazon Refund Data!A2:AO", // TODO: Update placeholder value.
+      auth: jwt,
+      key: credentials.api_key,
+    };
+
+    const sheets = google.sheets("v4");
+    sheets.spreadsheets.values.get(request, (err, res) => {
+      if (err) {
+        console.log("Rejecting because of error");
+        reject(err);
+      } else {
+        console.log("Request successful");
+        resolve(res.data.values);
+      }
+    });
+  });
+}
+
+function getXeroAmazonRefundDataByUnits(unitsMap) {
+  return new Promise(async function (resolve, reject) {
+    let result = []
+    try {
+      const refundData = await getXeroAmazonRefundData()
+      for(let i = 0; i < refundData.length; i++) {
+        if(unitsMap[refundData[i][36]]) {
+          result.push(refundData[i])
+        }
+      }
+      resolve(result)
+    } catch (err) {
+      reject(err)
+    
+    }
+  });
+}
+
+function parseAmazonBills(rule, data) {
+  const TemplateEngine = require("./template-engine")
+  const templateEngine = new TemplateEngine(rule)
+
   let checkExists = {};
   let jsonXeroData = [];
+  
   for (let i = 0; i < data.length; i++) {
     if (
       data[i][10] !== "6782" &&
       data[i][10] !== "1252" &&
       data[i][6] !== "Cancelled"
     ) {
-      data[i][11] = getAmazonAccountCode(data[i][17], data[i][11]);
+      
+      
       if (checkExists[data[i][7]] === undefined) {
         checkExists[data[i][7]] = i;
         jsonXeroData[i] = {
-          type: "ACCPAY",
+          type: rule.invoice.type,
           contact: {
             name: "Amazon",
           },
 
           
-          invoiceNumber: "AMZN-" + data[i][7].substring(0, 8) +": " + data[i][18] +" PO-" + data[i][2] + " " + data[i][17],
+          invoiceNumber: templateEngine.exec(rule.invoice.reference, data[i]),
           url: "https://stinsonbeachpm.com",
           currencyCode: "USD",
-          status: "AUTHORISED", //DRAFT
+          status: "DRAFT", //AUTHORISED
           lineAmountTypes: "NoTax",
-          date: moment(data[i][0]).format("YYYY-MM-DD"),
-          dueDate: moment(data[i][0]).add(15, "days").format("YYYY-MM-DD"),
+          date: templateEngine.exec(rule.invoice.date, data[i]),
+          dueDate: templateEngine.exec(rule.invoice.due_date, data[i]),
           lineItems: [
             {
-              //item: data[i][14],
-              description: data[i][12],
-              quantity: data[i][14],
-              unitAmount: BigNumber(data[i][16]).div(data[i][14]).toString(),
-              accountCode: data[i][11],
+              description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
+              quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
+              unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+              accountCode: templateEngine.exec(rule.invoice.line_items.account_code, data[i]),
               tracking: [
                 {
-                  name: "Property",
-                  option: data[i][18],
+                  name: rule.invoice.line_items.tracking[0].name,
+                  option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
                 },
                 {
-                  name: "Channel",
-                  option: data[i][19],
+                  name: rule.invoice.line_items.tracking[1].name,
+                  option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
                 },
-              ],
-            },
+              ]
+            }
           ],
         };
       } else {
         jsonXeroData[checkExists[data[i][7]]].lineItems.push({
-          // item: data[i][14],
-          description: data[i][12],
-          quantity: data[i][14],
-          unitAmount: BigNumber(data[i][16]).div(data[i][14]).toString(),
-          accountCode: data[i][11],
+          description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
+          quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
+          unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+          accountCode: templateEngine.exec(rule.invoice.line_items.account_code, data[i]),
           tracking: [
             {
-              name: "Property",
-              option: data[i][18],
+              name: rule.invoice.line_items.tracking[0].name,
+              option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
             },
             {
-              name: "Channel",
-              option: data[i][19],
+              name: rule.invoice.line_items.tracking[1].name,
+              option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
             },
-          ],
+          ]
         });
       }
     }
@@ -325,17 +378,119 @@ function parseAmazonBills(data) {
   return jsonXeroData;
 }
 
-function getAmazonAccountCode(property, unspsc) {
-  if (
-    property === "11 Sierra" ||
-    property === "Mouse Hole" ||
-    property === "Casita Azul" || property === "IM1483" ||
-    property === "RA1503" || property === "IM1491" ||
-    property === "KV905A" 
-  ) {
-    return "5556";
+function parseAmazonRefunds(rule, data) {
+  const TemplateEngine = require("./template-engine")
+  const templateEngine = new TemplateEngine(rule)
+
+  let checkExists = {};
+  let jsonXeroData = [];
+  
+  for (let i = 0; i < data.length; i++) {
+      
+      if (checkExists[data[i][13]] === undefined) {
+        checkExists[data[i][13]] = i;
+        jsonXeroData[i] = {
+          type: rule.invoice.type,
+          contact: {
+            name: "Amazon",
+          },
+
+          
+          reference: templateEngine.exec(rule.invoice.reference, data[i]),
+          url: "https://stinsonbeachpm.com",
+          currencyCode: "USD",
+          status: "DRAFT", //AUTHORISED
+          lineAmountTypes: "NoTax",
+          date: templateEngine.exec(rule.invoice.date, data[i]),
+          dueDate: templateEngine.exec(rule.invoice.due_date, data[i]),
+          lineItems: [
+            {
+              description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
+              quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
+              unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+              accountCode: templateEngine.exec(rule.invoice.line_items.account_code, data[i]),
+              tracking: [
+                {
+                  name: rule.invoice.line_items.tracking[0].name,
+                  option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
+                },
+                {
+                  name: rule.invoice.line_items.tracking[1].name,
+                  option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
+                },
+              ]
+            }
+          ],
+        };
+      } else {
+        jsonXeroData[checkExists[data[i][13]]].lineItems.push({
+          description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
+          quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
+          unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+          accountCode: templateEngine.exec(rule.invoice.line_items.account_code, data[i]),
+          tracking: [
+            {
+              name: rule.invoice.line_items.tracking[0].name,
+              option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
+            },
+            {
+              name: rule.invoice.line_items.tracking[1].name,
+              option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
+            },
+          ]
+        });
+      }
+    
   }
-  return segmentCodes[unspsc.substring(0, 2)];
+
+  return jsonXeroData;
+}
+
+function parseAmazonLineItems(data) {
+  const rule = {
+    "type":"AMAZON_REFUNDS",
+    "invoice":{
+    "line_items": {
+    "unit_amount": "<%unit_amount%>",
+    "account_code": "4900",
+    "quantity": 1,
+    "tracking": [
+        {
+            "name": "Property",
+            "option": "<%unit_name%>"
+        },
+        {
+            "option": "<%channel_option%>",
+            "name": "Channel"
+        }
+    ],
+    "description": "Refund: <%item_description%>"
+}}}
+  const TemplateEngine = require("./template-engine")
+  const templateEngine = new TemplateEngine(rule)
+
+  
+  let jsonXeroData = [];
+  
+  for (let i = 0; i < data.length; i++) {
+    jsonXeroData.push({
+      description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
+      quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
+      unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+      accountCode: templateEngine.exec(rule.invoice.line_items.account_code, data[i]),
+      tracking: [
+        {
+          name: rule.invoice.line_items.tracking[0].name,
+          option: templateEngine.exec(rule.invoice.line_items.tracking[0].option),
+        },
+        {
+          name: rule.invoice.line_items.tracking[1].name,
+          option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
+        },
+      ]
+    });
+  }
+  return jsonXeroData
 }
 
 function getUnpaidCleaningSheetData(hours_sheet) {
@@ -533,13 +688,20 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
             linkedTxnsIds[linkedTxns[i].sourceLineItemID] = linkedTxns[i]
           }
         }
-      
+
+        const amazon_refunds = await getXeroAmazonRefundDataByUnits(rule.units_filter)
+        const amazonLineItems = parseAmazonLineItems(amazon_refunds)
+        invoices[0].lineItems = amazonLineItems.concat(invoices[0].lineItems)
+        
       } else if(rule.type === "COMMISSION") {
         const parsedReports = await getCommissionData(rule, xero)
         invoices = parseAccountingRuleInvoices(rule, parsedReports)
-      } else if(rule.type === "AMAZON") {
-        const rawAmazonData = await getXeroAmazonData();
-        invoices = parseAmazonBills(rawAmazonData);
+      } else if(rule.type === "AMAZON_BILLS") {
+        const rawAmazonData = await getXeroAmazonBillData();
+        invoices = parseAmazonBills(rule, rawAmazonData);
+      } else if(rule.type === "AMAZON_REFUNDS") {
+        const rawAmazonData = await getXeroAmazonRefundData();
+        invoices = parseAmazonRefunds(rule, rawAmazonData);
       } else if(rule.type === "CLEANING_FEES_TO_MANAGER"){
         const parsedReports = await getCleaningRevenue(rule, xero)
         invoices = parseAccountingRuleInvoices(rule, parsedReports)
@@ -564,14 +726,15 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
       4
       );
     xeroInvioces = inviocesRes.response.body.Invoices;
-    
+    res.send(xeroInvioces);
     
   } catch (e) {
     console.log("fail in creating invoice", e)
     res.send(e)
   }
-  
-  if(rule.billable) {
+  return
+  if(rule.billable && rule.type !== "AMAZON_REFUNDS") {
+    
     for (let i = 0; i < xeroInvioces.length; i++) {
       const invoiceId = xeroInvioces[i].InvoiceID;
       const lineItems = xeroInvioces[i].LineItems;
@@ -699,12 +862,7 @@ function parseAccountingRuleInvoices(rule, data) {
   
   for (let i = 0; i < data.length; i++) {
     const unit_name = templateEngine.exec("<%unit_name%>", data[i])
-    // console.log(i)
-    // console.log( data[i].description)
-    // console.log("Total1: ", !rule.filter || (rule.filter && rule.units_filter[unit_name] !== undefined))
-    // console.log(" !rule.filter ",  !rule.filter )
-    // console.log("(rule.filter &&", (rule.filter && rule.units_filter[unit_name] !== undefined))
-    // console.log("")
+  
     if( !rule.filter || (rule.filter && rule.units_filter[unit_name] !== undefined) ) {
       let accountCode = ""
       if(rule.billable && rule.billable_units[unit_name] !== undefined) {
@@ -713,7 +871,6 @@ function parseAccountingRuleInvoices(rule, data) {
         accountCode = rule.invoice.line_items.account_code
       }
       jsonXeroData.lineItems.push({
-        // item: data[i][14],
         
         description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
         quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
@@ -728,7 +885,7 @@ function parseAccountingRuleInvoices(rule, data) {
             name: rule.invoice.line_items.tracking[1].name,
             option: templateEngine.exec(rule.invoice.line_items.tracking[1].option),
           },
-        ],
+        ]
       });
     }
     
@@ -852,15 +1009,12 @@ exports.templatingTest = functions.https.onRequest(async (req, res) => {
   } 
 
   const rulesDoc = await db.collection('accounting-rules').doc(req.query.rule_id).get()
-
     if (!rulesDoc.exists) {
       res.send('No rule for id');
       return;
     }  
-    const rule = rulesDoc.data()
-    const trackingCatagoriesResponse = await xero.accountingApi.getBankTransaction(rule.account.account_id, "4ff81c87-20ee-4add-a638-bda3cd954f27")
-    
-    res.send(trackingCatagoriesResponse)
+    rule = rulesDoc.data()
+    res.send(rule)
 })
 
 function getOnwerGrossProfit(rule, xero){
