@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Form, Spinner } from "react-bootstrap";
 import "./SelectUnit.css";
 import { useHistory } from "react-router-dom";
 import { useParams } from "react-router-dom";
@@ -10,10 +10,13 @@ const SelectUnit = (props) => {
   const history = useHistory();
   const { id } = useParams();
   const [units, setUnits] = useState();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const activeUnitsGet = async () => {
+      setLoading(true);
       const activeUnits = await getActiveUnits();
+      setLoading(false);
       setUnits(activeUnits);
     };
     activeUnitsGet();
@@ -35,7 +38,8 @@ const SelectUnit = (props) => {
       {id === undefined && (
         <>
           <h2 className="text-center mt-5 mb-3" style={{ color: "#007bff" }}>
-            Select Unit
+            Select Unit{" "}
+            {loading && <Spinner animation="grow" variant="primary" />}
           </h2>
           <div className="d-flex justify-content-center">
             <Form.Control

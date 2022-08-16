@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Accordion, Button, Form, Modal, Table } from "react-bootstrap";
+import { Button, Form, Modal, Table } from "react-bootstrap";
 import "./Accounting.css";
-import { BsPencil, BsArrowRight } from "react-icons/bs";
+import { BsPencil } from "react-icons/bs";
 import db from "../../admin";
-import { executeAccountingRule } from "../../API";
-import Loader from "../loader/Loader";
 import { Link } from "react-router-dom";
+import AccountingRules from "./accountingRules/AccountingRules";
+import Loader from "../loader/Loader";
 
 const rulesList = [
   // {
@@ -48,6 +48,7 @@ const rulesList = [
 
 const Accounting = () => {
   const [showModel, setShowModel] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
   const [value, setValue] = useState();
   const [model1value, setModel1Value] = useState();
@@ -56,6 +57,7 @@ const Accounting = () => {
   const [rulesList, setRulesList] = useState();
 
   useEffect(() => {
+    setLoading(true);
     const getAccountDataOnSnapShot = async () => {
       await db.collection("accounts").onSnapshot((doc) => {
         let tempData = [];
@@ -72,6 +74,7 @@ const Accounting = () => {
           tempData.push({ ...item.data(), id: item?.id });
         });
         setRulesList(tempData);
+        setLoading(false);
       });
     };
     getRulesDataOnSnapShot();
@@ -80,111 +83,84 @@ const Accounting = () => {
 
   return (
     <>
-      <div>
-        <div className="account-div mb-2">
-          <h3 className="account-title">Accounts</h3>
-          <button
-            type="submit"
-            className="account-button"
-            onClick={() => setShowModel(true)}
-          >
-            +Add Account
-          </button>
-        </div>
-        <div>
-          <Table className="table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Platform</th>
-                <th>Account</th>
-                <th>Status</th>
-                <th>Edit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accountList?.map((item) => {
-                return (
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          <div>
+            <div className="account-div mb-2">
+              <h3 className="account-title">Accounts</h3>
+              <button
+                type="submit"
+                className="account-button"
+                onClick={() => setShowModel(true)}
+              >
+                +Add Account
+              </button>
+            </div>
+            <div>
+              <Table className="table">
+                <thead>
                   <tr>
-                    <td>{item?.type}</td>
-                    <td>{item?.platform}</td>
-                    <td>{item?.account}</td>
-                    <td>
-                      <button type="submit" className="active-button">
-                        {item?.status}
-                      </button>
-                    </td>
-                    <td>
-                      <BsPencil />
-                    </td>
+                    <th>Type</th>
+                    <th>Platform</th>
+                    <th>Account</th>
+                    <th>Status</th>
+                    <th>Edit</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        </div>
-      </div>
+                </thead>
+                <tbody>
+                  {accountList?.map((item, index) => {
+                    return (
+                      <tr key={index + item.id}>
+                        <td>{item?.type}</td>
+                        <td>{item?.platform}</td>
+                        <td>{item?.account}</td>
+                        <td>
+                          <button type="submit" className="active-button">
+                            {item?.status}
+                          </button>
+                        </td>
+                        <td>
+                          <BsPencil />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            </div>
+          </div>
 
-      <div className="account-div mb-2">
-        <h3 className="account-title">Accounting Rules</h3>
-        <button type="submit" className="account-button">
-          <Link to="/create-rule" style={{ color: "#fff" }}>
-            +Add Rules
-          </Link>
-        </button>
-      </div>
-      <div>
-        <Table className="table">
-          <thead>
-            <tr>
-              <th>STARTING PLATFORM</th>
-              <th>TYPE</th>
-              <th></th>
-              <th>END PLATFORM</th>
-              <th></th>
-              <th>Edit</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rulesList?.map((item) => {
-              return (
+          <div className="account-div mb-2">
+            <h3 className="account-title">Accounting Rules</h3>
+            <button type="submit" className="account-button">
+              <Link to="/create-rule" style={{ color: "#fff" }}>
+                +Add Rules
+              </Link>
+            </button>
+          </div>
+          <div>
+            <Table className="table">
+              <thead>
                 <tr>
-                  <td>
-                    <span>{item?.account.account}</span>
-                    <br />
-                    <span>{item?.invoice.contact.name}</span>
-                    <br />
-                    <span>{item?.id}</span>
-                  </td>
-                  <td>
-                    <span>{item?.type}</span>
-                  </td>
-                  <td>
-                    <BsArrowRight />
-                  </td>
-                  <td>
-                    <span>{item?.mirror_account?.account}</span>
-                    <br />
-                    <span>{item?.mirror_invoice?.contact.name}</span>
-                  </td>
-                  <td>
-                    <button
-                      type="submit"
-                      className="active-button"
-                      onClick={() => executeAccountingRule(item?.id)}
-                    >
-                      EXECUTE
-                    </button>
-                  </td>
-                  <td>
-                    <BsPencil />
-                  </td>
+                  <th>STARTING PLATFORM</th>
+                  <th>TYPE</th>
+                  <th></th>
+                  <th>END PLATFORM</th>
+                  <th></th>
+                  <th>Edit</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </Table>
-      </div>
+              </thead>
+              <tbody>
+                {rulesList?.map((item, index) => {
+                  return <AccountingRules item={item} key={index} />;
+                })}
+              </tbody>
+            </Table>
+          </div>
+        </>
+      )}
 
       {showModel && (
         <Modal
