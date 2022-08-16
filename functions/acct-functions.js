@@ -648,7 +648,7 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
 
     const rulesDoc = await db.collection('accounting-rules').doc(req.query.rule_id).get()
     if (!rulesDoc.exists) {
-      res.send('No rule for id');
+      res.status(400).send('No rule for id');
       return;
     }  
     rule = rulesDoc.data()
@@ -668,8 +668,7 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
 
         const rawCleanings = await getUnpaidCleaningSheetData(rule.source_data)
         invoices = parseAccountingRuleInvoices(rule, rawCleanings);
-      
-      
+        
     } else if( rule.type === "BILLABLE_EXPENSE") {
       
         let linkedTxnsResponse = await xero.accountingApi.getLinkedTransactions(rule.account.account_id, undefined, undefined, undefined, rule.invoice.contact.xero_id, 'APPROVED')
@@ -704,6 +703,7 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
         invoices = parseAmazonRefunds(rule, rawAmazonData);
       } else if(rule.type === "CLEANING_FEES_TO_MANAGER"){
         const parsedReports = await getCleaningRevenue(rule, xero)
+        
         invoices = parseAccountingRuleInvoices(rule, parsedReports)
       } else if(rule.type === "OWNER_PAYOUT") {
         const parsedReports = await getOnwerGrossProfit(rule, xero)
@@ -711,9 +711,9 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
       }
   } catch (e) {
     console.log("Fail in invoice parse", e)
-    res.send(e)
+    res.status(400).send("Fail in invoice parse")
   }
-  
+  if(invoices[0].lineItems.length > 0) {
   try {
   
     const newInvoices = new Invoices();
@@ -730,9 +730,9 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
     
   } catch (e) {
     console.log("fail in creating invoice", e)
-    res.send(e)
+    res.status(400).send("fail in creating invoice")
   }
-  return
+  
   if(rule.billable && rule.type !== "AMAZON_REFUNDS") {
     
     for (let i = 0; i < xeroInvioces.length; i++) {
@@ -754,7 +754,7 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
             );
           } catch (e) {
             console.log("Fail in billing line item",e)
-            res.send(e)
+            res.status(400).send("Fail in billing line item")
           }
           //console.log("linkedRes", linkedRes.response.statusCode);
         }
@@ -782,7 +782,7 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
                 } catch (e) {
                   //console.log(e.response.body.Elements[0].ValidationErrors)
                   console.log("Fail in connecting billable expense target",e)
-                  res.send(e)
+                  res.status(400).send("Fail in connecting billable expense target")
                 }
           }
         }
@@ -822,18 +822,15 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
           console.log(e)
         }
         
-        res.send(e)
+        res.status(400).send("Fail in mirror invoice")
       }
     } 
     
-    res.send("complete")
-    //   create mirror transactions
-
-    // if email reciept
-    //   create email receipt
-      
-  
-    //   res.send(rule) 
+    res.status(200).send("Complete")
+  } else {
+    res.status(400).send("No input data")
+  }
+    
 })
 
 function parseAccountingRuleInvoices(rule, data) {
