@@ -12,8 +12,11 @@ const typeOption = {
     { type: "HOURS" },
     { type: "CLEANING" },
     { type: "COMMISIONS" },
-    { type: "AMAZON" },
     { type: "BILLABLE_EXPENSE" },
+    { type: "AMAZON_BILLS" },
+    { type: "AMAZON_REFUNDS" },
+    { type: "CLEANING_FEES_TO_MANAGER" },
+    { type: "OWNER_PAYOUT" },
   ],
 };
 
@@ -22,7 +25,10 @@ const source_data_type_option = {
     { source_data_type: "HOURS" },
     { source_data_type: "CLEANING" },
     { source_data_type: "COMMISIONS" },
-    { source_data_type: "AMAZON" },
+    { source_data_type: "AMAZON_BILLS" },
+    { source_data_type: "AMAZON_REFUNDS" },
+    { source_data_type: "CLEANING_FEES_TO_MANAGER" },
+    { source_data_type: "OWNER_PAYOUT" },
   ],
 };
 
@@ -174,7 +180,7 @@ const AccountingRulesForm = () => {
               contact_id: "",
               contact_name: "",
             },
-            currency: "",
+            currency: "USD",
             date: "",
             due_date: "",
             reference: "",
