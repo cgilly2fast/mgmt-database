@@ -78,9 +78,7 @@ const Calendar = (props) => {
   const [calendar, setCalendar] = useState();
   const [reservationDetail, setReservationDetail] = useState();
   const { id } = useParams();
-
   const calendarId = calendar?.id && calendar?.id;
-
   const unitData = calendar?.unit && calendar?.unit;
 
   useEffect(() => {
@@ -94,16 +92,12 @@ const Calendar = (props) => {
   }, []);
 
   useEffect(() => {
-    // setLoading(true);
     getCalendarlist();
-    // setLoading(false);
   }, [id]);
 
   const getCalendarlist = async () => {
-    // setLoading(true);
     const calendarList = await getCalendar(id);
     setCalendar(calendarList);
-    // setLoading(false);
   };
 
   const handleClick = (arg) => {
@@ -128,14 +122,6 @@ const Calendar = (props) => {
     setShow(false);
   };
 
-  const handleCloseCanvas = () => {
-    setShowCanvas(false);
-  };
-
-  const handleCloseModel = () => {
-    setShowModel(false);
-  };
-
   const handleSelect = (e) => {
     const id = e.target.value;
     history.push(`/calendar/${id}`);
@@ -155,7 +141,6 @@ const Calendar = (props) => {
   }, [calendar]);
 
   useEffect(() => {
-    // setLoading(true);
     if (reservationList?.length) {
       const data = reservationList.map((value) => {
         return {
@@ -174,7 +159,6 @@ const Calendar = (props) => {
         };
       });
       setReservationItems(data);
-      // setLoading(false);
     }
   }, [reservationList]);
 
@@ -462,7 +446,9 @@ const Calendar = (props) => {
           <>
             <Offcanvas
               show={showCanvas}
-              onHide={handleCloseCanvas}
+              onHide={() => {
+                setShowCanvas(false);
+              }}
               placement="end"
             >
               {!reservationloading ? (
@@ -619,7 +605,12 @@ const Calendar = (props) => {
 
         {/* Reservations Model */}
         {showModel && (
-          <Modal show={showModel} onHide={handleCloseModel}>
+          <Modal
+            show={showModel}
+            onHide={() => {
+              setShowModel(false);
+            }}
+          >
             <Modal.Header closeButton>
               <Modal.Title>
                 <div className="d-flex">
@@ -787,7 +778,9 @@ const Calendar = (props) => {
             <Modal.Footer>
               <Button
                 variant="primary"
-                onClick={handleCloseModel}
+                onClick={() => {
+                  setShowModel(false);
+                }}
                 style={{ borderRadius: "50px" }}
               >
                 Close

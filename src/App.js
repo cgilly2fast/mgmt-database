@@ -22,7 +22,7 @@ import Calendar from "./components/calendar/Calendar";
 import SelectUnit from "./components/selectUnit/SelectUnit";
 import Map from "./components/map/Map";
 import Accounting from "./components/accounting/Accounting";
-import Rules from "./components/rules/Rules";
+// import Rules from "./components/rules/Rules";
 import AccountingRulesForm from "./components/accountingRulesForm/AccountingRulesForm";
 import AllMessages from "./components/allMessages/AllMessages";
 import Chat from "./components/chat/Chat";
