@@ -144,10 +144,12 @@ export const getThreadById = async (id) => {
 };
 
 export const executeAccountingRule = async (id) => {
-  try {
-    const rule = await axios.get(ApiUrl + "/executeAccountingRule?rule_id="+ id);
-    return rule.data;
-  } catch (error) {
-    return error;
-  }
+  return new Promise(async function (resolve, reject) {
+    try {
+      const rule = await axios.get(ApiUrl + "/executeAccountingRule?rule_id="+ id);
+      resolve(rule.data);
+    } catch (error) {
+      reject(error);
+    }
+  })
 };

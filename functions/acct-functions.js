@@ -5,11 +5,9 @@ const { google } = require("googleapis");
 
 const { db } = require("./admin");
 const BigNumber = require('bignumber.js');
-const { composer } = require("googleapis/build/src/apis/composer");
-const { link } = require("fs/promises");
+//const { composer } = require("googleapis/build/src/apis/composer");
 
 const LOCAL = true;
-let unitsHash = {};
 
 const client_id = credentials.xero_client_id;
 const client_secret = credentials.xero_client_secret;
@@ -137,89 +135,6 @@ exports.callback  = functions.https.onRequest(async (req, res) => {
     console.log(err);
     res.send("Sorry, something went wrong in callback");
   }
-});
-
-exports.uploadAmazonBills  = functions.https.onRequest(async (req, res) => {
-  res.set("Cache-Control", "public, max-age=300, s-maxage=600");
-  const { XeroClient, Invoices } = require("xero-node");
-  const { TokenSet } = require("openid-client");
-  const xero = new XeroClient({
-    clientId: client_id,
-    clientSecret: client_secret,
-    redirectUris: [redirectUrl],
-    scopes: scopes.split(" "),
-  });
-
-  await xero.initialize();
-  
-  const sessionSnapshot = await db.collection("sessions").where("type","==", "xero").orderBy("created", "desc").limit(1).get()
-  await xero.setTokenSet(new TokenSet(sessionSnapshot.docs[0].data().tokenSet));
-  let tokenSet = await xero.readTokenSet();
-
-  if (tokenSet.expired()) {
-    const validTokenSet = await xero.refreshToken();
-    await saveXeroToken(validTokenSet)
-    tokenSet = validTokenSet
-  } 
-  try {
-      const rawXeroData = await getXeroAmazonBillData();
-
-      const invoices = parseAmazonBills(rawXeroData);
-      
-      
-      const newInvoices = new Invoices();
-      newInvoices.invoices = invoices;
-
-      // const inviocesRes = await xero.accountingApi.createInvoices(
-      //   xeroTenantId,
-      //   newInvoices,
-      //   false,
-      //   4
-      // );
-      // const xeroInvioces = inviocesRes.response.body.Invoices;
-      // console.log("invoice length");
-      // console.log(invoices.length);
-
-      for (let i = 0; i < xeroInvioces.length; i++) {
-        const invoiceId = xeroInvioces[i].InvoiceID;
-        const lineItems = xeroInvioces[i].LineItems;
-
-        for (let j = 0; j < lineItems.length; j++) {
-          const unitName = lineItems[j].Tracking[0].Option;
-
-          const snapshot = await db
-            .collection("owners")
-            .where("units." + unitName + ".name", "==", unitName)
-            .where("partnership", "==", true)
-            .get();
-
-          if (!snapshot.empty) {
-            let data = [];
-            snapshot.forEach((doc) => {
-              data.push(doc.data());
-            });
-            const linkedRes = await xero.accountingApi.createLinkedTransaction(
-              xeroTenantId,
-              {
-                sourceTransactionID: invoiceId,
-                sourceLineItemID: lineItems[j].LineItemID,
-                contactID: data[0].units[unitName].xero_id,
-              }
-            );
-            //console.log("linkedRes", linkedRes.response.statusCode);
-          }
-        }
-      }
-
-      res.send(rawXeroData);
-    } catch (err) {
-      console.log(err);
-      res.send(err);
-      // res.send(
-      //   "Sorry, something went wrong in uploadInvoices, try reconnecting by <a href='https://us-central1-ghotels-production.cloudfunctions.net/acct/connect'>clicking here</a>"
-      // );
-    }
-  
 });
 
 function getXeroAmazonBillData() {

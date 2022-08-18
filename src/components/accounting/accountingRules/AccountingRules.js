@@ -10,7 +10,8 @@ const AccountingRules = ({ item }) => {
   const handleExecuteAccountingRule = (id) => {
       setExecuteLoading(true);
       executeAccountingRule(id)
-        .then((response) => {
+        .then((response, ) => {
+          
           console.log("response", response);
           setExecuteLoading(false);
           setMessage({
@@ -21,16 +22,16 @@ const AccountingRules = ({ item }) => {
             setMessage(null);
           }, 2000);
         })
-        .catch((error) => {
-          console.log("error", error);
-          setExecuteLoading(false);
-          setMessage({
-            responseMessage: "Something want wrong!",
-            color: "red",
-          });
-          setTimeout(() => {
-            setMessage(null);
-          }, 2000);
+        .catch((err) => {
+          console.log("error", err);
+            setExecuteLoading(false);
+            setMessage({
+              responseMessage: "Something went wrong!",
+              color: "red",
+            });
+            setTimeout(() => {
+              setMessage(null);
+            }, 2000);
         });
   };
 
@@ -54,6 +55,7 @@ const AccountingRules = ({ item }) => {
         <br />
         <span>{item?.mirror_invoice?.contact?.name}</span>
       </td>
+      <td>View History</td>
       <td>
         {executeLoading && !message?.responseMessage ? (
           <Spinner animation="border" size="sm" variant="primary" />

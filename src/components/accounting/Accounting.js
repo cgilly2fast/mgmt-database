@@ -148,6 +148,7 @@ const Accounting = () => {
                   <th>TYPE</th>
                   <th></th>
                   <th>END PLATFORM</th>
+                  <th>HISTORY</th>
                   <th></th>
                   <th>Edit</th>
                 </tr>
