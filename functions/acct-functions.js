@@ -545,6 +545,11 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
     scopes: scopes.split(" "),
   });
   let rule  = {}
+  let sync = { rule_id: req.query.rule_id,
+                status: "",
+                status_detail: "",
+                invoices: []
+              }
   try {
     await xero.initialize();
     
@@ -641,7 +646,7 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
       4
       );
     xeroInvioces = inviocesRes.response.body.Invoices;
-    res.send(xeroInvioces);
+    
     
   } catch (e) {
     console.log("fail in creating invoice", e)
@@ -743,7 +748,10 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
     
     res.status(200).send("Complete")
   } else {
-    res.status(400).send("No input data")
+    sync.status = "ERROR"
+    sync.status_detail = "No input data"
+    const syncRes = await db.collection('sync').doc().set(sync)
+    res.status(404).send(new Error("No input data"))
   }
     
 })
