@@ -21,13 +21,13 @@ export default function Login() {
       setLoading(true);
       await login(emailRef.current.value, passwordRef.current.value);
       const data = await auth.currentUser?.getIdTokenResult();
-      if (!data?.claims?.isAdmin) {
-        await logout();
-        history.push("/login");
-        setError("Only Admin allowed!");
-      } else {
+      // if (!data?.claims?.isAdmin) {
+      //   await logout();
+      //   history.push("/login");
+      //   setError("Only Admin allowed!");
+      // } else {
         history.push("/");
-      }
+      //}
       // history.push("/");
     } catch {
       setError("Failed to log in");

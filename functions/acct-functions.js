@@ -2,7 +2,7 @@ const functions = require("firebase-functions");
 const moment = require("moment-timezone");
 const { credentials } = require("./development_credentials");
 const { google } = require("googleapis");
-
+const admin = require('firebase-admin')
 const { db } = require("./admin");
 const BigNumber = require('bignumber.js');
 //const { composer } = require("googleapis/build/src/apis/composer");
@@ -61,8 +61,8 @@ exports.getAllXeroContacts  = functions.https.onRequest(async (req, res) => {
   
         // const newInvoices = new Invoices();
         // newInvoices.invoices = invoices;
-  
-        const contactsRes = await xero.accountingApi.getContacts(xeroTenantId)
+        const contactsRes = await xero.accountingApi.getOrganisations('76ba9d17-a490-4697-8c70-c4b8ce87c1c4')
+        //const contactsRes = await xero.accountingApi.getContacts(xeroTenantId)
         //const contactsRes = await xero.accountingApi.getReportsList(xeroTenantId)
         res.send(contactsRes);
         //res.send(invoices)
@@ -220,7 +220,7 @@ function getXeroAmazonRefundDataByUnits(unitsMap) {
 }
 
 function parseAmazonBills(rule, data) {
-  const TemplateEngine = require("./template-engine")
+  const TemplateEngine = require("./utils/template-engine")
   const templateEngine = new TemplateEngine(rule)
 
   let checkExists = {};
@@ -244,17 +244,17 @@ function parseAmazonBills(rule, data) {
 
           
           invoiceNumber: templateEngine.exec(rule.invoice.reference, data[i]),
-          url: "https://stinsonbeachpm.com",
+          
           currencyCode: "USD",
           status: "DRAFT", //AUTHORISED
           lineAmountTypes: "NoTax",
-          date: templateEngine.exec(rule.invoice.date, data[i]),
-          dueDate: templateEngine.exec(rule.invoice.due_date, data[i]),
+          //date: templateEngine.exec(rule.invoice.date, data[i]),
+          //dueDate: templateEngine.exec(rule.invoice.due_date, data[i]),
           lineItems: [
             {
               description: templateEngine.exec(rule.invoice.line_items.description, data[i]) ,
               quantity: templateEngine.exec(rule.invoice.line_items.quantity, data[i]),
-              unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
+              //unitAmount: templateEngine.exec(rule.invoice.line_items.unit_amount, data[i]), //GET FROM DATABASE
               accountCode: templateEngine.exec(rule.invoice.line_items.account_code, data[i]),
               tracking: [
                 {
@@ -294,7 +294,7 @@ function parseAmazonBills(rule, data) {
 }
 
 function parseAmazonRefunds(rule, data) {
-  const TemplateEngine = require("./template-engine")
+  const TemplateEngine = require("./utils/template-engine")
   const templateEngine = new TemplateEngine(rule)
 
   let checkExists = {};
@@ -312,7 +312,7 @@ function parseAmazonRefunds(rule, data) {
 
           
           reference: templateEngine.exec(rule.invoice.reference, data[i]),
-          url: "https://stinsonbeachpm.com",
+          
           currencyCode: "USD",
           status: "DRAFT", //AUTHORISED
           lineAmountTypes: "NoTax",
@@ -381,7 +381,7 @@ function parseAmazonLineItems(data) {
     ],
     "description": "Refund: <%item_description%>"
 }}}
-  const TemplateEngine = require("./template-engine")
+  const TemplateEngine = require("./utils/template-engine")
   const templateEngine = new TemplateEngine(rule)
 
   
@@ -510,7 +510,7 @@ exports.refreshXeroConnection = functions.https.onRequest(async (req, res) => {
   if (tokenSet.expired()) {
     const validTokenSet = await xero.refreshToken();
     await saveXeroToken(xero, validTokenSet)
-    res.send("Xero Connection Refreshed")
+    res.status(200).send("Xero Connection Refreshed")
   } else {
     res.send("Xero token not expired. Expires at: " + moment(tokenSet.expires_at *1000).utcOffset("-0700").toString() + " (PST)")
   }
@@ -548,7 +548,8 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
   let sync = { rule_id: req.query.rule_id,
                 status: "",
                 status_detail: "",
-                invoices: []
+                invoices: [],
+                created_at: admin.firestore.FieldValue.serverTimestamp(),
               }
   try {
     await xero.initialize();
@@ -646,13 +647,43 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
       4
       );
     xeroInvioces = inviocesRes.response.body.Invoices;
-    
+
+    sync.status = "SYNCED"
+    sync.status_detail += "Invoices created successfully"
+    for(let i = 0; i < xeroInvioces.length; i++) {
+      if(!xeroInvioces[i].HasErrors){
+        let description = ""
+        let url = "https://go.xero.com/organisationlogin/default.aspx?shortcode=" + rule.account.short_code;
+        if(xeroInvioces[i].Type === "ACCPAY") {
+          description = xeroInvioces[i].InvoiceNumber
+          url += "&redirecturl=/AccountsPayable/Edit.aspx?InvoiceID=" 
+        } else{
+          description = xeroInvioces[i].Reference
+          url += "&redirecturl=/AccountsReceivable/View.aspx?InvoiceID=" 
+          
+        }
+        sync.invoices.push({
+          invoice_id: xeroInvioces[i].InvoiceID,
+          description: description,
+          created_at: moment(xeroInvioces[i].UpdatedDateUTC).toString(),
+          url: url += xeroInvioces[i].InvoiceID
+        })
+      } else {
+        sync.status = "ERROR"
+      }
+    }
+    if(sync.status == "ERROR") {
+      throw new Error
+    }
     
   } catch (e) {
+    sync.status = "ERROR"
+    sync.status_detail += "Fail in creating invoice"
     console.log("fail in creating invoice", e)
     res.status(400).send("fail in creating invoice")
+    await db.collection('sync').doc().set(sync)
+    throw e
   }
-  
   if(rule.billable && rule.type !== "AMAZON_REFUNDS") {
     
     for (let i = 0; i < xeroInvioces.length; i++) {
@@ -673,8 +704,12 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
               }
             );
           } catch (e) {
+            sync.status = "ERROR"
+            sync.status_detail += ", Fail in billing line item"
             console.log("Fail in billing line item",e)
             res.status(400).send("Fail in billing line item")
+            await db.collection('sync').doc().set(sync)
+            throw e
           }
           //console.log("linkedRes", linkedRes.response.statusCode);
         }
@@ -700,9 +735,12 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
                   
                   
                 } catch (e) {
-                  //console.log(e.response.body.Elements[0].ValidationErrors)
+                  sync.status = "ERROR"
+                  sync.status_detail += ", Fail in connecting billable expense target"
                   console.log("Fail in connecting billable expense target",e)
                   res.status(400).send("Fail in connecting billable expense target")
+                  await db.collection('sync').doc().set(sync)
+                  throw e
                 }
           }
         }
@@ -734,30 +772,34 @@ exports.executeAccountingRule = functions.https.onRequest(async (req, res) =>{
           4
         );
         xeroInvioces = mirrorInviocesRes.response.body.Invoices;
-        res.send(mirrorInviocesRes)
+        
       } catch (e) {
         if(e.response !== undefined) {
           console.log(e.response.body);
         }else {
           console.log(e)
         }
-        
+        sync.status = "ERROR"
+        sync.status_detail += ", Fail in mirror invoice"
         res.status(400).send("Fail in mirror invoice")
+        await db.collection('sync').doc().set(sync)
+        throw e
       }
     } 
     
-    res.status(200).send("Complete")
+    
   } else {
     sync.status = "ERROR"
     sync.status_detail = "No input data"
-    const syncRes = await db.collection('sync').doc().set(sync)
     res.status(404).send(new Error("No input data"))
+    throw new Error
   }
-    
+  res.status(200).send("Complete")
+  const syncRes = await db.collection('sync').doc().set(sync)
 })
 
 function parseAccountingRuleInvoices(rule, data) {
-  const TemplateEngine = require("./template-engine")
+  const TemplateEngine = require("./utils/template-engine")
   const templateEngine = new TemplateEngine(rule)
   
 
@@ -815,7 +857,7 @@ function parseAccountingRuleInvoices(rule, data) {
 }
 
 function parseMirrorInvoices(rule, data) {
-  const TemplateEngine = require("./template-engine")
+  const TemplateEngine = require("./utils/template-engine")
   const templateEngine = new TemplateEngine(rule)
 
   let jsonXeroData =  {
@@ -1165,3 +1207,18 @@ function getBankTxns(bankTxnIds, tennat_id, xero) {
       resolve(sourceTxns)
     })
 }
+
+exports.getSyncObjects = functions.https.onRequest(async (req, res) => {
+
+  const snapshot = await db.collection('sync').where("rule_id", "==", req.query.rule_id).orderBy("created_at", "desc" ).get()
+  if (snapshot.empty) {
+    console.log('No matching documents.');
+    res.status(404).send('No matching documents.')
+    return;
+  }  
+  let result = []
+  snapshot.forEach(doc => {
+    result.push({ ...doc.data(), id: doc.id })
+  });
+    res.status(200).send(result)
+})

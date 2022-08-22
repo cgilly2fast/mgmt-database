@@ -181,3 +181,14 @@ export const executeAccountingRule = async (id) => {
     }
   })
 };
+
+export const getSyncObject = async (id) => {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const syncObjs = await axios.get(ApiUrl + "/getSyncObject?rule_id="+ id);
+      resolve(syncObjs.data);
+    } catch (error) {
+      reject(error);
+    }
+  })
+};

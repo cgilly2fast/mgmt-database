@@ -421,7 +421,7 @@ exports.updateCalendar = functions.https.onRequest(async (req, res) => {
             min_stay: min_stay,
             price: {
               currency: currency,
-              price: price * 10,
+              price: price,
             },
             status: {
               reason: reason,
@@ -435,7 +435,7 @@ exports.updateCalendar = functions.https.onRequest(async (req, res) => {
             date: date,
             day: day,
             price: {
-              price: price * 10,
+              price: price,
               currency: currency,
             },
             status: { available: true },
@@ -590,7 +590,7 @@ const adCalendarCollection = async () => {
               day: values?.day,
               date: values?.date,
               price: {
-                price: values?.price.price,
+                price: values?.price.amount,
                 currency: values?.price.currency,
               },
               status: {

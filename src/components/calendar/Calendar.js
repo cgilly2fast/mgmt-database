@@ -30,7 +30,7 @@ function renderEventContent(eventInfo) {
           <>
             <b>
               Price: $
-              {eventInfo?.event?.extendedProps?.value?.price?.price / 10}
+              {eventInfo?.event?.extendedProps?.value?.price?.price}
             </b>
             <br />
           </>
@@ -171,7 +171,7 @@ const Calendar = (props) => {
             if (values.date >= moment(new Date()).format("YYYY-MM-DD")) {
               return {
                 type: "price",
-                title: "$" + values?.price.price / 10,
+                title: "$" + values?.price.amount ,
                 extendedProps: {
                   date: values?.date,
                   value: values,
@@ -274,7 +274,7 @@ const Calendar = (props) => {
                 ...data,
                 day: data?.value?.day,
                 min_stay: data?.value?.min_stay,
-                price: data?.value?.price?.price / 10,
+                price: data?.value?.price?.price,
                 currency: data?.value?.price?.currency,
                 reason: data?.value?.status?.reason,
               }}
