@@ -4,9 +4,33 @@
   border-radius: 2px;
   margin-right: 8px;
 }
+
 .icon {
   width: 30px;
   height: 30px;
+  border-radius: 2px;
+  margin-right: 8px;
+}
+
+.units-div {
+  width: 100%;
+  display: flex;
+  max-width: 50%;
+  justify-content: space-between !important;
+}
+
+.units-row :hover {
+  background: #adadad;
+  border-radius: 5px;
+}
+
+.units-pic-name-div:hover {
+  text-decoration: none;
+}
+
+.not-image {
+  background-color: #adadad;
+  padding: 6px 12px;
   border-radius: 2px;
   margin-right: 8px;
 }

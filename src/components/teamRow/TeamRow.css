@@ -1,0 +1,14 @@
+.teams-list-div {
+  display: flex;
+  width: 50%;
+  justify-content: space-between;
+}
+
+.teams-row :hover {
+  background: #adadad;
+  border-radius: 5px;
+}
+
+.teams-pic-name-div:hover {
+  text-decoration: none;
+}

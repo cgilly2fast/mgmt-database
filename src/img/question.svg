@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.6 (67491) - http://www.bohemiancoding.com/sketch -->
+    <title>question</title>
+    <desc>Created with Sketch.</desc>
+    <g id="question" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="question-circle-copy-6" transform="translate(1.000000, 1.000000)" stroke="#D0CDD4" stroke-width="1.2">
+            <path d="M6.75,6.75 C6.7502185,5.6058219 7.60909032,4.6440076 8.74595163,4.51481802 C9.88281294,4.38562845 10.9355943,5.1302081 11.1925341,6.24516349 C11.4494739,7.36011889 10.8287415,8.49035727 9.75,8.87175 C9.3003061,9.03074073 8.99974995,9.45602768 9,9.933 L9,10.6875" id="Path" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M9,12.9375 C8.84466991,12.9375 8.71875,13.0634199 8.71875,13.21875 C8.71875,13.3740801 8.84466991,13.5 9,13.5 C9.15533009,13.5 9.28125,13.3740801 9.28125,13.21875 C9.28125,13.0634199 9.15533009,12.9375 9,12.9375" id="Path" stroke-linecap="round" stroke-linejoin="round"></path>
+            <circle id="Oval" cx="9" cy="9" r="8.4375"></circle>
+        </g>
+    </g>
+</svg>

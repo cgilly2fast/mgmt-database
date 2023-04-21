@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.6 (67491) - http://www.bohemiancoding.com/sketch -->
+    <title>settings</title>
+    <desc>Created with Sketch.</desc>
+    <g id="settings" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+        <g id="settings-slider" transform="translate(1.000000, 1.000000)" stroke="#D0CDD4" stroke-width="1.2">
+            <rect id="Rectangle" x="0.56325" y="0.5625" width="16.875" height="16.875" rx="1.5"></rect>
+            <path d="M9.56325,11.8125 L14.06325,11.8125" id="Path"></path>
+            <path d="M3.93825,11.8125 L6.18825,11.8125" id="Path"></path>
+            <path d="M9.56325,11.8125 C9.56324991,12.7443829 8.80788274,13.4998618 7.87599989,13.4999998 C6.94411704,13.5001378 6.18852616,12.7448826 6.18825007,11.8129998 C6.18797399,10.881117 6.94311723,10.1254142 7.875,10.125 C8.32268276,10.124801 8.75209769,10.3025029 9.06872756,10.6189921 C9.38535743,10.9354813 9.56325004,11.3648172 9.56325,11.8125 Z" id="Path"></path>
+            <path d="M10.68825,6.1875 L3.93825,6.1875" id="Path"></path>
+            <path d="M14.06325,6.1875 C14.0632499,5.25561714 13.3078827,4.50013818 12.3759999,4.50000019 C11.444117,4.49986219 10.6885262,5.2551174 10.6882501,6.18700022 C10.687974,7.11888305 11.4431172,7.87458583 12.375,7.875 C13.3071019,7.87500009 14.0628359,7.11960182 14.06325,6.1875 Z" id="Path"></path>
+        </g>
+    </g>
+</svg>

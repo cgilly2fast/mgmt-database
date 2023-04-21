@@ -1,0 +1,98 @@
+[
+    {
+        "name": "New inquiry",
+        "type": "new_inquiry",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-inquiry.svg"
+    },
+    {
+        "name": "New pre-approval",
+        "type": "new_pre_approval",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-request.svg"
+    },
+    {
+        "name": "New request to book",
+        "type": "new_request_to_book",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-alteration.svg"
+    },
+    {
+        "name": "New reservation",
+        "type": "new_reservation",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-alteration.svg"
+    },
+    {
+        "name": "New cancellation",
+        "type": "new_cancellation",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-cancelled.svg"
+    },
+    {
+        "name": "Expired pre-approval",
+        "type": "expired_pre_approval",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-cancelled.svg"
+    },
+    {
+        "name": "Inquiry/booking denied",
+        "type": "inquiry_denied",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-cancelled.svg"
+    },
+    {
+        "name": "New special offer",
+        "type": "new_special_offer",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-inquiry.svg"
+    },
+    {
+        "name": "New payment issue",
+        "type": "new_payment_issue",
+        "short_type": "event",
+        "icon": "mgmt-web/src/img/booking-cancelled.svg"
+    },
+    {
+        "name": "After a new reservation",
+        "type": "after_a_new_reservation",
+        "short_type": "scheduled",
+        "icon": "mgmt-web/src/img/booking-alteration.svg"
+    },
+    {
+        "name": "Before check-in",
+        "type": "before_check_in",
+        "short_type": "scheduled",
+        "icon": "mgmt-web/src/img/check-in.svg"
+    },
+    {
+        "name": "After check-in",
+        "type": "after_check_in",
+        "short_type": "scheduled",
+        "icon": "mgmt-web/src/img/check-in.svg"
+    },
+    {
+        "name": "Before check-out",
+        "type": "before_check_out",
+        "short_type": "scheduled",
+        "icon": "mgmt-web/src/img/check-out.svg"
+    },
+    {
+        "name": "After check-out",
+        "type": "after_check_out",
+        "short_type": "scheduled",
+        "icon": "mgmt-web/src/img/check-out.svg"
+    },
+    {
+        "name": "On a given day of the week",
+        "type": "on_a_given_day_of_the_week",
+        "short_type": "scheduled",
+        "icon": "mgmt-web/src/img/check-out.svg"
+    },
+    {
+        "name": "After a cancel reservation",
+        "type": "after_a_cancel_reservation",
+        "short_type": "scheduled",
+        "icon": "mgmt-web/src/img/booking-cancelled.svg"
+    }
+]

@@ -1,0 +1,40 @@
+.setting-main-wrapper {
+  margin-top: 24px;
+  padding: 24px 0 0;
+  border-top: 1px solid #e5e2e9;
+}
+
+.setting-h3 {
+  font-size: 1.25em;
+  color: #230b41;
+  padding-right: 40px;
+}
+
+.setting-wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.specify-reservation-duration-wrapper {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  border: 1px solid #e5e2e9;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.selected-setting {
+  border: 1px solid #47c693;
+}
+
+.setting-checkbox {
+  margin-right: 10px;
+}
+
+.duration-select {
+  margin-top: 20px;
+  height: 40px;
+  border-radius: 5px;
+  padding: 0px 10px;
+}

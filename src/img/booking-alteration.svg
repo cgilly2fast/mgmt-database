@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53 (72520) - https://sketchapp.com -->
+    <title>booking-alteration</title>
+    <desc>Created with Sketch.</desc>
+    <g id="booking-alteration" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+        <g id="calendar-refresh" transform="translate(1.000000, 1.000000)" stroke="#D0CDD4" stroke-width="1.2">
+            <path d="M6.1875,12.9375 L1.6875,12.9375 C1.06617966,12.9375 0.5625,12.4338203 0.5625,11.8125 L0.5625,2.8125 C0.5625,2.19117966 1.06617966,1.6875 1.6875,1.6875 L11.8125,1.6875 C12.4338203,1.6875 12.9375,2.19117966 12.9375,2.8125 L12.9375,6.1875" id="Path"></path>
+            <path d="M0.5625,5.0625 L12.9375,5.0625" id="Path"></path>
+            <path d="M3.9375,2.8125 L3.9375,0.5625" id="Path"></path>
+            <path d="M9.5625,2.8125 L9.5625,0.5625" id="Path"></path>
+            <polyline id="Path" points="11.25 14.0625 8.4375 14.0625 8.4375 16.875"></polyline>
+            <path d="M17.00025,14.613 C16.386653,16.401846 14.6483858,17.5558235 12.7616308,17.4268777 C10.8748759,17.2979319 9.30976957,15.918193 8.94525,14.0625" id="Path"></path>
+            <polyline id="Path" points="14.625 11.8125 17.4375 11.8125 17.4375 9"></polyline>
+            <path d="M8.87475,11.26275 C9.48724062,9.47282303 11.2257932,8.31761471 13.1132226,8.44643089 C15.0006519,8.57524707 16.5661295,9.9559539 16.92975,11.8125" id="Path"></path>
+        </g>
+    </g>
+</svg>

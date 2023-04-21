@@ -8,3 +8,11 @@
 .unit_card_listings {
   width: 100%;
 }
+
+.not-image-wrapper {
+  width: 300px;
+  height: 200px;
+  border-radius: 2px;
+  margin-right: 8px;
+  background: #adadad;
+}

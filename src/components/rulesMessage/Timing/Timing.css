@@ -1,0 +1,52 @@
+.timing-main-wrapper {
+  margin-top: 24px;
+  padding: 24px 0 0;
+  border-top: 1px solid #e5e2e9;
+}
+
+.timing-wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.timing-h3 {
+  font-size: 1.25em;
+  color: #230b41;
+  padding-right: 40px;
+}
+
+.timing-button {
+  background-color: #f8f7f9;
+  border: none;
+}
+
+.timing-button:hover {
+  border: 1px solid #d0cdd4 !important;
+}
+
+.timing-ui {
+  max-height: 300px !important;
+  min-width: 112px !important;
+  max-width: 280px !important;
+  background: #fff;
+  box-shadow: 0 2px 4px -1px rgb(0 0 0 / 20%), 0 4px 5px 0 rgb(0 0 0 / 14%),
+    0 1px 10px 0 rgb(0 0 0 / 12%);
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 4px;
+  outline: 0;
+  padding: 10px !important;
+}
+
+/* .dropdown-toggle {
+  width: 70%;
+}
+
+.dropdown-toggle::after {
+  margin-left: 21.255em !important;
+} */
+
+.dropdown-after-menu.show {
+  width: 70%;
+}

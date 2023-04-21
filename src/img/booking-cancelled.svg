@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53 (72520) - https://sketchapp.com -->
+    <title>booking-cancelled</title>
+    <desc>Created with Sketch.</desc>
+    <g id="booking-cancelled" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linejoin="round">
+        <g id="calendar-disable-1" transform="translate(1.000000, 1.000000)" stroke="#D0CDD4" stroke-width="1.2">
+            <circle id="Oval" stroke-linecap="round" cx="12.9375" cy="12.9375" r="4.5"></circle>
+            <path d="M14.625,11.25 L11.25,14.625" id="Path" stroke-linecap="round"></path>
+            <path d="M11.25,11.25 L14.625,14.625" id="Path" stroke-linecap="round"></path>
+            <path d="M6.1875,12.9375 L1.6875,12.9375 C1.06617966,12.9375 0.5625,12.4338203 0.5625,11.8125 L0.5625,2.82375 C0.5625,2.20242966 1.06617966,1.69875 1.6875,1.69875 L11.8125,1.69875 C12.4338203,1.69875 12.9375,2.20242966 12.9375,2.82375 L12.9375,6.1875" id="Path" stroke-linecap="round"></path>
+            <path d="M0.5625,5.0625 L12.9375,5.0625" id="Path"></path>
+            <path d="M3.93225,2.8125 L3.93225,0.5625" id="Path" stroke-linecap="round"></path>
+            <path d="M9.55725,2.8125 L9.55725,0.5625" id="Path" stroke-linecap="round"></path>
+        </g>
+    </g>
+</svg>

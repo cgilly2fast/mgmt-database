@@ -1,0 +1,19 @@
+.preview-modal {
+  max-width: 720px !important;
+  top: 100px;
+  max-height: 90vh !important;
+}
+
+.preview-wrapper {
+  height: 390px;
+  overflow-y: auto;
+  background: #f8f7f9;
+  padding: 24px;
+  max-height: 390px;
+  border: none;
+  resize: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin-top: 15px;
+}

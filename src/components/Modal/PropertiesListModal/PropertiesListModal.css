@@ -1,0 +1,24 @@
+.properties-list-wrapper-modal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.properties-modal {
+  max-height: 700px;
+  overflow-y: scroll;
+  padding: 40px 32px 0px !important;
+  margin-bottom: 30px;
+}
+
+.properties-list-img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% !important;
+  margin-right: 14px;
+}
+
+.properties-modal::-webkit-scrollbar {
+  display: none;
+}
