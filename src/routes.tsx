@@ -14,6 +14,7 @@ import AllMessages from "./components/allMessages/AllMessages";
 import Chat from "./components/chat/Chat";
 import MessagingRules from "./components/MessagingRules/MessagingRules";
 import RulesMessage from "./components/rulesMessage/RulesMessage";
+import Accounting from "./components/accounting/Accounting";
 
 export default function Router() {
   let element = useRoutes([
@@ -68,6 +69,10 @@ export default function Router() {
         {
           path: "/teammate/:teammateId",
           element: <Teammate />,
+        },
+        {
+          path: "/accounting-connections",
+          element: <Accounting />,
         },
       ],
     },

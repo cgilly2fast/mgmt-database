@@ -73,6 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 width: !menuCollapse ? "100%" : "37px",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
+                padding: "0.5rem 1rem",
               }}
             >
               {!menuCollapse ? "Mgmt Database" : "MD"}

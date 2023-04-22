@@ -203,7 +203,7 @@ const MessagingRules: React.FC = () => {
                         )}
                       </td>
                       <td>
-                        <div  className="text-end">
+                        <div className="text-end">
                           <button
                             type="button"
                             data-toggle="dropdown"

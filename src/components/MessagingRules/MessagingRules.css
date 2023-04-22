@@ -12,13 +12,10 @@
 }
 
 .dropdown-menu.show {
-  width: 70%;
-}
-
-.dropdown-menu.show {
   background: #ffffff;
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.15);
   border-radius: 15px;
+  width: 100px;
 }
 
 .more-button {
@@ -30,6 +27,7 @@
 .add-new-button-div {
   display: flex;
   justify-content: flex-end;
+  padding-bottom: 12px;
 }
 
 .add-new-button {
@@ -145,4 +143,12 @@
 
 .more-li:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+.dropdown-toggle {
+  width: 70%;
+}
+
+.dropdown-toggle::after {
+  margin-left: 21.255em !important;
 }

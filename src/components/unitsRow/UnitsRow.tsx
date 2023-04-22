@@ -13,7 +13,7 @@ export const UnitsRow: React.FC<UnitsRowProps> = ({ unit }: UnitsRowProps) => {
   const listings = unit.listings === undefined ? {} : unit.listings;
   return (
     <Row className="units-row">
-      <div className="units-div py-2">
+      <div className="units-div px-3 py-2">
         <div>
           <NavLink
             to={{

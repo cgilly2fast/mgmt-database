@@ -283,3 +283,54 @@ export type ruleDetailtype = {
   units?: any
 }
 
+export type accountListtype = {
+  account?: string
+  account_id?: string
+  id?: string
+  platform?: string
+  short_code?: string
+  status?: string
+  type?: string
+}
+
+export type ArulesListtype = {
+  account?: {
+    account?: string
+    account_id?: string
+    id?: string
+    platform?: string
+    short_code?: string
+  }
+  billable?: boolean
+  commission_rate?: string
+  email_receipt?: boolean
+  filter?: boolean
+  id?: string
+  invoice?: {
+    contact?: {
+      contact_id?: string
+      name?: string
+      xero_id: string
+    }
+    currency?: string
+    date?: string
+    due_date?: string
+    line_items?: {
+      account_code?: number
+      description?: string
+      quantity?: number
+      tracking?: any
+      unit_amount?: string
+    }
+    reference?: string
+    type?: string
+  }
+  mirror?: string
+  source_data?: string
+  source_data_type?: string
+  status?: string
+  type?: string
+  units_billable?: any
+  units_filter?: any
+}
+

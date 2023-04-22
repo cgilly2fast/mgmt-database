@@ -1,0 +1,10 @@
+.po_input_wrapper {
+  display: flex;
+  position: relative;
+}
+
+.copy-icon {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+}
