@@ -1,0 +1,72 @@
+[
+    {
+        "id": 1,
+        "value": "double_bed",
+        "text": "Double"
+    },
+    {
+        "id": 2,
+        "value": "queen_bed",
+        "text": "Queen"
+    },
+    {
+        "id": 3,
+        "value": "single_bed",
+        "text": "Single"
+    },
+    {
+        "id": 4,
+        "value": "sofa_bed",
+        "text": "Sofa bed"
+    },
+    {
+        "id": 5,
+        "value": "king_bed",
+        "text": "King"
+    },
+    {
+        "id": 6,
+        "value": "small_double_bed",
+        "text": "Small double"
+    },
+    {
+        "id": 7,
+        "value": "couch",
+        "text": "Sofa"
+    },
+    {
+        "id": 8,
+        "value": "bunk_bed",
+        "text": "Bunk bed"
+    },
+    {
+        "id": 9,
+        "value": "floor_mattress",
+        "text": "Floor mattress"
+    },
+    {
+        "id": 10,
+        "value": "air_mattress",
+        "text": "Airbed"
+    },
+    {
+        "id": 11,
+        "value": "crib",
+        "text": "Cot"
+    },
+    {
+        "id": 12,
+        "value": "toddler_bed",
+        "text": "Toddler bed"
+    },
+    {
+        "id": 13,
+        "value": "hammock",
+        "text": "Hammock"
+    },
+    {
+        "id": 14,
+        "value": "water_bed",
+        "text": "Water bed"
+    }
+]

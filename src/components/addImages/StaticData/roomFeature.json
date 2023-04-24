@@ -1,0 +1,182 @@
+[
+    {
+        "id": 1,
+        "value": "wall_bed",
+        "text": "Waal bed"
+    },
+    {
+        "id": 2,
+        "value": "day_bed",
+        "text": "Day bed"
+    },
+    {
+        "id": 3,
+        "value": "pillow_top_mattress",
+        "text": "Pillow-top mattress"
+    },
+    {
+        "id": 4,
+        "value": "memory_foam_mattress",
+        "text": "Memory foam mattress"
+    },
+    {
+        "id": 5,
+        "value": "en_suite_bathroom",
+        "text": "En suite bathroom"
+    },
+    {
+        "id": 6,
+        "value": "room_darkening_shades",
+        "text": "Room-darkening shades"
+    },
+    {
+        "id": 7,
+        "value": "amazon_echo",
+        "text": "Amazon Echo"
+    },
+    {
+        "id": 8,
+        "value": "smart_tv",
+        "text": "Smart TV"
+    },
+    {
+        "id": 9,
+        "value": "tv",
+        "text": "TV"
+    },
+    {
+        "id": 10,
+        "value": "projector_and_screen",
+        "text": "Projector and screen"
+    },
+    {
+        "id": 11,
+        "value": "cable_tv",
+        "text": "Cable TV"
+    },
+    {
+        "id": 12,
+        "value": "netflix",
+        "text": "Netflix"
+    },
+    {
+        "id": 13,
+        "value": "HBO_GO",
+        "text": "HBO GO"
+    },
+    {
+        "id": 14,
+        "value": "sound_system",
+        "text": "Sound System"
+    },
+    {
+        "id": 15,
+        "value": "DVD_player",
+        "text": "DVD player"
+    },
+    {
+        "id": 16,
+        "value": "games_console",
+        "text": "Games console"
+    },
+    {
+        "id": 17,
+        "value": "mini_fridge",
+        "text": "Mini fridge"
+    },
+    {
+        "id": 18,
+        "value": "kitchenette",
+        "text": "Kitchenette"
+    },
+    {
+        "id": 19,
+        "value": "espresso_machine",
+        "text": "Espresso Machine"
+    },
+    {
+        "id": 20,
+        "value": "indoor_fireplace",
+        "text": "Indoor fireplace"
+    },
+    {
+        "id": 21,
+        "value": "air_conditioning",
+        "text": "Air conditioning"
+    },
+    {
+        "id": 22,
+        "value": "ceiling_fan",
+        "text": "Ceiling Fan"
+    },
+    {
+        "id": 23,
+        "value": "heated_floors",
+        "text": "Heated floors"
+    },
+    {
+        "id": 24,
+        "value": "whirlpool_bath",
+        "text": "Whirlpool bath"
+    },
+    {
+        "id": 25,
+        "value": "valet_stand",
+        "text": "Valet stand"
+    },
+    {
+        "id": 26,
+        "value": "wine_cooler",
+        "text": "Wine cooler"
+    },
+    {
+        "id": 27,
+        "value": "heated_towel_rail",
+        "text": "Heated towel rail"
+    },
+    {
+        "id": 28,
+        "value": "exercise_equipment",
+        "text": "Exercise equipment"
+    },
+    {
+        "id": 29,
+        "value": "high_resolution_computer_monitor",
+        "text": "High resolution computer monitor"
+    },
+    {
+        "id": 30,
+        "value": "printer",
+        "text": "Printer"
+    },
+    {
+        "id": 31,
+        "value": "fax_machine",
+        "text": "Fax machine"
+    },
+    {
+        "id": 32,
+        "value": "mountain_view",
+        "text": "Mountain view"
+    },
+    {
+        "id": 33,
+        "value": "beach_view",
+        "text": "Beach view"
+    },
+    {
+        "id": 34,
+        "value": "terrace",
+        "text": "Terrace"
+    },
+    {
+        "id": 35,
+        "value": "balcony",
+        "text": "Balcony"
+    },
+    {
+        "id": 36,
+        "value": "travel_cot",
+        "text": "Travel cot"
+    }
+]

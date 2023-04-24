@@ -294,6 +294,8 @@ export type accountListtype = {
 }
 
 export type ArulesListtype = {
+  mirror_invoice: any;
+  mirror_account: any;
   account?: {
     account?: string
     account_id?: string
@@ -332,5 +334,88 @@ export type ArulesListtype = {
   type?: string
   units_billable?: any
   units_filter?: any
+}
+
+export type messagetype = {
+  color: string
+  responseMessage: string
+}
+
+export type typeValue = {
+  type: string
+}
+
+export type unitValue = {
+  account_code: string
+  bill_to: string
+  unit_id: string
+  unit_name: string
+}
+
+export type filterValue = {
+  unit_id: string
+  unit_name: string
+}
+
+export type sourceDataTypeValue = {
+  source_data_type: string
+}
+
+export type statusValue = {
+  status: string
+}
+
+export type connectionValue = {
+  account: string
+  account_id: string
+  connection_id: string
+  platfrom: undefined | string
+}
+
+export type invoiceTypeValue = {
+  type: string
+}
+
+export type mirrorInvoiceTypeValue = {
+  type?: string
+  contact?: {
+    contact_id?: string
+    contact_name?: string
+  }
+  currency?: string
+  date?: string
+  due_date?: string
+  reference?: string
+  line_items?: {
+    account_code?: string
+    description?: string
+    quantity?: string
+    unit_amount?: string
+    tracking?: [{
+      name?: string
+      option?: string
+    }]
+  }
+}
+
+export type RuleHistorytype = {
+  color: string
+  responseMessage: string
+}
+
+export type syncListtype = {
+  created_at: any
+  id: string
+  invoices?: [{
+    account_id: string
+    created_at: string
+    description: string
+    invoice_id: string
+    url: string
+  }]
+  mirror_invoices: any
+  rule_id:string
+  status:string
+  status_details:string
 }
 

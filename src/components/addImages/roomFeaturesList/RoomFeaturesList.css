@@ -1,0 +1,135 @@
+.accordian-item-wrapper {
+  box-shadow: 0 3px 10px 5px rgb(0 0 0 / 5%);
+  margin: 20px 0px;
+  border: 1px solid lightgray !important;
+  border-radius: 10px !important;
+}
+
+.accordian-item-wrapper:hover {
+  box-shadow: 0px 4px lightblue;
+}
+
+.accordian-header-wrapper {
+  height: 120px;
+  padding-top: 10px;
+}
+
+.accordian-header-wrapper2 {
+  height: 100px;
+  padding-top: 10px;
+}
+
+.room-features-select {
+  width: 25% !important;
+  box-shadow: none !important;
+  padding: 10px;
+  height: 50px;
+}
+
+.room-features-select:active {
+  border: 1px solid lightgray !important;
+}
+
+.room-features-select:focus {
+  border: 1px solid lightgray !important;
+}
+
+.accordian-body-wrapper {
+  border-top: 1px solid lightgray;
+}
+
+.images-modal {
+  max-width: 800px !important;
+}
+
+.accordion-button {
+  box-shadow: none !important;
+}
+
+.accordion-button:not(.collapsed) {
+  color: black;
+  background-color: #fff;
+}
+
+.selected-photos-wrapper {
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.room-feature-wrapper {
+  background: lightgray;
+  border-radius: 33px;
+  padding: 10px 15px;
+  color: lightslategray;
+  align-items: center;
+  display: flex;
+  margin: 10px;
+}
+
+.cross-mark {
+  margin: 0px;
+  cursor: pointer;
+  background: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+.accordian-footer-wrappper {
+  padding-top: 15px;
+  color: #17a2b8;
+  font-weight: 600;
+  width: 20%;
+  cursor: pointer;
+}
+
+.incomplete {
+  margin: 0px;
+  color: #e2390c;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.complete {
+  margin: 0px;
+  color: #17a2b8;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.incomplete-span {
+  font-weight: 600;
+  color: red;
+}
+
+.add-photos-button {
+  padding: 5px 10px;
+  background: #17a2b8;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: none;
+  border: 0px;
+  border-radius: 33px;
+}
+
+.cross-button {
+  position: absolute;
+  top: 15px;
+  left: 210px;
+  background: #fff;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  margin: 0px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.delete-modal-header {
+  justify-content: center !important;
+  color: #ff0036;
+}

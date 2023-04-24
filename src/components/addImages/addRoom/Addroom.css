@@ -1,0 +1,82 @@
+.addroom-wrapper {
+  box-shadow: 0 3px 10px 5px rgb(0 0 0 / 5%);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.addroom-button {
+  background: #17a2b8;
+  height: 35px;
+  padding: 5px 10px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 33px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addroom-button:hover {
+  box-shadow: 4px 4px lightgray;
+}
+
+.add-room-modal-dialog {
+  max-width: 1000px !important;
+}
+
+.add-room-modal-body {
+  height: 380px;
+  display: flex;
+  flex-direction: row;
+  padding: 30px !important;
+  overflow-y: scroll;
+}
+
+.add-room-modal-body::-webkit-scrollbar {
+  display: none;
+}
+
+.no-room-inner-wrapper {
+  border: 5px dotted lightgray;
+  width: 33%;
+  text-align: center;
+  padding: 50px;
+}
+
+.indoor-div {
+  width: 100%;
+  margin-right: 35px;
+}
+
+.outer-div {
+  width: 100%;
+}
+
+.room-type-title {
+  font-size: 25px !important;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.plus-minus {
+  background: none;
+  border: 1px solid;
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  margin: 0px 10px;
+}
+
+.room-list-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0px;
+  align-items: baseline;
+}
+
+.listing-div {
+  display: flex;
+  width: 50%;
+  flex-wrap: wrap;
+}

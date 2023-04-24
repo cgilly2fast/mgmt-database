@@ -4,10 +4,10 @@ import "./Accounting.css";
 import { BsPencil } from "react-icons/bs";
 import db from "../../admin";
 import { Link } from "react-router-dom";
-// import AccountingRules from "./accountingRules/AccountingRules";
 import Loader from "../loader/Loader";
 import { accountListtype } from "../../API/Types";
 import CreatePOModal from "../Modal/CreatePOModal/CreatePOModal";
+import AccountingRules from "./accountingRules/AccountingRules";
 
 // const rulesList = [
 //   // {
@@ -59,8 +59,6 @@ const Accounting: React.FC = () => {
   const [accountList, setAccountList] = useState<accountListtype[]>([]);
   const [rulesList, setRulesList] = useState([]);
   const [currentPONumber, setCurrentPONumber] = useState(null);
-
-  console.log("rulesList", rulesList);
 
   useEffect(() => {
     setLoading(true);
@@ -178,11 +176,11 @@ const Accounting: React.FC = () => {
                   <th>Edit</th>
                 </tr>
               </thead>
-              {/* <tbody>
+              <tbody>
                 {rulesList?.map((item, index) => {
                   return <AccountingRules item={item} key={index} />;
                 })}
-              </tbody> */}
+              </tbody>
             </Table>
           </div>
         </>

@@ -1,0 +1,114 @@
+[
+    {
+        "id": 1,
+        "title": "Living room",
+        "name": "livingroom",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 2,
+        "title": "Full Kitchen",
+        "name": "fullkitchen",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 3,
+        "title": "Bedroom",
+        "name": "bedroom",
+        "count": 0,
+        "isbedroom": true,
+        "type": "Indoor"
+    },
+    {
+        "id": 4,
+        "title": "Full Bathroom",
+        "name": "fullbathroom",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 5,
+        "title": "Half Bathroom",
+        "name": "halfbathroom",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 6,
+        "title": "Dining room",
+        "name": "diningroom",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 7,
+        "title": "Family room",
+        "name": "familyroom",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 8,
+        "title": "Common Space",
+        "name": "commonspace",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 9,
+        "title": "Entry",
+        "name": "entry",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 10,
+        "title": "Exterior",
+        "name": "exterior",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Indoor"
+    },
+    {
+        "id": 11,
+        "title": "Entrance",
+        "name": "entrance",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Outdoor"
+    },
+    {
+        "id": 12,
+        "title": "Patio",
+        "name": "patio",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Outdoor"
+    },
+    {
+        "id": 13,
+        "title": "Backyard",
+        "name": "backyard",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Outdoor"
+    },
+    {
+        "id": 14,
+        "title": "Frontyard",
+        "name": "frontyard",
+        "count": 0,
+        "isbedroom": false,
+        "type": "Outdoor"
+    }
+]

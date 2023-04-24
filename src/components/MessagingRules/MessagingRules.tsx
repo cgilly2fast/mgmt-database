@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Table } from "react-bootstrap";
 import NewtonLoader from "../loader/ NewtonLoader/NewtonLoader";
-// import CreateMagicalMomentsModal from '../Modal/CreateMagicalMoment/CreateMagicalMomentsModal';
 import "./MessagingRules.css";
 import NoRules from "../../img/NoRules.png";
 import More from "../../img/more.svg";
-// import PropertiesListModal from '../Modal/PropertiesListModal/PropertiesListModal';
 import { BsPencilSquare, BsXCircle } from "react-icons/bs";
 import { db } from "../../config/firebase";
 import { useNavigate } from "react-router-dom";

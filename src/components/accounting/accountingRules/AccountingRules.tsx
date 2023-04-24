@@ -1,35 +1,41 @@
-import React, { useState } from 'react';
-import { Spinner } from 'react-bootstrap';
-import { BsArrowRight, BsPencil } from 'react-icons/bs';
-import { Link } from 'react-router-dom';
-import { functions } from '../../../config/firebase';
+import React, { useState } from "react";
+import { Spinner } from "react-bootstrap";
+import { BsArrowRight, BsPencil } from "react-icons/bs";
+import { Link } from "react-router-dom";
+import { functions } from "../../../config/firebase";
+import { ArulesListtype, messagetype } from "../../../API/Types";
 
-const AccountingRules = ({ item }) => {
+interface AccountingRulesrProps {
+  item: ArulesListtype;
+}
+const AccountingRules: React.FC<AccountingRulesrProps> = ({
+  item,
+}: AccountingRulesrProps) => {
   const [executeLoading, setExecuteLoading] = useState(false);
-  const [message, setMessage] = useState({ responseMessage: '', color: '' });
+  const [message, setMessage] = useState<messagetype | null>(null);
   const callablExecuteAccountingRulep = functions.httpsCallable(
-    'accounting-executeAccountingRule',
+    "accounting-executeAccountingRule"
   );
 
-  const handleExecuteAccountingRule = id => {
+  const handleExecuteAccountingRule = (id: string | undefined) => {
     setExecuteLoading(true);
     callablExecuteAccountingRulep({ rule_id: id })
-      .then(response => {
+      .then((response) => {
         setExecuteLoading(false);
         setMessage({
-          responseMessage: 'Complete!',
-          color: 'green',
+          responseMessage: "Complete!",
+          color: "green",
         });
         setTimeout(() => {
           setMessage(null);
         }, 2000);
       })
-      .catch(err => {
-        console.log('error', err);
+      .catch((err) => {
+        console.log("error", err);
         setExecuteLoading(false);
         setMessage({
-          responseMessage: 'Something went wrong!',
-          color: 'red',
+          responseMessage: "Something went wrong!",
+          color: "red",
         });
         setTimeout(() => {
           setMessage(null);
@@ -58,7 +64,7 @@ const AccountingRules = ({ item }) => {
         <span>{item?.mirror_invoice?.contact?.name}</span>
       </td>
       <td>
-        <Link to={'/accounting/rule/' + item?.id + '/history'}>
+        <Link to={"/accounting/rule/" + item?.id + "/history"}>
           View History
         </Link>
       </td>

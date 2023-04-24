@@ -15,6 +15,9 @@ import Chat from "./components/chat/Chat";
 import MessagingRules from "./components/MessagingRules/MessagingRules";
 import RulesMessage from "./components/rulesMessage/RulesMessage";
 import Accounting from "./components/accounting/Accounting";
+import AccountingRulesForm from "./components/accountingRulesForm/AccountingRulesForm";
+import RuleHistory from "./components/ruleHistory/RuleHistory";
+import Addimages from "./components/addImages/Addimages";
 
 export default function Router() {
   let element = useRoutes([
@@ -33,6 +36,10 @@ export default function Router() {
         {
           path: "/unit/:unitId",
           element: <Unit />,
+        },
+        {
+          path: "/unit/:unitId/add-images",
+          element: <Addimages />,
         },
         {
           path: "/owners",
@@ -73,6 +80,14 @@ export default function Router() {
         {
           path: "/accounting-connections",
           element: <Accounting />,
+        },
+        {
+          path: "/create-rule",
+          element: <AccountingRulesForm />,
+        },
+        {
+          path: "/accounting/rule/:rule_id/history",
+          element: <RuleHistory />,
         },
       ],
     },
