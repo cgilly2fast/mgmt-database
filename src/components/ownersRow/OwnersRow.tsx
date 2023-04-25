@@ -58,9 +58,7 @@ export const OwnersRow: React.FC<OwnersRowProps> = ({
                   onClick={() => {
                     navigator.clipboard.writeText(owner?.phone);
                   }}
-                >
-                  <BsTelephone />
-                </i>
+                ></i>
               </span>
             </OverlayTrigger>
             <OverlayTrigger
@@ -72,15 +70,11 @@ export const OwnersRow: React.FC<OwnersRowProps> = ({
                   onClick={() => {
                     navigator.clipboard.writeText(owner?.email);
                   }}
-                >
-                  <BsEnvelope />
-                </i>
+                ></i>
               </span>
             </OverlayTrigger>
 
-            <i className="bi bi-chevron-compact-right">
-              <BsChevronCompactRight />
-            </i>
+            <i className="bi bi-chevron-compact-right"></i>
           </p>
         </div>
       </div>

@@ -34,7 +34,7 @@ export const Units: React.FC = () => {
               </Link>
             </Button>
             {units.map((unit, index) => {
-              return <UnitRow key={index} unit={unit}/>;
+              return <UnitRow key={index} unit={unit} />;
             })}
           </Container>
         </div>

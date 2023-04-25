@@ -18,7 +18,7 @@ import {
 import { BsTrash } from "react-icons/bs";
 import { db } from "../../../config/firebase";
 
-const RoomFeaturesList = () => {
+const RoomFeaturesList: React.FC = () => {
   const hiddenFileInputAllPhotos = useRef<any>();
   const [multiImages, setMultiImages] = useState<any>([]);
   const [show, setShow] = useState<boolean>(false);

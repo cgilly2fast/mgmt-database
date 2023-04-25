@@ -56,9 +56,7 @@ export const TeamRow: React.FC<TeamRowProps> = ({ teammate }: TeamRowProps) => {
                   onClick={() => {
                     navigator.clipboard.writeText(teammate.phone);
                   }}
-                >
-                  <BsTelephone />
-                </i>
+                ></i>
               </span>
             </OverlayTrigger>
             <OverlayTrigger
@@ -70,15 +68,11 @@ export const TeamRow: React.FC<TeamRowProps> = ({ teammate }: TeamRowProps) => {
                   onClick={() => {
                     navigator.clipboard.writeText(teammate.email);
                   }}
-                >
-                  <BsEnvelope />
-                </i>
+                ></i>
               </span>
             </OverlayTrigger>
 
-            <i className="bi bi-chevron-compact-right">
-              <BsChevronCompactRight />
-            </i>
+            <i className="bi bi-chevron-compact-right"></i>
           </p>
         </div>
       </div>

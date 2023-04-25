@@ -1,0 +1,152 @@
+.form-input {
+  font-family: monospace;
+}
+
+.main-div-calendar {
+  margin-top: 20px;
+}
+
+.select-unit {
+  font-family: monospace;
+}
+
+.label {
+  font-family: monospace;
+  color: #007bff;
+}
+
+.model-div {
+  border: 1px solid #007bff;
+  padding: 10px;
+  border-radius: 15px;
+}
+
+.guest-image-calendar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.loader {
+  border: 5px solid white;
+  border-radius: 50%;
+  border-top: 5px solid #3498db;
+  width: 60px;
+  height: 60px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fc-h-event {
+  border-radius: 33px;
+  text-align: center;
+}
+
+.fc-h-event .fc-event-main {
+  cursor: pointer;
+}
+
+.fc-day-grid-event .fc-content {
+  white-space: normal !important;
+}
+
+.img-calendar {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.reservation-event {
+  display: flex;
+  justify-content: center;
+}
+
+.owner-name {
+  padding-left: 10px;
+  text-transform: capitalize;
+  font-size: 20px;
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.property-image-calendar {
+  border-radius: 4px;
+  width: 100%;
+}
+
+.model-owner-title {
+  text-transform: capitalize;
+  font-size: 20px;
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 400;
+  color: #5c576a;
+  cursor: pointer;
+  text-decoration: underline;
+  align-self: end;
+}
+
+.head-image {
+  position: relative;
+}
+
+.occupancy {
+  margin-left: 0px;
+}
+
+.detail-div {
+  border: 1px solid black;
+  border-radius: 15px;
+}
+
+.button {
+  width: 100%;
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 100;
+  font-family: "Courier New", Courier, monospace;
+  position: absolute;
+  top: 200px;
+  left: 30px;
+  color: #fff;
+}
+
+.detail-tag {
+  font-size: 18px;
+  font-weight: 400;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  align-self: center;
+  color: #5c576a;
+}
+
+.checkInandOut-div {
+  border: 1px solid black;
+  width: 50%;
+  border-radius: 15px;
+  padding-top: 10px;
+  justify-content: center;
+}

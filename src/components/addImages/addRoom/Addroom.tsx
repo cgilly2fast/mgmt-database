@@ -10,7 +10,7 @@ import CoverImage from "../coverImage/CoverImage";
 import BackWithTitle from "../backWithTitle/BackWithTitle";
 import db from "../../../admin";
 
-const Addroom = () => {
+const Addroom: React.FC = () => {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentValue, setCurrentValue] = useState<any>([]);
@@ -20,6 +20,8 @@ const Addroom = () => {
   const [newChange, setNewChange] = useState<any>([]);
   const { unitId } = useParams();
   const navigate = useNavigate();
+
+  console.log("currentValue",currentValue);
 
   useEffect(() => {
     getRoomData();
@@ -91,7 +93,7 @@ const Addroom = () => {
 
   const updateFieldChanged = (ele: {
     id?: number;
-    title: any;
+    title: string;
     name?: string;
     count: any;
     isbedroom?: boolean;

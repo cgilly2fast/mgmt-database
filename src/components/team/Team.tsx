@@ -35,8 +35,8 @@ export const Team: React.FC = () => {
               </Link>
             </Button>
             {team.map((teammate, index) => {
-                return <TeamRow key={index} teammate={teammate}></TeamRow>;
-              })}
+              return <TeamRow key={index} teammate={teammate}></TeamRow>;
+            })}
           </Container>
         </div>
       )}

@@ -9,7 +9,7 @@ import {
 import "./CoverImage.css";
 import { db } from "../../../config/firebase";
 
-const CoverImage = () => {
+const CoverImage: React.FC = () => {
   const hiddenFileInputAllPhotos = useRef<any>();
   const [multipalImage, setMultipalImage] = useState<any>([]);
   const [coverIamge, setCoverImage] = useState<any>([]);

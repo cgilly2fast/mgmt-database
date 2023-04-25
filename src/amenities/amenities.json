@@ -1,0 +1,158 @@
+[
+    {
+        "url": "",
+        "name": "Luggage Storage",
+        "notes": "",
+        "available": false
+    },
+    {
+        "name": "Elevators",
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Felevator.svg?alt=media&token=52868d69-a2a6-4a29-8c5d-4aa199f14d81",
+        "notes": ""
+    },
+    {
+        "name": "Kid Friendly",
+        "notes": "",
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fkid.svg?alt=media&token=013d87ea-5acd-4e1d-96b5-bfb0722b7549"
+    },
+    {
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2FDishwasher.svg?alt=media&token=7f6c209e-e216-402f-ba3f-30e035259359",
+        "notes": "",
+        "name": "Dishwasher",
+        "available": false
+    },
+    {
+        "notes": "",
+        "name": "Hair Dryer",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2F005-hairdryer.svg?alt=media&token=4144458f-52be-45c1-9e54-43126b51fc65",
+        "available": false
+    },
+    {
+        "name": "Carbon Monoxide Detector ",
+        "available": false,
+        "notes": "",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fparking.svg?alt=media&token=1694fc01-6d86-4303-80d2-7ddb2713bb4f"
+    },
+    {
+        "name": "Iron",
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2F002-iron.svg?alt=media&token=d30507d7-b2c5-4a18-a725-9d9b00501d2e",
+        "notes": ""
+    },
+    {
+        "name": "Gym",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Ffitness_room.svg?alt=media&token=15cb372f-0a51-4509-afc7-7aaff3e99a34",
+        "available": false,
+        "notes": ""
+    },
+    {
+        "available": false,
+        "notes": "",
+        "name": "Pack N Play",
+        "url": ""
+    },
+    {
+        "available": false,
+        "notes": "",
+        "name": "Fire Extinguisher",
+        "url": ""
+    },
+    {
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fpool.svg?alt=media&token=9eabe57a-a163-4b76-b806-50fa5217831b",
+        "name": "Pool",
+        "notes": "",
+        "available": false
+    },
+    {
+        "name": "Ev Charger",
+        "notes": "",
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fev_car_cahrger.svg?alt=media&token=10374fed-96eb-40bb-b363-caa5fa9afe5c"
+    },
+    {
+        "notes": "",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Flounge_workspace.svg?alt=media&token=13951146-40b2-41d4-861a-5dab1c556ae8",
+        "available": false,
+        "name": "Workspace"
+    },
+    {
+        "available": false,
+        "name": "Microwave",
+        "url": "",
+        "notes": ""
+    },
+    {
+        "notes": "",
+        "name": "Kitchen",
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fcooking.svg?alt=media&token=7f4b0a3a-7ede-4ce0-8272-b47841a5c2e3"
+    },
+    {
+        "name": "Wheelchair",
+        "url": "",
+        "notes": "",
+        "available": false
+    },
+    {
+        "name": "Grill",
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fgrill.svg?alt=media&token=c285fd52-6676-4658-be59-340df6193816",
+        "notes": ""
+    },
+    {
+        "notes": "",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2F009-tv.svg?alt=media&token=3ae91b7b-bec9-4dd9-93ec-6a1d34940f6e",
+        "available": false,
+        "name": "Cable Tv"
+    },
+    {
+        "available": false,
+        "notes": "",
+        "url": "",
+        "name": "Smoke Detector"
+    },
+    {
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fclothes_dryer.svg?alt=media&token=cd547b2d-133a-4d7e-a864-e4957d5d7400",
+        "available": false,
+        "name": "Laundry",
+        "notes": ""
+    },
+    {
+        "available": false,
+        "name": "Air Conditioning",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fsnow.svg?alt=media&token=03876c81-6318-4825-ada7-76f53bbc01a4",
+        "notes": ""
+    },
+    {
+        "notes": "",
+        "available": false,
+        "name": "Front Desk",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Ffront_desk.svg?alt=media&token=0b2f15d3-9560-43d2-99fa-703bc7c4bd8a"
+    },
+    {
+        "available": false,
+        "notes": "",
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Fhot_tub.svg?alt=media&token=569c61e4-df23-45de-bb02-14e479b260c6",
+        "name": "Hot Tub"
+    },
+    {
+        "name": "Single Level",
+        "available": false,
+        "notes": "",
+        "url": ""
+    },
+    {
+        "notes": "",
+        "name": "Patio Balcony",
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Foutdoor.svg?alt=media&token=8693ebe5-6ad8-40c6-b1bd-6d902f600d12"
+    },
+    {
+        "available": false,
+        "url": "https://firebasestorage.googleapis.com/v0/b/ghotels-development.appspot.com/o/icons%2Famenities%2Ftv.svg?alt=media&token=a7f16fd5-746d-4363-b2dd-2194ae9fe633",
+        "notes": "",
+        "name": "Smart Tv"
+    }
+]

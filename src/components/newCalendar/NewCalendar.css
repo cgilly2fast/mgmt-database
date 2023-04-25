@@ -1,0 +1,22 @@
+.new-calendar-reservation-event {
+  display: flex;
+  justify-content: flex-start;
+  overflow: hidden;
+  align-items: center;
+}
+
+.fc-timeline-event {
+  transform: skewX(-20deg);
+}
+
+.guest-name {
+  margin: 0px;
+}
+
+.fc-timeline-event-harness {
+  max-height: 35px;
+}
+
+.resource-label-calendar {
+  cursor: pointer;
+}

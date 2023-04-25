@@ -18,6 +18,9 @@ import Accounting from "./components/accounting/Accounting";
 import AccountingRulesForm from "./components/accountingRulesForm/AccountingRulesForm";
 import RuleHistory from "./components/ruleHistory/RuleHistory";
 import Addimages from "./components/addImages/Addimages";
+import Map from "./components/map/Map";
+import Calendar from "./components/calendar/Calendar";
+import NewCalendar from "./components/newCalendar/NewCalendar";
 
 export default function Router() {
   let element = useRoutes([
@@ -40,6 +43,14 @@ export default function Router() {
         {
           path: "/unit/:unitId/add-images",
           element: <Addimages />,
+        },
+        {
+          path: "/calendar/:id",
+          element: <Calendar />,
+        },
+        {
+          path: "/calendar",
+          element: <NewCalendar />,
         },
         {
           path: "/owners",
@@ -91,6 +102,7 @@ export default function Router() {
         },
       ],
     },
+    { path: "/map", element: <Map /> },
     { path: "/login", element: <Login /> },
     { path: "/signup", element: <Signup /> },
     { path: "/forgot-password", element: <ForgotPassword /> },
