@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Container, Button } from "react-bootstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getTeammateById } from "../../API";
 import BackButton from "../../img/BackButton.svg";
 import { teamtype } from "../../API/Types";
@@ -8,14 +8,21 @@ import { BsPersonCircle } from "react-icons/bs";
 
 export const Teammate: React.FC = () => {
   const params = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { teammateId } = params;
   const [teammate, setTeammate] = useState<teamtype | null>(null);
 
   useEffect(() => {
     const teammatedata = async () => {
-      const unitById = await getTeammateById(teammateId);
-      setTeammate(unitById);
+      if (location && location.state && location.state.teammate) {
+        setTeammate(location.state.teammate);
+      } else {
+        const teammatedata = await getTeammateById(teammateId);
+        setTeammate(teammatedata);
+      }
+      // const unitById = await getTeammateById(teammateId);
+      // setTeammate(unitById);
     };
     teammatedata();
   }, []);
@@ -39,20 +46,14 @@ export const Teammate: React.FC = () => {
             src={teammate?.picture}
           />
         ) : (
-          <i className="bi-chevron-person-circle">
-            <BsPersonCircle
-              style={{
-                fontSize: "30px",
-              }}
-            />
-          </i>
+          <i className="bi-chevron-person-circle" />
         )}
         <Button variant="primary">
           <Link
             to={{
-              pathname: "/teammate/" + teammate?.id + "/edit",
-              // state: unit,
+              pathname: "/teammate/" + teammate?.uuid + "/edit",
             }}
+            state={{ teammate: teammate }}
             style={{ color: "#fff", textDecoration: "none" }}
           >
             + Edit Teammate Info

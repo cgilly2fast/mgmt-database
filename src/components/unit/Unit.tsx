@@ -202,8 +202,8 @@ const Unit: React.FC = () => {
                           "/listing/" +
                           listings[key].provider +
                           "/edit",
-                        // state: { unit: unit, listing: listings[key] },
-                      }}
+                        }}
+                        state={{unit:unit, listing: listings[key]}}
                     >
                       <Card className="unit_card_listings">
                         <Card.Img variant="top" src={listings[key].picture} />
@@ -231,8 +231,8 @@ const Unit: React.FC = () => {
               <NavLink
                 to={{
                   pathname: "/unit/" + unit.id + "/listing/create",
-                  // state: unit,
                 }}
+                state={unit}          
               >
                 <Card style={{ width: "410px" }}>
                   <Card.Img variant="top" src="" />

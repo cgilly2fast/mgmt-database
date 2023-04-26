@@ -5,7 +5,7 @@ import { BsPencil } from "react-icons/bs";
 import db from "../../admin";
 import { Link } from "react-router-dom";
 import Loader from "../loader/Loader";
-import { accountListtype } from "../../API/Types";
+import { accountListtype, tempDatatype } from "../../API/Types";
 import CreatePOModal from "../Modal/CreatePOModal/CreatePOModal";
 import AccountingRules from "./accountingRules/AccountingRules";
 
@@ -64,15 +64,15 @@ const Accounting: React.FC = () => {
     setLoading(true);
     const getAccountDataOnSnapShot = async () => {
       db.collection("accounts").onSnapshot((doc) => {
-        let tempData: any = [];
-        doc.forEach((item) => {
+        let tempData: tempDatatype[] = [];
+        doc.forEach((item: any) => {
           tempData.push({ ...item.data(), id: item?.id });
         });
         setAccountList(tempData);
       });
     };
     const getRulesDataOnSnapShot = async () => {
-      await db.collection("accounting-rules").onSnapshot((doc) => {
+      db.collection("accounting-rules").onSnapshot((doc) => {
         let tempData: any = [];
         doc.forEach((item) => {
           tempData.push({ ...item.data(), id: item?.id });
@@ -133,9 +133,9 @@ const Accounting: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {accountList?.map((item: accountListtype, index: any) => {
+                  {accountList?.map((item: accountListtype) => {
                     return (
-                      <tr key={index + item.id}>
+                      <tr key={item?.id}>
                         <td>{item?.type}</td>
                         <td>{item?.platform}</td>
                         <td>{item?.account}</td>

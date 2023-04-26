@@ -21,6 +21,23 @@ import Addimages from "./components/addImages/Addimages";
 import Map from "./components/map/Map";
 import Calendar from "./components/calendar/Calendar";
 import NewCalendar from "./components/newCalendar/NewCalendar";
+import AddNewUnitForm from "./components/addNewUnitForm/AddNewUnitForm";
+import ListingForm from "./components/listingForm/ListingForm";
+import OwnerForm from "./components/ownerForm/OwnerForm";
+import TeammateForm from "./components/teammateForm/TeammateForm";
+import DocumentationRoute from "./components/GhotelsDocumentation/DocumentationRoute/DocumentationRoute";
+import Getstart from "./components/GhotelsDocumentation/Getstart/Getstart";
+import MarkdownRender from "./components/GhotelsDocumentation/MarkdownRender";
+import FunctionMarkdown from "./Assets/DocumentationMarkdown/FunctionMarkdown";
+import MgmtOverviewMarkdown from "./Assets/DocumentationMarkdown/MgmtOverviewMarkdown";
+import MgmtSignUpMarkdown from "./Assets/DocumentationMarkdown/MgmtSignUpMarkdown";
+import HospitablesMarkdown from "./Assets/DocumentationMarkdown/HospitablesMarkdown";
+import GhotelsOverviewMarkdown from "./Assets/DocumentationMarkdown/GhotelsOverviewMarkdown";
+import GHotelSignUpMarkdown from "./Assets/DocumentationMarkdown/GHotelSignUpMarkdown";
+import GHotelsRoomboolMarkdown from "./Assets/DocumentationMarkdown/GHotelsRoomboolMarkdown";
+import StripeMarkdown from "./Assets/DocumentationMarkdown/StripeMarkdown";
+import PersonaMarkdown from "./Assets/DocumentationMarkdown/PersonaMarkdown";
+import AliasMarkdown from "./Assets/DocumentationMarkdown/AliasMarkdown";
 
 export default function Router() {
   let element = useRoutes([
@@ -41,6 +58,22 @@ export default function Router() {
           element: <Unit />,
         },
         {
+          path: "/unit/add-new-unit",
+          element: <AddNewUnitForm />,
+        },
+        {
+          path: "/unit/:unitId/edit-new",
+          element: <AddNewUnitForm />,
+        },
+        {
+          path: "/unit/:unitId/listing/create",
+          element: <ListingForm />,
+        },
+        {
+          path: "/unit/:unitId/listing/:provider/edit",
+          element: <ListingForm />,
+        },
+        {
           path: "/unit/:unitId/add-images",
           element: <Addimages />,
         },
@@ -59,6 +92,14 @@ export default function Router() {
         {
           path: "/owner/:ownerId",
           element: <Owner />,
+        },
+        {
+          path: "/owner/create",
+          element: <OwnerForm />,
+        },
+        {
+          path: "/owner/:ownerId/edit",
+          element: <OwnerForm />,
         },
         {
           path: "/inbox/segments/unreadmessage",
@@ -89,6 +130,14 @@ export default function Router() {
           element: <Teammate />,
         },
         {
+          path: "/teammate/create",
+          element: <TeammateForm />,
+        },
+        {
+          path: "/teammate/:teammateId/edit",
+          element: <TeammateForm />,
+        },
+        {
           path: "/accounting-connections",
           element: <Accounting />,
         },
@@ -106,6 +155,56 @@ export default function Router() {
     { path: "/login", element: <Login /> },
     { path: "/signup", element: <Signup /> },
     { path: "/forgot-password", element: <ForgotPassword /> },
+    {
+      path: "/documentation",
+      element: <DocumentationRoute />,
+      children: [
+        {
+          path: "/documentation",
+          element: <Getstart />,
+        },
+        {
+          path: "/documentation/function",
+          element: <MarkdownRender markdown={FunctionMarkdown} />,
+        },
+        {
+          path: "/documentation/mgmt/overview",
+          element: <MarkdownRender markdown={MgmtOverviewMarkdown} />,
+        },
+        {
+          path: "/documentation/mgmt/signup",
+          element: <MarkdownRender markdown={MgmtSignUpMarkdown} />,
+        },
+        {
+          path: "/documentation/mgmt/hospitable",
+          element: <MarkdownRender markdown={HospitablesMarkdown} />,
+        },
+        {
+          path: "/documentation/ghotels/overview",
+          element: <MarkdownRender markdown={GhotelsOverviewMarkdown} />,
+        },
+        {
+          path: "/documentation/ghotels/signup",
+          element: <MarkdownRender markdown={GHotelSignUpMarkdown} />,
+        },
+        {
+          path: "/documentation/ghotels/rooms",
+          element: <MarkdownRender markdown={GHotelsRoomboolMarkdown} />,
+        },
+        {
+          path: "/documentation/ghotels/thirdparty/stripe",
+          element: <MarkdownRender markdown={StripeMarkdown} />,
+        },
+        {
+          path: "/documentation/ghotels/thirdparty/persona",
+          element: <MarkdownRender markdown={PersonaMarkdown} />,
+        },
+        {
+          path: "/documentation/alias",
+          element: <MarkdownRender markdown={AliasMarkdown} />,
+        },
+      ],
+    },
   ]);
   return element;
 }

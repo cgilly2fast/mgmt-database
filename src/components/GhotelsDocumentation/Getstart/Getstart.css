@@ -1,0 +1,12 @@
+.main_div {
+  display: flex;
+  justify-content: center;
+  font-size: 100px;
+  font-weight: 700;
+}
+
+@media (max-width:1440px) {
+  .main_div {
+    font-size: 70px;
+  }
+}

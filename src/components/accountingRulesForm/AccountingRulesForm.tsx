@@ -7,12 +7,14 @@ import "./AccountingRulesForm.css";
 import * as Yup from "yup";
 import { getActiveUnits, getConnections } from "../../API";
 import {
+  UnitsType,
   connectionValue,
   filterValue,
   invoiceTypeValue,
   mirrorInvoiceTypeValue,
   sourceDataTypeValue,
   statusValue,
+  tempDatatype,
   typeValue,
   unitValue,
 } from "../../API/Types";
@@ -61,7 +63,7 @@ const AccountingRulesForm: React.FC = () => {
   const [sourceDataTypeValue, setSourceDataTypeValue] = useState<
     sourceDataTypeValue[]
   >([]);
-  const [sourceDataValue, setSourceDataValue] = useState<any>();
+  const [sourceDataValue, setSourceDataValue] = useState<string>();
   const [statusValue, setStatusValue] = useState<statusValue[]>([]);
   const [connectionValue, setConnectionValue] = useState<connectionValue[]>([]);
   const [invoiceTypeValue, setInvoiceTypeValue] = useState<invoiceTypeValue[]>(
@@ -70,9 +72,10 @@ const AccountingRulesForm: React.FC = () => {
   const [mirrorInvoiceTypeValue, setMirrorInvoiceTypeValue] = useState<
     mirrorInvoiceTypeValue[]
   >([]);
-  const [units, setUnits] = useState<any[]>([]);
-  const [connections, setConnections] = useState<any[]>([]);
+  const [units, setUnits] = useState<UnitsType[]>([]);
+  const [connections, setConnections] = useState<tempDatatype[]>([]);
 
+  console.log("connections", connections);
   useEffect(() => {
     const accountingRules = async () => {
       const activeUnits = await getActiveUnits();
@@ -104,7 +107,7 @@ const AccountingRulesForm: React.FC = () => {
       account: item?.account,
       account_id: item?.account_id,
       connection_id: item?.id,
-      platfrom: item?.platfrom,
+      platfrom: item?.platform,
     };
   });
 

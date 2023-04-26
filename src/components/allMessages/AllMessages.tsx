@@ -37,7 +37,7 @@ import { Allmessagestype } from "../../API/Types";
 
 const AllMessages: React.FC = () => {
   const navigate = useNavigate();
-  const [thread, setThread] = useState([]);
+  const [thread, setThread] = useState<Allmessagestype[]>([]);
   const [loading, setLoading] = useState();
 
   // useEffect(() => {
@@ -52,12 +52,11 @@ const AllMessages: React.FC = () => {
 
   useEffect(() => {
     const getThreadDataOnSnapShot = async () => {
-      await db
-        .collection("threads")
+      db.collection("threads")
         .orderBy("last_message.created_at", "desc")
         .onSnapshot((doc) => {
-          let tempData: any = [];
-          doc.forEach((item) => {
+          let tempData: Allmessagestype[] = [];
+          doc.forEach((item: any) => {
             tempData.push({ ...item.data(), id: item?.id });
           });
           setThread(tempData);
@@ -103,7 +102,9 @@ const AllMessages: React.FC = () => {
                   }}
                 >
                   <div className="inbox-list-inner-div">
-                    <Form.Check style={{ padding: "11px 0px" }} />
+                    <Form.Check
+                      style={{ margin: "0px 10px", padding: "11px 0px" }}
+                    />
                     <div className="d-flex image-div">
                       <BsPersonCircle
                         style={{

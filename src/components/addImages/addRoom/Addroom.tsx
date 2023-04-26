@@ -21,14 +21,11 @@ const Addroom: React.FC = () => {
   const { unitId } = useParams();
   const navigate = useNavigate();
 
-  console.log("currentValue",currentValue);
-
   useEffect(() => {
     getRoomData();
   }, []);
 
   const getRoomData = async () => {
-    console.log("124");
     setLoading(true);
     const unitsRef = await db.collection("units").doc(unitId).get();
     if (unitsRef?.data()) {
@@ -50,7 +47,6 @@ const Addroom: React.FC = () => {
               });
               setData(changeData);
               setDataCount(changeData);
-              console.log("changeData", changeData);
               const map = withOutCoverImage?.reduce((obj: any, b: any) => {
                 obj[b[1]?.list_name] = ++obj[b[1]?.list_name] || 1;
                 return obj;
@@ -120,8 +116,8 @@ const Addroom: React.FC = () => {
   const updateFieldValue = async (element: {
     id?: number;
     title?: string;
-    name: any;
-    count: any;
+    name: string;
+    count: number;
     isbedroom?: boolean;
     type?: string;
   }) => {
@@ -274,7 +270,7 @@ const Addroom: React.FC = () => {
                             <button
                               name={element?.name}
                               className="plus-minus"
-                              onClick={(e: any) => {
+                              onClick={(e:any) => {
                                 setData((list) =>
                                   list.map((obj) => {
                                     return {

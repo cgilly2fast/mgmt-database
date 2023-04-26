@@ -9,17 +9,12 @@ const Map: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [listOfCity, setListOfCity] = useState<listOfCitytype[]>([]);
 
-  console.log("listOfCity", listOfCity);
-
   useEffect(() => {
     setLoading(true);
     setListOfCity(cities);
     setLoading(false);
   }, []);
-
-  {
-    console.log("cities", cities);
-  }
+  
   return loading ? (
     <NewtonLoader />
   ) : (

@@ -22,8 +22,8 @@ export const TeamRow: React.FC<TeamRowProps> = ({ teammate }: TeamRowProps) => {
           <NavLink
             to={{
               pathname: "/teammate/" + teammate?.id,
-              // state: { teammate: teammate },
             }}
+            state={{ teammate: teammate }}
             className="teams-pic-name-div"
           >
             {teammate.picture !== "" ? (
@@ -33,13 +33,7 @@ export const TeamRow: React.FC<TeamRowProps> = ({ teammate }: TeamRowProps) => {
                 src={teammate.picture}
               />
             ) : (
-              <i className="bi-chevron-person-circle">
-                <BsPersonCircle
-                  style={{
-                    fontSize: "30px",
-                  }}
-                />
-              </i>
+              <i className="bi-person-circle" />
             )}
             <span>{teammate.first_name}</span>
             <span> {teammate.last_name}</span>

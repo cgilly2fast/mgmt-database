@@ -4,6 +4,7 @@ import Header from "../header/Header";
 import Sidebar from "../menu/Sidebar";
 import "./PrivateRoute.css";
 import { useAuth } from "../../context/Authcontext";
+import { Container } from "react-bootstrap";
 
 export const PrivateRoute: React.FC = () => {
   const { currentUser }: any = useAuth();
@@ -11,24 +12,26 @@ export const PrivateRoute: React.FC = () => {
 
   return currentUser ? (
     <>
-      <div>
-        <Sidebar
-          setMenuCollapse={setMenuCollapse}
-          menuCollapse={menuCollapse}
-        />
-      </div>
-      <div
-        className="main-div-detail"
-        style={{
-          marginLeft: !menuCollapse ? "18%" : "8%",
-          width: !menuCollapse ? "80%" : "90%",
-        }}
-      >
-        <div style={{}}>
-          <Header />
-          <Outlet />
+      <Container fluid className="p-0 d-flex">
+        <div>
+          <Sidebar
+            setMenuCollapse={setMenuCollapse}
+            menuCollapse={menuCollapse}
+          />
         </div>
-      </div>
+        <div
+          className="main-div-detail"
+          style={{
+            marginLeft: !menuCollapse ? "18%" : "8%",
+            width: !menuCollapse ? "80%" : "90%",
+          }}
+        >
+          <div style={{}}>
+            <Header />
+            <Outlet />
+          </div>
+        </div>
+      </Container>
     </>
   ) : (
     <Navigate to="/login" />

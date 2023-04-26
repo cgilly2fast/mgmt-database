@@ -5,7 +5,6 @@ import LocationIcon from "../../img/Location.png";
 import { listOfCitytype } from "../../API/Types";
 
 const Marker = ({ tooltip, text, onClick }: any): JSX.Element => {
-  console.log("tooltip", tooltip);
   const popover = (
     <Popover id="popover-basic" style={{ position: "absolute" }}>
       <Popover.Header style={{ background: "#007bff", color: "#fff" }}>

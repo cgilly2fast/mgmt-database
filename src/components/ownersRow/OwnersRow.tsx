@@ -34,13 +34,7 @@ export const OwnersRow: React.FC<OwnersRowProps> = ({
                 src={owner?.picture}
               />
             ) : (
-              <i className="bi-chevron-person-circle">
-                <BsPersonCircle
-                  style={{
-                    fontSize: "30px",
-                  }}
-                />
-              </i>
+              <i className="bi-chevron-person-circle" />
             )}
             <span>{owner?.first_name}</span>
 

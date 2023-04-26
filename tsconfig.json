@@ -17,6 +17,7 @@
     "jsx": "react-jsx",
     "strictPropertyInitialization": false,
     // "strictNullChecks": false
+    "noImplicitAny": false
   },
   "include": ["src", "react-app-env.d.ts", "reportWebVitals.ts", "font.d.ts"]
 }

@@ -100,16 +100,16 @@ const RoomFeaturesList: React.FC = () => {
 
   const handleRemoveBed = async (
     id: string | undefined,
-    roomId: any,
-    value: any
+    roomId: string,
+    value: string
   ) => {
     await removeRoomBedFetures(id, roomId, value);
   };
 
   const handleRemoveRoom = async (
     id: string | undefined,
-    roomId: any,
-    value: any
+    roomId: string,
+    value: string
   ) => {
     setLoadingRoom(true);
     await removeRoomFetures(id, roomId, value);
@@ -144,19 +144,19 @@ const RoomFeaturesList: React.FC = () => {
     }
   };
 
-  const selectOption = async (e: { target: { id: any; value: string } }) => {
+  const selectOption = async (e: { target: { id: string; value: string } }) => {
     if (unitId && e.target.id && JSON.parse(e.target.value)) {
       await setRoomFetures(unitId, e.target.id, JSON.parse(e.target.value));
     }
   };
 
-  const selectOptionBed = async (e: { target: { id: any; value: string } }) => {
+  const selectOptionBed = async (e: { target: { id: string; value: string } }) => {
     if (unitId && e.target.id && JSON.parse(e.target.value)) {
       await setRoomBedFetures(unitId, e.target.id, JSON.parse(e.target.value));
     }
   };
 
-  const handleRemovePhotos = async (ele: any, roomId: any) => {
+  const handleRemovePhotos = async (ele: string, roomId: string) => {
     if (window.confirm("Are you sure delete this Image")) {
       await removePhoto(unitId, roomId, reloadPage, ele);
     }
@@ -165,7 +165,7 @@ const RoomFeaturesList: React.FC = () => {
   return (
     <div className="main-list-wrapper">
       <Accordion flush>
-        {roomValues?.map((item: any, i: any) => {
+        {roomValues?.map((item: object, i: any) => {
           return (
             <Accordion.Item
               eventKey={i}
@@ -219,7 +219,7 @@ const RoomFeaturesList: React.FC = () => {
                         })}
                       </Form.Select>
                       <div style={{ display: "flex", flexWrap: "wrap" }}>
-                        {roomValues?.map((obj: any, i: any) => {
+                        {roomValues?.map((obj: object , i: any) => {
                           return (
                             <div key={`23${i}`}>
                               {obj[1]?.bed_type?.map(
@@ -280,7 +280,7 @@ const RoomFeaturesList: React.FC = () => {
                     <Spinner animation="border" size="sm" variant="primary" />
                   )}
                   <div style={{ display: "flex", flexWrap: "wrap" }}>
-                    {roomValues?.map((obj: any, i: any) => {
+                    {roomValues?.map((obj: object, i: any) => {
                       return (
                         <div key={`90${i}`}>
                           {obj[1]?.room_feature?.map(

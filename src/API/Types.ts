@@ -542,3 +542,14 @@ export type reservationListtype = {
     reason: string
   }
 }
+
+export type tempDatatype = {
+  account: string
+  account_id: string
+  id: string
+  platform: string
+  short_code: string
+  status: string
+  type: string
+}
+

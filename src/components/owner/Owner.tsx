@@ -19,7 +19,7 @@ export const Owner: React.FC = () => {
     };
     ownerdata();
   }, []);
-  
+
   const address = owner?.address === undefined ? {} : owner?.address;
   const units = owner?.units === undefined ? {} : owner?.units;
 
@@ -46,8 +46,8 @@ export const Owner: React.FC = () => {
           <Link
             to={{
               pathname: "/owner/" + owner?.uuid + "/edit",
-              // state: unit,
             }}
+            state={{ owner: owner }}
             style={{ color: "#fff", textDecoration: "none" }}
           >
             + Edit Owner Info
