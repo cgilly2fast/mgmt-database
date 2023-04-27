@@ -36,11 +36,11 @@ export const OwnerForm: React.FC = () => {
     vrbo_username: "",
     company_name: "",
     picture: "",
-    active: "",
+    active: true,
     business_number: "",
     business_pin: "",
     owner_statements: "",
-    partnership: "",
+    partnership: true,
     percentage: "",
     tot_account: "",
     tot_pin: "",
@@ -54,9 +54,9 @@ export const OwnerForm: React.FC = () => {
     setLoding(true);
     setError("");
     try {
-      await updateOwner(form);
+      const res = await updateOwner(form);
       setLoding(false);
-      // navigate('/owner/' + res.data.uuid);
+      navigate("/owner/" + res.data.uuid);
     } catch (err) {
       setError(err);
     }

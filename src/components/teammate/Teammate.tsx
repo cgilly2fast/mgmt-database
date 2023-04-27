@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getTeammateById } from "../../API";
 import BackButton from "../../img/BackButton.svg";
 import { teamtype } from "../../API/Types";
-import { BsPersonCircle } from "react-icons/bs";
 
 export const Teammate: React.FC = () => {
   const params = useParams();
@@ -76,7 +75,6 @@ export const Teammate: React.FC = () => {
       </Container>
     </>
   );
-  // }
 };
 
 export default Teammate;

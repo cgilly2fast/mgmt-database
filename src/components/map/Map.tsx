@@ -6,7 +6,7 @@ import NewtonLoader from "../loader/ NewtonLoader/NewtonLoader";
 import { listOfCitytype } from "../../API/Types";
 
 const Map: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [listOfCity, setListOfCity] = useState<listOfCitytype[]>([]);
 
   useEffect(() => {
@@ -14,7 +14,7 @@ const Map: React.FC = () => {
     setListOfCity(cities);
     setLoading(false);
   }, []);
-  
+
   return loading ? (
     <NewtonLoader />
   ) : (
@@ -30,7 +30,7 @@ const Map: React.FC = () => {
           style={{ position: "inherit" }}
           yesIWantToUseGoogleMapApiInternals
         >
-          {listOfCity?.map((item: any) => (
+          {listOfCity?.map((item: listOfCitytype) => (
             <Marker
               key={item?.id}
               text="city"

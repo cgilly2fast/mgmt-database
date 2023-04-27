@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Spinner } from 'react-bootstrap';
-import './SelectUnit.css';
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
-import BackButton from '../../img/BackButton.svg';
-import { getActiveUnits } from '../../API';
+import React, { useEffect, useState } from "react";
+import { Form, Spinner } from "react-bootstrap";
+import "./SelectUnit.css";
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import BackButton from "../../img/BackButton.svg";
+import { getActiveUnits } from "../../API";
 
 const SelectUnit: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const SelectUnit: React.FC = () => {
     activeUnitsGet();
   }, []);
 
-  const handleSelect = (e: { target: { value: any; }; }) => {
+  const handleSelect = (e: { target: { value: any } }) => {
     const id = e.target.value;
     navigate(`/calendar/${id}`);
   };
@@ -32,13 +32,13 @@ const SelectUnit: React.FC = () => {
       <img
         src={BackButton}
         alt="back"
-        style={{ height: '30px', cursor: 'pointer' }}
+        style={{ height: "30px", cursor: "pointer" }}
         onClick={() => navigate(-1)}
       />
       {id === undefined && (
         <>
-          <h2 className="text-center mt-5 mb-3" style={{ color: '#007bff' }}>
-            Select Unit{' '}
+          <h2 className="text-center mt-5 mb-3" style={{ color: "#007bff" }}>
+            Select Unit{" "}
             {loading && <Spinner animation="grow" variant="primary" />}
           </h2>
           <div className="d-flex justify-content-center">
@@ -46,7 +46,7 @@ const SelectUnit: React.FC = () => {
               as="select"
               className="select-unit"
               onChange={handleSelect}
-              style={{ width: '30%' }}
+              style={{ width: "30%" }}
             >
               <option selected disabled>
                 Select Units

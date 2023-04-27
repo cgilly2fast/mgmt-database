@@ -9,21 +9,20 @@ import Loader from "../../loader/Loader";
 import CoverImage from "../coverImage/CoverImage";
 import BackWithTitle from "../backWithTitle/BackWithTitle";
 import db from "../../../admin";
+import { dataCounttype } from "../../../API/Types";
 
 const Addroom: React.FC = () => {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentValue, setCurrentValue] = useState<any>([]);
-  const [roomLengthValue, setRoomLengthValue] = useState<any>([]);
-  const [data, setData] = useState(addRoomFeatures);
-  const [dataCount, setDataCount] = useState<any>([]);
+  const [currentValue, setCurrentValue] = useState<Number>(0);
+  const [roomLengthValue, setRoomLengthValue] = useState<
+    Array<Array<string | unknown>>
+  >([]);
+  const [data, setData] = useState<dataCounttype[]>(addRoomFeatures);
+  const [dataCount, setDataCount] = useState<dataCounttype[]>([]);
   const [newChange, setNewChange] = useState<any>([]);
   const { unitId } = useParams();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    getRoomData();
-  }, []);
 
   const getRoomData = async () => {
     setLoading(true);
@@ -61,7 +60,7 @@ const Addroom: React.FC = () => {
                     return a[1]?.title?.localeCompare(b[1]?.title);
                   }
                 );
-                setCurrentValue(sortValueWithOutCoverImage);
+                setCurrentValue(sortValueWithOutCoverImage?.length);
               }
             }
           }
@@ -71,6 +70,10 @@ const Addroom: React.FC = () => {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    getRoomData();
+  }, []);
 
   const handleClose = () => {
     setShow(false);
@@ -87,14 +90,7 @@ const Addroom: React.FC = () => {
     getRoomData();
   };
 
-  const updateFieldChanged = (ele: {
-    id?: number;
-    title: string;
-    name?: string;
-    count: any;
-    isbedroom?: boolean;
-    type?: string;
-  }) => {
+  const updateFieldChanged = (ele: dataCounttype) => {
     if (ele?.count === 0) {
       setNewChange((list: any) => {
         return [...list, ele];
@@ -149,19 +145,17 @@ const Addroom: React.FC = () => {
         <div>
           <BackWithTitle />
           <CoverImage />
-          {currentValue.length ? (
+          {currentValue ? (
             <div className="addroom-wrapper">
               <div className="listing-div">
-                {roomLengthValue?.map(
-                  (item: any[], i: React.Key | null | undefined) => {
-                    return (
-                      <li style={{ padding: "0px 20px" }} key={i}>
-                        {item[0].charAt(0).toUpperCase() + item[0]?.slice(1)}
-                        {item[1] !== 1 ? ` (${item[1]})` : ""}
-                      </li>
-                    );
-                  }
-                )}
+                {roomLengthValue?.map((item: any, i) => {
+                  return (
+                    <li style={{ padding: "0px 20px" }} key={i}>
+                      {item[0].charAt(0).toUpperCase() + item[0]?.slice(1)}
+                      {item[1] !== 1 ? ` (${item[1]})` : ""}
+                    </li>
+                  );
+                })}
               </div>
               <div
                 className="addroom-button"
@@ -270,7 +264,7 @@ const Addroom: React.FC = () => {
                             <button
                               name={element?.name}
                               className="plus-minus"
-                              onClick={(e:any) => {
+                              onClick={(e: any) => {
                                 setData((list) =>
                                   list.map((obj) => {
                                     return {

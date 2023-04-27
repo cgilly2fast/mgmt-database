@@ -1,4 +1,3 @@
-import { Formik } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 import { Accordion, Button, Form, Modal, Spinner } from "react-bootstrap";
 import "./RoomFeaturesList.css";
@@ -7,7 +6,6 @@ import roomFeatures from "../StaticData/roomFeature.json";
 import { useParams } from "react-router-dom";
 import {
   removePhoto,
-  removePhotos,
   removeRoom,
   removeRoomBedFetures,
   removeRoomFetures,
@@ -20,13 +18,17 @@ import { db } from "../../../config/firebase";
 
 const RoomFeaturesList: React.FC = () => {
   const hiddenFileInputAllPhotos = useRef<any>();
-  const [multiImages, setMultiImages] = useState<any>([]);
+  const [multiImages, setMultiImages] = useState<Array<Array<string | number>>>(
+    []
+  );
   const [show, setShow] = useState<boolean>(false);
   const [showDelete, setShowDelete] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadloading, setUploadLoading] = useState<boolean>(false);
   const [loadingRoom, setLoadingRoom] = useState<boolean>(false);
-  const [roomValues, setRoomValues] = useState<any>([]);
+  const [roomValues, setRoomValues] = useState<Array<Array<string | unknown>>>(
+    []
+  );
   const [roomid, setRoomid] = useState("");
   const [deleteRoomId, setDeleteRoomId] = useState("");
   const [deleteRoomDetail, setDeleteRoomDetail] = useState("");
@@ -88,7 +90,7 @@ const RoomFeaturesList: React.FC = () => {
     if (tempdata) {
       setMultiImages(Object.entries(tempdata));
     } else {
-      setMultiImages(null);
+      setMultiImages([]);
     }
 
     setLoading(false);
@@ -150,7 +152,9 @@ const RoomFeaturesList: React.FC = () => {
     }
   };
 
-  const selectOptionBed = async (e: { target: { id: string; value: string } }) => {
+  const selectOptionBed = async (e: {
+    target: { id: string; value: string };
+  }) => {
     if (unitId && e.target.id && JSON.parse(e.target.value)) {
       await setRoomBedFetures(unitId, e.target.id, JSON.parse(e.target.value));
     }
@@ -219,7 +223,7 @@ const RoomFeaturesList: React.FC = () => {
                         })}
                       </Form.Select>
                       <div style={{ display: "flex", flexWrap: "wrap" }}>
-                        {roomValues?.map((obj: object , i: any) => {
+                        {roomValues?.map((obj: object, i: any) => {
                           return (
                             <div key={`23${i}`}>
                               {obj[1]?.bed_type?.map(
@@ -416,7 +420,7 @@ const RoomFeaturesList: React.FC = () => {
                   flexWrap: "wrap",
                 }}
               >
-                {multiImages?.map((item: (Blob | MediaSource)[], i: any) => {
+                {multiImages?.map((item: any, i: any) => {
                   return (
                     <>
                       <div key={i}>

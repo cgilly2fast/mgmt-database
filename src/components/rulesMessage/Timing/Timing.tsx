@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Watch from "../../../img/time.svg";
 import "./Timing.css";
 import db from "../../../admin";
-import { ruleDetailtype } from "../../../API/Types";
 import { useParams } from "react-router-dom";
 
 interface TimingProps {

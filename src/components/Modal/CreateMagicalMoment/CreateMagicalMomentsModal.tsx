@@ -8,7 +8,6 @@ import BookingCancelled from "../../../img/booking-cancelled.svg";
 import BookingInquiry from "../../../img/booking-inquiry.svg";
 import CheckIn from "../../../img/check-in.svg";
 import CheckOut from "../../../img/check-out.svg";
-// import Question from '../../../img/question.svg';
 import Cancel from "../../../img/cancel.svg";
 import { getMessageRules } from "../../../API";
 import { db } from "../../../config/firebase";

@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Card, Button } from "react-bootstrap";
 import { NavLink, Link, useParams, useNavigate } from "react-router-dom";
 import "./Owner.css";

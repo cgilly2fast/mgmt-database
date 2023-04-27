@@ -3,7 +3,6 @@ import "./Setting.css";
 import SettingIcon from "../../../img/settings.svg";
 import { db } from "../../../config/firebase";
 import { useParams } from "react-router-dom";
-import { ruleDetailtype } from "../../../API/Types";
 
 interface SettingProps {
   setSavingLoader: (value: string) => void;
@@ -16,7 +15,7 @@ const Setting: React.FC<SettingProps> = ({
   ruleDetail,
   setRuleDetail,
 }: SettingProps) => {
-  const [checkedSetting, setCheckedSetting] = useState<boolean | undefined>(
+  const [checkedSetting, setCheckedSetting] = useState<boolean>(
     false
   );
   const { id } = useParams();

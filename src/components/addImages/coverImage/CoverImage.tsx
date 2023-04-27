@@ -11,8 +11,10 @@ import { db } from "../../../config/firebase";
 
 const CoverImage: React.FC = () => {
   const hiddenFileInputAllPhotos = useRef<any>();
-  const [multipalImage, setMultipalImage] = useState<any>([]);
-  const [coverIamge, setCoverImage] = useState<any>([]);
+  const [multipalImage, setMultipalImage] = useState<
+    Array<Array<string | number>>
+  >([]);
+  const [coverIamge, setCoverImage] = useState<string>();
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -68,7 +70,7 @@ const CoverImage: React.FC = () => {
     if (tempdata.length) {
       setMultipalImage(Object.entries(tempdata));
     } else {
-      setMultipalImage(null);
+      setMultipalImage([]);
       handleClose();
     }
     setLoading(false);
@@ -157,9 +159,9 @@ const CoverImage: React.FC = () => {
                     <h4>No photos</h4>
                   ) : (
                     Array.isArray(coverIamge) &&
-                    coverIamge?.map((item: any, i) => {
+                    coverIamge?.map((item: any) => {
                       return (
-                        <div key={i} className="container-wrapper">
+                        <div key={item} className="container-wrapper">
                           <img
                             src={item?.original}
                             alt="room-images"
@@ -184,7 +186,7 @@ const CoverImage: React.FC = () => {
                               <div
                                 className="text"
                                 onClick={() => {
-                                  makeCurrent(coverIamge, i);
+                                  makeCurrent(coverIamge, item);
                                 }}
                               >
                                 Current
@@ -240,7 +242,7 @@ const CoverImage: React.FC = () => {
                 flexWrap: "wrap",
               }}
             >
-              {multipalImage?.map((item: (Blob | MediaSource)[], i: any) => {
+              {multipalImage?.map((item: any, i: any) => {
                 return (
                   <>
                     <div key={i}>

@@ -1,10 +1,9 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Button, Col, Row, Alert } from "react-bootstrap";
-import axios from "axios";
-import ApiUrl from "../../globalVariables";
 import BackButton from "../../img/BackButton.svg";
 import { getUnitById, updateUnit } from "../../API";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { ListingFormtype } from "../../API/Types";
 
 export const ListingForm: React.FC = () => {
   const params = useParams();
@@ -13,21 +12,24 @@ export const ListingForm: React.FC = () => {
   const [error, setError] = useState<any>("");
   const [lodaing, setLoding] = useState(false);
   const [unit, setUnit] = useState({ listings: {} });
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<ListingFormtype>({
     id: "",
     url: "",
     active: true,
     picture: "",
     provider: "",
-    remit_taxes: "",
+    remit_taxes: true,
     public_name: "",
   });
-  
+
+  console.log("form", form);
+
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     setLoding(true);
     setError("");
     const currantProvider: any = params;
+    console.log("currantProvider", currantProvider);
     if (
       currantProvider === undefined ||
       currantProvider === form?.provider ||
@@ -40,9 +42,9 @@ export const ListingForm: React.FC = () => {
         } else {
           unit.listings[form.provider] = form;
           try {
-            await updateUnit(unit);
+            const res = await updateUnit(unit);
             setLoding(false);
-            // navigate("/unit/" + unit?.id);
+            navigate("/unit/" + res?.data?.id);
           } catch (err) {
             setError(err);
           }
@@ -55,18 +57,18 @@ export const ListingForm: React.FC = () => {
           unit.listings[form.provider] = form;
           delete unit.listings[currantProvider];
           try {
-            await updateUnit(unit);
+            const res = await updateUnit(unit);
             setLoding(false);
-            // navigate("/unit/" + res?.data?.id);
+            navigate("/unit/" + res?.data?.id);
           } catch (err) {
             setError(err);
           }
         } else {
           unit.listings[form.provider] = form;
           try {
-            await updateUnit(unit);
+            const res = await updateUnit(unit);
             setLoding(false);
-            // navigate("/unit/" + res?.data?.id);
+            navigate("/unit/" + res?.data?.id);
           } catch (err) {
             setError(err);
           }

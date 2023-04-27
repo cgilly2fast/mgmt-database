@@ -16,7 +16,7 @@ import amenities from "../../amenities/amenities.json";
 import { useNavigate, useParams } from "react-router-dom";
 import moment from "moment-timezone";
 import NewtonLoader from "../loader/ NewtonLoader/NewtonLoader";
-import { amenitiesType } from "../../API/Types";
+import { UnitsType, addownerstype } from "../../API/Types";
 const AddNewUnitForm: React.FC = () => {
   const navigate = useNavigate();
   const { unitId } = useParams();
@@ -32,17 +32,19 @@ const AddNewUnitForm: React.FC = () => {
     number: "",
     street: "",
   });
-  const [owners, setOwners] = useState<any>([]);
+  const [owners, setOwners] = useState<addownerstype[]>([]);
   const [amenitiesList, setAmenitiesList] = useState(amenities);
   const [show, setShow] = useState(false);
   const [showAmenities, setShowAmenities] = useState(false);
   const [loading, setLoading] = useState(true);
   const [addAndUpdateLoading, setAddAndUpdateLoading] = useState(false);
-  const [unit, setUnit] = useState<any>(null);
+  const [unit, setUnit] = useState<UnitsType | null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const today = moment().format("DD-MM-YYYY");
+
+  console.log("unit", unit);
 
   useEffect(() => {
     const getUnitByIdData = async () => {
@@ -193,7 +195,7 @@ const AddNewUnitForm: React.FC = () => {
                 : "",
               amenities_list: unit?.amenities_list ? unit?.amenities_list : "",
               faq_url: unit?.faq ? unit?.faq : "",
-              house_manual: unit?.house_manual ? unit?.house_manual : "",
+              house_manual: unit?.house_manaul ? unit?.house_manaul : "",
               guidebook_url: unit?.guidebook_url ? unit?.guidebook_url : "",
               title: unit?.title ? unit?.title : "",
             }}

@@ -27,7 +27,6 @@ import { addMessages, getThreadById } from "../../API";
 import Loader from "../loader/Loader";
 import db from "../../admin";
 import { Formik } from "formik";
-import { useAuth } from "../../context/Authcontext";
 import { threadByIdtype, threadMessagetype } from "../../API/Types";
 import { auth } from "../../config/firebase";
 
@@ -123,7 +122,7 @@ const Chat: React.FC = () => {
         <Row>
           <Col
             lg={2}
-            style={{ padding: "0px", height: "100vh", overflow: "auto" }}
+            style={{ padding: "0px", height: "100vh" }}
             className="reservation-col"
           >
             <div className="reservation-detail-main-div">

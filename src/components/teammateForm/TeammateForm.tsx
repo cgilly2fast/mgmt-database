@@ -4,6 +4,7 @@ import { Alert } from "bootstrap";
 import BackButton from "../../img/BackButton.svg";
 import { getTeammateById, updateTeammate } from "../../API";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Teammateformtype } from "../../API/Types";
 
 export const TeammateForm: React.FC = () => {
   const params = useParams();
@@ -11,7 +12,7 @@ export const TeammateForm: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<any>("");
   const [lodaing, setLoding] = useState(false);
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<Teammateformtype>({
     active: true,
     uuid: "",
     first_name: "",

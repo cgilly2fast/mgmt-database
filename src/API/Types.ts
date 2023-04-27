@@ -1,6 +1,6 @@
 export type UnitsType = {
   guest_info_type: string;
-  active: boolean;
+  active: any;
   address?: {
     apartment?: String;
     city?: String;
@@ -35,11 +35,11 @@ export type UnitsType = {
   owner: owner;
   photos_archive: string;
   picture: picture[];
-  property_type: boolean;
+  property_type: any;
   remit_taxes: string;
   rent: string;
   room_type: string;
-  send_guest_info: boolean;
+  send_guest_info: any;
   tax_rate: string;
   timezone: string;
   title: string;
@@ -553,3 +553,83 @@ export type tempDatatype = {
   type: string
 }
 
+export type dataCounttype = {
+  id?: number;
+  title?: string;
+  name: string;
+  count: number;
+  isbedroom?: boolean;
+  type?: string;
+}
+
+export type addownerstype = {
+  active: boolean
+  address?: {
+    apartment: string
+    areas: any
+    city: string
+    coordinates: any
+    country: string
+    display: string
+    number: string
+    postcode: string
+    state: string
+    street: string
+  }
+  airbnb_username: string
+  company_name: string
+  email: string
+  first_name: string
+  id: string
+  last_name: string
+  mgmt_take_cleaning_fee: boolean
+  owner_statements: boolean
+  partnership: boolean
+  pay_tax: boolean
+  phone: string
+  picture: string
+  units: any
+  vrbo_username: string
+  xero_id: string
+}
+
+export type ListingFormtype = {
+  active: any
+  id: string
+  picture: string
+  provider: string
+  public_name: string
+  remit_taxes: any
+  url: any
+}
+
+export type amenitiestype = {
+  available: any
+  name: string
+  notes: string
+  url: string
+}
+
+export type Teammateformtype = {
+  active: boolean
+  uuid: string
+  first_name: string
+  last_name: string
+  position: string
+  address: {
+    display: string
+    apartment: string
+    street: string
+    number: string
+    city: string
+    state: string
+    postcode: string
+    latitude: string
+    longitude: string
+  },
+  email: string
+  phone: string
+  payment_type: string
+  hours_sheet: string
+  picture: string
+}

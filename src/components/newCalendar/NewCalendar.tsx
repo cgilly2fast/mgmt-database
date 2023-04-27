@@ -22,11 +22,7 @@ import * as Yup from "yup";
 import Loader from "../loader/Loader";
 import Heartrateloading from "../loader/Heartrateloading/Heartrateloading";
 import { db } from "../../config/firebase";
-import {
-  UnitsType,
-  postsItemstype,
-  reservationItemstype,
-} from "../../API/Types";
+import { UnitsType } from "../../API/Types";
 
 function renderEventContent(eventInfo: any) {
   return (

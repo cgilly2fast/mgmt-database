@@ -114,9 +114,9 @@ const MessagingRules: React.FC = () => {
                     <tr
                       key={index + item?.id}
                       className="rules-list-tr"
-                      // onClick={() => {
-                      //   history.push(`/rules/${item.id}`);
-                      // }}
+                      onClick={() => {
+                        navigate(`/rules/${item.id}`);
+                      }}
                     >
                       <td>
                         <label htmlFor={item.id} className="switch">

@@ -6,7 +6,7 @@ import { auth, functions } from "../../config/firebase";
 import { useAuth } from "../../context/Authcontext";
 
 export const Login: React.FC = () => {
-  const emailRef: any = useRef();
+  const emailRef = useRef<any>(null);
   const passwordRef: any = useRef();
   const { login, logout }: any = useAuth();
   const [error, setError] = useState("");
