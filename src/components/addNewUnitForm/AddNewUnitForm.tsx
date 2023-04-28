@@ -44,8 +44,6 @@ const AddNewUnitForm: React.FC = () => {
   const handleShow = () => setShow(true);
   const today = moment().format("DD-MM-YYYY");
 
-  console.log("unit", unit);
-
   useEffect(() => {
     const getUnitByIdData = async () => {
       setLoading(true);

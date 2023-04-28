@@ -20,8 +20,6 @@ export const Teammate: React.FC = () => {
         const teammatedata = await getTeammateById(teammateId);
         setTeammate(teammatedata);
       }
-      // const unitById = await getTeammateById(teammateId);
-      // setTeammate(unitById);
     };
     teammatedata();
   }, []);

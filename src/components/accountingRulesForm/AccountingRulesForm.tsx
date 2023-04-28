@@ -154,18 +154,6 @@ const AccountingRulesForm: React.FC = () => {
 
   const validationSchema = Yup.object().shape({
     type: Yup.object().required("type is required").nullable(),
-    // billable: Yup.boolean(),
-    // units_billable: Yup.string().when("billable", {
-    //   is: true,
-    //   then: Yup.string().required("units_billable is required"),
-    // }),
-    // mirror: Yup.boolean(),
-    // filter: Yup.boolean(),
-    // filter_units: Yup.string().when("filter", {
-    //   is: true,
-    //   then: Yup.string().required("filter_units is required"),
-    // }),
-    // email_receipt: Yup.boolean(),
     source_data_type: Yup.string()
       .required("source data type is required")
       .nullable(),
@@ -235,7 +223,6 @@ const AccountingRulesForm: React.FC = () => {
           },
         }}
         enableReinitialize
-        // validationSchema={validationSchema}
         onSubmit={async (values: any) => {
           const newValue = {
             uuid: uuid(),

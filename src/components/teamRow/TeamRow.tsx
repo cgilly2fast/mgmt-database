@@ -1,14 +1,8 @@
-import React, { Component } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { Row, OverlayTrigger, Tooltip } from "react-bootstrap";
 import "./TeamRow.css";
 import { teamtype } from "../../API/Types";
-import {
-  BsChevronCompactRight,
-  BsEnvelope,
-  BsPersonCircle,
-  BsTelephone,
-} from "react-icons/bs";
 
 interface TeamRowProps {
   teammate: teamtype;

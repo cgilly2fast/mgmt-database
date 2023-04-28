@@ -1,6 +1,6 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Nav, Card, Button, Col } from "react-bootstrap";
-import { NavLink, Link, useLocation, useParams } from "react-router-dom";
+import { NavLink, Link, useParams } from "react-router-dom";
 import moment from "moment-timezone";
 import BackButton from "../../img/BackButton.svg";
 import "./Unit.css";
@@ -14,7 +14,7 @@ const Unit: React.FC = () => {
   const navigate = useNavigate();
   const { unitId } = params;
   const [unit, setUnit] = useState<UnitsType | null>(null);
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState<boolean>(false);
 
   useEffect(() => {
     const unitdata = async () => {
@@ -46,8 +46,7 @@ const Unit: React.FC = () => {
                 className="property_img"
                 alt="unit living room"
                 src={
-                  unit?.picture?.filter((item: any) => item?.isCurrent)[0]
-                    ?.original
+                  unit?.picture?.filter((item) => item?.isCurrent)[0]?.original
                 }
               />
               <br />
@@ -60,8 +59,8 @@ const Unit: React.FC = () => {
             <Link
               to={{
                 pathname: "/unit/" + unit.id + "/edit-new",
-                // state: unit,
               }}
+              state={unit}
               style={{ color: "#fff", textDecoration: "none" }}
             >
               + Edit Unit Info
@@ -202,8 +201,8 @@ const Unit: React.FC = () => {
                           "/listing/" +
                           listings[key].provider +
                           "/edit",
-                        }}
-                        state={{unit:unit, listing: listings[key]}}
+                      }}
+                      state={{ unit: unit, listing: listings[key] }}
                     >
                       <Card className="unit_card_listings">
                         <Card.Img variant="top" src={listings[key].picture} />
@@ -232,7 +231,7 @@ const Unit: React.FC = () => {
                 to={{
                   pathname: "/unit/" + unit.id + "/listing/create",
                 }}
-                state={unit}          
+                state={unit}
               >
                 <Card style={{ width: "410px" }}>
                   <Card.Img variant="top" src="" />
@@ -246,7 +245,6 @@ const Unit: React.FC = () => {
         </Container>
         <UpdateAmenitiesModal
           show={show}
-          unit_id={unitId}
           close={() => {
             setShow(false);
           }}

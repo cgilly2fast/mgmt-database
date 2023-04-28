@@ -1,9 +1,8 @@
-import React, { Component } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { Row } from "react-bootstrap";
 import "./UnitsRow.css";
 import { UnitsType } from "../../API/Types";
-import Unit from "../unit/Unit";
 
 interface UnitsRowProps {
   unit: UnitsType;
@@ -26,7 +25,7 @@ export const UnitsRow: React.FC<UnitsRowProps> = ({ unit }: UnitsRowProps) => {
                 className="property_icon"
                 alt="property unit main"
                 src={
-                  unit?.picture?.filter((item: any) => item?.isCurrent)[0]
+                  unit?.picture?.filter((item) => item?.isCurrent)[0]
                     ?.original
                 }
               />

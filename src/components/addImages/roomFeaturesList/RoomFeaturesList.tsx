@@ -74,15 +74,15 @@ const RoomFeaturesList: React.FC = () => {
     hiddenFileInputAllPhotos.current.click();
   };
 
-  const handleMultiSelectImage = async (e: any) => {
+  const handleMultiSelectImage = async (e) => {
     setMultiImages(Object.entries(e.target.files));
     handleShow();
   };
 
-  const handleRemove = async (e: { target: { id: string } }) => {
+  const handleRemove = async (e) => {
     setLoading(true);
     let tempdata: any = [];
-    multiImages.map((item: any) => {
+    multiImages.map((item) => {
       if (item[0] !== e.target.id) {
         tempdata.push(item[1]);
       }
@@ -146,7 +146,7 @@ const RoomFeaturesList: React.FC = () => {
     }
   };
 
-  const selectOption = async (e: { target: { id: string; value: string } }) => {
+  const selectOption = async (e) => {
     if (unitId && e.target.id && JSON.parse(e.target.value)) {
       await setRoomFetures(unitId, e.target.id, JSON.parse(e.target.value));
     }
@@ -160,7 +160,7 @@ const RoomFeaturesList: React.FC = () => {
     }
   };
 
-  const handleRemovePhotos = async (ele: string, roomId: string) => {
+  const handleRemovePhotos = async (ele, roomId) => {
     if (window.confirm("Are you sure delete this Image")) {
       await removePhoto(unitId, roomId, reloadPage, ele);
     }
@@ -237,7 +237,6 @@ const RoomFeaturesList: React.FC = () => {
                                       <p
                                         className="cross-mark"
                                         id={obj[0]}
-                                        // value={itemList}
                                         onClick={() => {
                                           handleRemoveBed(
                                             unitId,
@@ -298,7 +297,6 @@ const RoomFeaturesList: React.FC = () => {
                                   <p
                                     className="cross-mark"
                                     id={obj[0]}
-                                    // value={itemList}
                                     onClick={() => {
                                       handleRemoveRoom(
                                         unitId,
@@ -354,7 +352,7 @@ const RoomFeaturesList: React.FC = () => {
                   {!item[1]?.photos?.length ? (
                     <h4>No Photos</h4>
                   ) : (
-                    item[1]?.photos?.map((ele: any, i: any) => {
+                    item[1]?.photos?.map((ele, i) => {
                       return (
                         <div
                           key={i}

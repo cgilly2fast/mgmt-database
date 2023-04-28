@@ -38,7 +38,7 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const [threadById, setThreadById] = useState<threadByIdtype>();
   const [threadMessage, setThreadMessage] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [length, setLength] = useState({
     items: Array.from({ length: 10 }),
   });

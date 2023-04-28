@@ -21,27 +21,25 @@ const Scope: React.FC<ScopeProps> = ({
 }: ScopeProps) => {
   const { id } = useParams();
 
-  const handleChange = async (e: {
-    target: { name: string; checked: boolean };
-  }) => {
+  const handleChange = async (e: { target }) => {
     let itemName = e.target.name;
     let checked = e.target.checked;
     let list = unitList?.list;
     let allChecked = unitList?.allChecked;
     if (itemName === "checkAll") {
       allChecked = checked;
-      list = list?.map((item: object) => ({
+      list = list?.map((item) => ({
         ...item,
         isChecked: checked,
       }));
     } else {
-      list = list?.map((item: { unit_name: string }) =>
+      list = list?.map((item) =>
         item.unit_name === itemName ? { ...item, isChecked: checked } : item
       );
-      allChecked = list.every((item: { isChecked: boolean }) => item.isChecked);
+      allChecked = list.every((item) => item.isChecked);
     }
     const selectedLength = list
-      .filter((ele: { isChecked: boolean }) => ele?.isChecked)
+      .filter((ele) => ele?.isChecked)
       .map(
         (ele: {
           unit_id: string;
@@ -70,16 +68,14 @@ const Scope: React.FC<ScopeProps> = ({
 
   const handleClear = async () => {
     let list = unitList?.list;
-    list = list?.map((item: object) => ({
+    list = list?.map((item) => ({
       ...item,
       isChecked: false,
     }));
-    const allChecked = list.every(
-      (item: { isChecked: boolean }) => item.isChecked
-    );
+    const allChecked = list.every((item) => item.isChecked);
     const selectedLength = list
-      .filter((ele: { isChecked: boolean }) => ele?.isChecked)
-      .map((ele: { unit_id: string }) => ele?.unit_id);
+      .filter((ele) => ele?.isChecked)
+      .map((ele) => ele?.unit_id);
     setUnitList({ list, allChecked, selectedLength: selectedLength.length });
   };
 
@@ -121,7 +117,7 @@ const Scope: React.FC<ScopeProps> = ({
             </div>
           </div>
           <div className="unit-list-wrapper">
-            {unitList?.list?.map((item: any, index: any) => {
+            {unitList?.list?.map((item, index) => {
               return (
                 <div key={index}>
                   <input

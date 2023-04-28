@@ -20,8 +20,6 @@ const Setting: React.FC<SettingProps> = ({
   );
   const { id } = useParams();
 
-  console.log("ruleDetail", ruleDetail);
-
   useEffect(() => {
     if (ruleDetail) {
       const durationSelected =

@@ -24,8 +24,11 @@ import {
 import Heartrateloading from "../loader/Heartrateloading/Heartrateloading";
 import {
   UnitsType,
+  calenderdatatype,
+  calendertype,
   eventsListtype,
   postsItemstype,
+  reservationDetailtype,
   reservationItemstype,
   reservationListtype,
 } from "../../API/Types";
@@ -112,13 +115,14 @@ const Calendar: React.FC = () => {
   const [reservationList, setReservationList] = useState<reservationListtype[]>(
     []
   );
-  const [data, setData] = useState<any>([]);
-  const [reservationId, setReservationId] = useState<any>();
-  const [showCanvas, setShowCanvas] = useState(false);
-  const [showModel, setShowModel] = useState(false);
+  const [data, setData] = useState<calenderdatatype | null>(null);
+  const [reservationId, setReservationId] = useState<number>();
+  const [showCanvas, setShowCanvas] = useState<boolean>(false);
+  const [showModel, setShowModel] = useState<boolean>(false);
   const [units, setUnits] = useState<UnitsType[]>([]);
-  const [calendar, setCalendar] = useState<any>([]);
-  const [reservationDetail, setReservationDetail] = useState<any>([]);
+  const [calendar, setCalendar] = useState<calendertype | undefined>();
+  const [reservationDetail, setReservationDetail] =
+    useState<reservationDetailtype>();
   const { id } = useParams();
   const calendarId = calendar?.id && calendar?.id;
   const unitData = calendar?.unit && calendar?.unit;
@@ -160,7 +164,7 @@ const Calendar: React.FC = () => {
   };
 
   const handleClose = () => {
-    setData(0);
+    setData(null);
     setShow(false);
   };
 
@@ -696,18 +700,18 @@ const Calendar: React.FC = () => {
                   <hr />
                 </>
               )}
-              {reservationDetail?.check_in_time && (
+              {reservationDetail?.check_in_date && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Check In : {reservationDetail?.check_in_time}
+                    Check In : {reservationDetail?.check_in_date}
                   </p>
                   <hr />
                 </>
               )}
-              {reservationDetail?.check_out_time && (
+              {reservationDetail?.check_out_date && (
                 <>
                   <p style={{ fontFamily: "monospace" }}>
-                    Check Out : {reservationDetail?.check_out_time}
+                    Check Out : {reservationDetail?.check_out_date}
                   </p>
                   <hr />
                 </>

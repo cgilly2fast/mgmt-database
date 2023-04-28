@@ -15,7 +15,7 @@ export const Signup: React.FC = () => {
   const navigate = useNavigate();
   const callableCheckTeammate = functions.httpsCallable("mgmt-checkTeammate");
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: { preventDefault: () => void }) {
     e.preventDefault();
 
     if (passwordRef.current.value !== passwordConfirmRef.current.value) {

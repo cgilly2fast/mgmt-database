@@ -15,9 +15,9 @@ const CoverImage: React.FC = () => {
     Array<Array<string | number>>
   >([]);
   const [coverIamge, setCoverImage] = useState<string>();
-  const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [uploadLoading, setUploadLoading] = useState(false);
+  const [show, setShow] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [uploadLoading, setUploadLoading] = useState<boolean>(false);
   const { unitId } = useParams();
 
   const handleClose = () => setShow(false);

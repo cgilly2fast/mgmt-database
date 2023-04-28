@@ -39,7 +39,7 @@ const PropertiesListModal: React.FC<PropertiesListModalProps> = ({
             />
           </div>
           <div>
-            {propertiesList?.units?.map((item: any, i: any) => {
+            {propertiesList?.units?.map((item, i) => {
               return (
                 <div key={i} className="properties-list-wrapper-modal">
                   <img

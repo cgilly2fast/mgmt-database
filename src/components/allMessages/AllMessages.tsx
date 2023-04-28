@@ -38,7 +38,7 @@ import { Allmessagestype } from "../../API/Types";
 const AllMessages: React.FC = () => {
   const navigate = useNavigate();
   const [thread, setThread] = useState<Allmessagestype[]>([]);
-  const [loading, setLoading] = useState();
+  const [loading, setLoading] = useState(false);
 
   // useEffect(() => {
   //   const getThreadsData = async () => {
@@ -52,6 +52,7 @@ const AllMessages: React.FC = () => {
 
   useEffect(() => {
     const getThreadDataOnSnapShot = async () => {
+      setLoading(true);
       db.collection("threads")
         .orderBy("last_message.created_at", "desc")
         .onSnapshot((doc) => {
@@ -61,6 +62,7 @@ const AllMessages: React.FC = () => {
           });
           setThread(tempData);
         });
+      setLoading(false);
     };
     getThreadDataOnSnapShot();
   }, []);

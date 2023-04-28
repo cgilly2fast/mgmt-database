@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import BackButton from "../../img/BackButton.svg";
 import { getActiveUnits } from "../../API";
+import { UnitsType } from "../../API/Types";
 
 const SelectUnit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [units, setUnits] = useState<any[]>([]);
+  const [units, setUnits] = useState<UnitsType[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ const SelectUnit: React.FC = () => {
     activeUnitsGet();
   }, []);
 
-  const handleSelect = (e: { target: { value: any } }) => {
+  const handleSelect = (e) => {
     const id = e.target.value;
     navigate(`/calendar/${id}`);
   };

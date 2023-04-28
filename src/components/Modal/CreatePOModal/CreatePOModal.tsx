@@ -29,7 +29,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
     ),
   });
 
-  function copy(text: any) {
+  function copy(text) {
     setCopyLoading(true);
     navigator.clipboard.writeText(text);
     setTimeout(() => {

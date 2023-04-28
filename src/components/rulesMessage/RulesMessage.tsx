@@ -215,10 +215,7 @@ const RulesMessage: React.FC = () => {
   useEffect(() => {
     setIsLoading(true);
     const getMessagingRulesById = async () => {
-      const rulesRef: any = await db
-        .collection("messaging-rules")
-        .doc(id)
-        .get();
+      const rulesRef = await db.collection("messaging-rules").doc(id).get();
       if (rulesRef.data()) {
         setRuleDetail(rulesRef.data());
         const unitRef = await db
@@ -231,27 +228,16 @@ const RulesMessage: React.FC = () => {
             unit_name: item?.data()?.name,
             unit_id: item?.id,
             unit_picture: item?.data()?.picture?.length
-              ? item
-                  ?.data()
-                  ?.picture?.filter(
-                    (item: { isCurrent: any }) => item?.isCurrent
-                  )[0]?.original
+              ? item?.data()?.picture?.filter((item) => item?.isCurrent)[0]
+                  ?.original
               : "",
             isChecked: Boolean(
-              rulesRef
-                .data()
-                ?.units?.find(
-                  (ele: { unit_id: string }) => ele?.unit_id === item?.id
-                )
+              rulesRef.data()?.units?.find((ele) => ele?.unit_id === item?.id)
             ),
           });
         });
-        const checkedAll = tempUnits.every(
-          (ele: { isChecked: any }) => ele.isChecked
-        );
-        const length = tempUnits.filter(
-          (ele: { isChecked: any }) => ele?.isChecked
-        ).length;
+        const checkedAll = tempUnits.every((ele) => ele.isChecked);
+        const length = tempUnits.filter((ele) => ele?.isChecked).length;
         setUnitList({
           list: tempUnits,
           allChecked: checkedAll,
@@ -275,7 +261,7 @@ const RulesMessage: React.FC = () => {
     }, 500);
   };
 
-  const eventActive = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const eventActive = async (e) => {
     setSavingLoader("Saving...");
     setRuleDetail({ ...ruleDetail, active: e.target.checked });
     await db
@@ -366,22 +352,11 @@ const RulesMessage: React.FC = () => {
                   trigger="%"
                   data={requestTag}
                   renderSuggestion={(
-                    _suggestion: any,
-                    _search: any,
-                    highlightedDisplay:
-                      | string
-                      | number
-                      | boolean
-                      | React.ReactElement<
-                          any,
-                          string | React.JSXElementConstructor<any>
-                        >
-                      | React.ReactFragment
-                      | React.ReactPortal
-                      | null
-                      | undefined,
-                    index: any,
-                    focused: any
+                    suggestion,
+                    search,
+                    highlightedDisplay,
+                    index,
+                    focused
                   ) => (
                     <div className={` ${focused ? "focused" : ""}`}>
                       {highlightedDisplay}

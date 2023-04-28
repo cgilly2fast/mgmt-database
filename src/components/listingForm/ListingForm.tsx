@@ -22,9 +22,7 @@ export const ListingForm: React.FC = () => {
     public_name: "",
   });
 
-  console.log("form", form);
-
-  const handleSubmit = async (event: any) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setLoding(true);
     setError("");
@@ -80,12 +78,12 @@ export const ListingForm: React.FC = () => {
     }
   };
 
-  const handleInputChange = (event: any) => {
+  const handleInputChange = (event) => {
     form[event.target.id] = event.target.value;
     setForm(form);
   };
 
-  const handleUrlChange = (event: any) => {
+  const handleUrlChange = (event) => {
     form.url = event.target.value;
     let domain = new URL(form.url);
     let provider = domain.hostname.replace("www.", "").replace(".com", "");

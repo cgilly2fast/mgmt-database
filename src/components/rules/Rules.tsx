@@ -1,4 +1,3 @@
-import React from "react";
 import { Accordion } from "react-bootstrap";
 import "./Rules.css";
 import { BsPencil, BsArrowRight } from "react-icons/bs";

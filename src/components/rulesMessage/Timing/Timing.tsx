@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 
 interface TimingProps {
   setSavingLoader: (value: string) => void;
-  ruleDetail: any;
+  ruleDetail:any;
   setRuleDetail: (value: object) => void;
 }
 
@@ -45,7 +45,7 @@ const Timing: React.FC<TimingProps> = ({
     }, 500);
   };
 
-  const handleChangeTriggerOn = async (type: string) => {
+  const handleChangeTriggerOn = async (type) => {
     setSavingLoader("Saving...");
     const data = {
       trigger_on: type,

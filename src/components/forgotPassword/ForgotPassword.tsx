@@ -10,7 +10,7 @@ export const ForgotPassword: React.FC = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e) {
     e.preventDefault();
     try {
       setMessage("");

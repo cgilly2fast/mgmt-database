@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Button } from "react-bootstrap";
 import OwnersRow from "../ownersRow/OwnersRow";
 import { Link } from "react-router-dom";

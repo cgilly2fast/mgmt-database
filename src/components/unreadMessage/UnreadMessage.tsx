@@ -4,10 +4,11 @@ import { BsPersonCircle, BsSearch } from "react-icons/bs";
 import moment from "moment-timezone";
 import "./UnreadMessage.css";
 import db from "../../admin";
-import { unreadmessgetype } from "../../API/Types";
+import { Allmessagestype, unreadmessgetype } from "../../API/Types";
 
 const UnreadMessage: React.FC = () => {
-  const [unreadMessages, setUnreadMessages] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState<Allmessagestype[]>([]);
+
   useEffect(() => {
     const getUnreadThreadDataOnSnapShot = async () => {
       db.collection("threads")

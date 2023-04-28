@@ -1,8 +1,5 @@
-import React, { Component, createRef, useEffect, useState } from "react";
+import React, { createRef, useEffect, useState } from "react";
 import { Form, Button, Col, Row } from "react-bootstrap";
-import { Alert } from "bootstrap";
-import axios from "axios";
-import ApiUrl from "../../globalVariables";
 import { Multiselect } from "multiselect-react-dropdown";
 import BackButton from "../../img/BackButton.svg";
 import { getTeammateById, getUnits, updateOwner } from "../../API";

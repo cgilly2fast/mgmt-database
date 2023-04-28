@@ -1,8 +1,6 @@
-import React from "react";
 import { OverlayTrigger, Popover } from "react-bootstrap";
 
 import LocationIcon from "../../img/Location.png";
-import { listOfCitytype } from "../../API/Types";
 
 const Marker = ({ tooltip, text, onClick }: any): JSX.Element => {
   const popover = (

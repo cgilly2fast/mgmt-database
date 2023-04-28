@@ -49,9 +49,9 @@ import AccountingRules from "./accountingRules/AccountingRules";
 // ];
 
 const Accounting: React.FC = () => {
-  const [showModel, setShowModel] = useState(false);
-  const [showPOModel, setShowPOModel] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showModel, setShowModel] = useState<boolean>(false);
+  const [showPOModel, setShowPOModel] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [step, setStep] = useState<any>(0);
   const [value, setValue] = useState();
   const [model1value, setModel1Value] = useState();
@@ -202,7 +202,6 @@ const Accounting: React.FC = () => {
 
             <Form.Select
               placeholder="Select Account Type..."
-              // variant="light"
               value={value}
             >
               <option disabled>Select Account Type...</option>
@@ -311,7 +310,6 @@ const Accounting: React.FC = () => {
 
             <Form.Select
               placeholder="Select an existing accounting platform..."
-              // variant="light"
               className="create-connection-dropdown-2"
               value={model2value}
             >

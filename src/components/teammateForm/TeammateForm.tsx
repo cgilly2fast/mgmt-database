@@ -1,6 +1,5 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Button, Col, Row } from "react-bootstrap";
-import { Alert } from "bootstrap";
 import BackButton from "../../img/BackButton.svg";
 import { getTeammateById, updateTeammate } from "../../API";
 import { useLocation, useNavigate, useParams } from "react-router-dom";

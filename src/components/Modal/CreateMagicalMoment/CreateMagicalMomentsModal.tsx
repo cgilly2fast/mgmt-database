@@ -161,7 +161,7 @@ const CreateMagicalMomentsModal: React.FC<CreateMagicalMomentsModalProps> = ({
           unit_picture: item
             ?.data()
             ?.picture?.filter(
-              (itemPic: { isCurrent: any }) => itemPic?.isCurrent
+              (itemPic) => itemPic?.isCurrent
             )[0]?.original,
         });
       });
@@ -170,7 +170,7 @@ const CreateMagicalMomentsModal: React.FC<CreateMagicalMomentsModalProps> = ({
     OwnerAndUnitsDetail();
   }, []);
 
-  const handleClick = async (value: { name: any; type: any }) => {
+  const handleClick = async (value) => {
     const messagingRuleObject = {
       name: value?.name,
       message: "",
@@ -235,7 +235,6 @@ const CreateMagicalMomentsModal: React.FC<CreateMagicalMomentsModalProps> = ({
                         onClick={() => handleClick(item)}
                         key={item?.name}
                       >
-                        {/* <img src={item?.icon} style={{ marginRight: '12px' }} /> */}
                         <p className="list-name">{item?.name}</p>
                       </div>
                     );

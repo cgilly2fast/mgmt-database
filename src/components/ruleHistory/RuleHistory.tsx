@@ -4,7 +4,6 @@ import "./RuleHistory.css";
 import { useParams } from "react-router-dom";
 import db from "../../admin";
 import Loader from "../loader/Loader";
-import { rollBackAccountingRule } from "../../API";
 import moment from "moment";
 import { functions } from "../../config/firebase";
 import { RuleHistorytype, syncListtype } from "../../API/Types";

@@ -1,24 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Form, Modal } from "react-bootstrap";
 import { getAmenities, UpdateAmenities } from "../../API";
+import { useParams } from "react-router-dom";
+import { updateamenitiestype } from "../../API/Types";
 
 interface UpdateAmenitiesModalProps {
   show: boolean;
-  unit_id: any;
   close: Function;
 }
 
 const UpdateAmenitiesModal: React.FC<UpdateAmenitiesModalProps> = ({
   show,
-  unit_id,
   close,
 }: UpdateAmenitiesModalProps) => {
-  const [amenities, setAmenities] = useState<any>([]);
+  const params = useParams();
+  const { unitId } = params;
+  const [amenities, setAmenities] = useState<updateamenitiestype[]>([]);
 
   useEffect(() => {
     const getAmenitiesData = async () => {
-      if (unit_id) {
-        const amenitiesData = await getAmenities(unit_id);
+      if (unitId) {
+        const amenitiesData = await getAmenities(unitId);
         setAmenities(Object.values(amenitiesData?.amenities));
       }
     };
@@ -26,7 +28,7 @@ const UpdateAmenitiesModal: React.FC<UpdateAmenitiesModalProps> = ({
   }, []);
 
   const handleSubmit = async () => {
-    await UpdateAmenities(unit_id, amenities);
+    await UpdateAmenities(unitId, amenities);
     console.log("update");
     close();
   };
@@ -42,7 +44,7 @@ const UpdateAmenitiesModal: React.FC<UpdateAmenitiesModalProps> = ({
     >
       <Modal.Header closeButton>Update Amenities</Modal.Header>
       <Modal.Body style={{ display: "flex", flexWrap: "wrap" }}>
-        {amenities?.map((item: any) => {
+        {amenities?.map((item) => {
           return (
             <div className="d-flex" style={{ width: "33%" }} key={item?.name}>
               {item?.url ? (
@@ -82,8 +84,8 @@ const UpdateAmenitiesModal: React.FC<UpdateAmenitiesModalProps> = ({
                   checked={item?.available}
                   onChange={(e) => {
                     e.target.checked
-                      ? setAmenities((listOfAmenities: any[]) =>
-                          listOfAmenities.map((obj: { name: string }) => {
+                      ? setAmenities((listOfAmenities) =>
+                          listOfAmenities.map((obj) => {
                             return {
                               ...obj,
                               ...(obj?.name === e.target.name && {
@@ -92,8 +94,8 @@ const UpdateAmenitiesModal: React.FC<UpdateAmenitiesModalProps> = ({
                             };
                           })
                         )
-                      : setAmenities((listOfAmenities: any[]) =>
-                          listOfAmenities.map((obj: { name: string }) => {
+                      : setAmenities((listOfAmenities) =>
+                          listOfAmenities.map((obj) => {
                             return {
                               ...obj,
                               ...(obj?.name === e.target.name && {

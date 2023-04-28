@@ -6,7 +6,7 @@ import { auth, functions } from "../../config/firebase";
 import { useAuth } from "../../context/Authcontext";
 
 export const Login: React.FC = () => {
-  const emailRef = useRef<any>(null);
+  const emailRef: any = useRef();
   const passwordRef: any = useRef();
   const { login, logout }: any = useAuth();
   const [error, setError] = useState("");
@@ -14,7 +14,7 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const callableCheckTeammate = functions.httpsCallable("mgmt-checkTeammate");
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     setLoading(false);
@@ -38,8 +38,6 @@ export const Login: React.FC = () => {
         navigate("/login", { replace: true });
         setError("Access disabled");
       }
-
-      // history.push("/");
     } catch (e) {
       console.log(e);
       setError("Failed to log in");

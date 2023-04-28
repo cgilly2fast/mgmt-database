@@ -16,7 +16,7 @@ export type UnitsType = {
     street?: string;
   };
   amenities_list: string;
-  capacity: capacity;
+  capacity?: capacity;
   check_in: string;
   check_out: string;
   cleaningf_ee: number;
@@ -50,7 +50,7 @@ export type UnitsType = {
 
 export type capacity = {
   bathrooms?: number;
-  bedrooms?: number;
+  bedrooms?: any;
   beds?: number;
   max?: number;
 };
@@ -632,4 +632,174 @@ export type Teammateformtype = {
   payment_type: string
   hours_sheet: string
   picture: string
+}
+
+export type calendertype = {
+  unit: any;
+  id: string;
+  length: number;
+  days: any
+  end_date: string
+  hospitable_id: number
+  provider: string
+  response: any
+  start_date: string
+  unit_id: string
+}
+
+export type postsItemstypes = {
+  backgroundColor: string
+  borderColor: string
+  date: string
+  extendedProps?: {
+    calendarId?: string
+    date: string
+    resourceId: string
+    value?: {
+      date: string
+      day: number
+      min_stay: number
+      price?: {
+        amount: number
+        currency: string
+      }
+      reservation?: {
+        first_name: string
+        last_name: string
+        picture: string
+        reservation_id: string
+      }
+      status?: {
+        available: boolean
+        note: string
+        reason: string
+      }
+    }
+  }
+  resourceId: string
+  textColor: string
+  title: string
+  transform: string
+  type: string
+}
+
+export type reservationItems = {
+  backgroundColor: string
+  borderColor: string
+  end: string
+  extendedProps?: {
+    picture: string
+    value?: {
+      date: string
+      day: number
+      end_date: string
+      min_stay: number
+      price?: {
+        amount: number
+        currency: string
+      }
+      reservation?: {
+        first_name: string
+        last_name: string
+        picture: string
+        provider: string
+        reservation_id: string
+      }
+      start_date: string
+      status?: {
+        available: boolean
+        note: string
+        reason: string
+      }
+      unit_id: string
+    }
+  }
+  id: string
+  resourceId: string
+  start: string
+  textColor: string
+  title: string
+  type: string
+}
+
+export type reservationDetailtype = {
+  booked_at: any
+  check_in_date: string
+  check_out_date: string
+  end_date: string
+  guest?: {
+    email?: string
+    first_name?: string
+    last_name?: string
+    phone?: string
+    phone_last_4?: number
+    picture?: string
+    uuid?: string
+  }
+  hospitable_id: number
+  id: string
+  instant_book: boolean
+  invoice?: {
+    base_amount: number
+    cleaning_fee: number
+    currency: string
+    guest_fee: number
+    host_service_fee: number
+    payout_amount: number
+    per_night_price: number
+    security_amount: string
+    sub_total: number
+    tax_amount: string
+    total_price: number
+  }
+  nights: number
+  occupancy?: {
+    adults: number
+    children: number
+    guests: number
+    infants: number
+    pets?: number
+  }
+  provider: string
+  reservation_code: string
+  start_date: string
+  status: string
+  unitName: string
+  unit_id: string
+  uuid: string
+}
+
+export type calenderdatatype = {
+  calendarId?: string
+  date: string
+  resourceId: string
+  transform: string
+  type: string
+  value?: {
+    date: string
+    day: number
+    min_stay: number
+    price?: {
+      amount: number
+      currency: string
+    }
+    reservation?: {
+      first_name: string
+      last_name: string
+      picture: string
+      reservation_id: string
+    }
+    status?: {
+      available: boolean
+      note: string
+      reason: string
+    }
+  }
+}
+
+export type updateamenitiestype = {
+  available: boolean
+  name: string
+  notes: string
+  url: string
 }

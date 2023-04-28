@@ -22,9 +22,16 @@ import * as Yup from "yup";
 import Loader from "../loader/Loader";
 import Heartrateloading from "../loader/Heartrateloading/Heartrateloading";
 import { db } from "../../config/firebase";
-import { UnitsType } from "../../API/Types";
+import {
+  UnitsType,
+  calenderdatatype,
+  calendertype,
+  postsItemstypes,
+  reservationDetailtype,
+  reservationItems,
+} from "../../API/Types";
 
-function renderEventContent(eventInfo: any) {
+function renderEventContent(eventInfo) {
   return (
     <>
       {eventInfo?.event?.extendedProps?.date ? (
@@ -58,16 +65,19 @@ const NewCalendar: React.FC = () => {
   const calendarRef: any | null = useRef();
   const [units, setUnits] = useState<UnitsType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [calendar, setCalendar] = useState<any>([]);
-  const [postsItems, setPostsItems] = useState<undefined | any>([]);
-  const [reservationItems, setReservationItems] = useState<any | undefined>([]);
-  const [reservationId, setReservationId] = useState<any>();
-  const [reservationDetail, setReservationDetail] = useState<any>([]);
+  const [calendar, setCalendar] = useState<calendertype[]>([]);
+  const [postsItems, setPostsItems] = useState<postsItemstypes[]>([]);
+  const [reservationItems, setReservationItems] = useState<reservationItems[]>(
+    []
+  );
+  const [reservationId, setReservationId] = useState<number>();
+  const [reservationDetail, setReservationDetail] =
+    useState<reservationDetailtype>();
   const [showCanvas, setShowCanvas] = useState(false);
   const [showModel, setShowModel] = useState(false);
-  const [unitData, setUnitData] = useState<any>([]);
+  const [unitData, setUnitData] = useState<UnitsType>();
   const [reservationloading, setReservationLoading] = useState(false);
-  const [data, setData] = useState<any>([]);
+  const [data, setData] = useState<calenderdatatype | null>(null);
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -92,39 +102,26 @@ const NewCalendar: React.FC = () => {
   useEffect(() => {
     if (calendar?.length) {
       let tempData: any = [];
-      calendar?.filter((value: { length: number; response: any[] }) => {
+      calendar?.filter((value) => {
         if (value.length !== 0) {
-          value?.response?.map(
-            (item: {
-              unit_id: any;
-              reservation: {
-                reservation_id: any;
-                first_name: any;
-                picture: any;
-              };
-              start_date: any;
-              end_date: any;
-            }) => {
-              // if (moment(item?.date).format('YYYY') === moment().format('YYYY')) {
-              const reservationItem = {
-                type: "reservations",
-                resourceId: item?.unit_id,
-                id: item?.reservation?.reservation_id,
-                title: item?.reservation?.first_name,
-                start: item?.start_date,
-                end: item?.end_date,
-                extendedProps: {
-                  picture: item?.reservation?.picture,
-                  value: item,
-                },
-                borderColor: "black",
-                backgroundColor: "#fffadf",
-                textColor: "black",
-              };
-              return tempData.push(reservationItem);
-              // }
-            }
-          );
+          value?.response?.map((item) => {
+            const reservationItem = {
+              type: "reservations",
+              resourceId: item?.unit_id,
+              id: item?.reservation?.reservation_id,
+              title: item?.reservation?.first_name,
+              start: item?.start_date,
+              end: item?.end_date,
+              extendedProps: {
+                picture: item?.reservation?.picture,
+                value: item,
+              },
+              borderColor: "black",
+              backgroundColor: "#fffadf",
+              textColor: "black",
+            };
+            return tempData.push(reservationItem);
+          });
         }
       });
       setReservationItems(tempData);
@@ -135,48 +132,41 @@ const NewCalendar: React.FC = () => {
     setLoading(true);
     if (calendar?.length) {
       let tempData: any = [];
-      calendar?.filter(
-        (value: {
-          length: number;
-          days: { [s: string]: unknown } | ArrayLike<unknown>;
-          unit_id: any;
-          id: any;
-        }) => {
-          if (value?.length !== 0) {
-            Object?.values(value?.days)?.map((item: any) => {
-              if (
-                item?.status?.reason !== "RESEVERED" &&
-                moment(item?.date).format("YYYY-MM-DD") >=
-                  moment().format("YYYY-MM-DD")
-              ) {
-                const tempPriceObject = {
-                  type: "price",
-                  resourceId: value?.unit_id,
-                  title: "$" + item?.price?.amount,
-                  extendedProps: {
-                    date: item?.date,
-                    value: item,
-                    resourceId: value?.unit_id,
-                    calendarId: value?.id,
-                  },
+      calendar?.filter((value) => {
+        if (value?.length !== 0) {
+          Object?.values(value?.days)?.map((item: any) => {
+            if (
+              item?.status?.reason !== "RESEVERED" &&
+              moment(item?.date).format("YYYY-MM-DD") >=
+                moment().format("YYYY-MM-DD")
+            ) {
+              const tempPriceObject = {
+                type: "price",
+                resourceId: value?.unit_id,
+                title: "$" + item?.price?.amount,
+                extendedProps: {
                   date: item?.date,
-                  borderColor: "#f1f1f100",
-                  backgroundColor: "#f1f1f100",
-                  textColor: "#5c576a",
-                  transform: "skewX(-20deg)",
-                };
-                return tempData.push(tempPriceObject);
-              }
-            });
-          }
+                  value: item,
+                  resourceId: value?.unit_id,
+                  calendarId: value?.id,
+                },
+                date: item?.date,
+                borderColor: "#f1f1f100",
+                backgroundColor: "#f1f1f100",
+                textColor: "#5c576a",
+                transform: "skewX(-20deg)",
+              };
+              return tempData.push(tempPriceObject);
+            }
+          });
         }
-      );
+      });
       setPostsItems(tempData);
       setLoading(false);
     }
   }, [calendar]);
 
-  const handleClick = (arg: any) => {
+  const handleClick = (arg) => {
     if (
       arg?.event?._def?.extendedProps?.type &&
       arg?.event?._def?.extendedProps?.type === "price"
@@ -220,7 +210,7 @@ const NewCalendar: React.FC = () => {
   }, []);
 
   const handleClose = () => {
-    setData(0);
+    setData(null);
     setShow(false);
   };
 
@@ -263,7 +253,6 @@ const NewCalendar: React.FC = () => {
           }}
           initialDate={new Date().toISOString()}
           nowIndicator={true}
-          // allDaySlot={false}
           showNonCurrentDates={false}
           timeZone="local"
           aspectRatio={1.5}
@@ -282,7 +271,6 @@ const NewCalendar: React.FC = () => {
           initialEvents={[reservationItems, postsItems]}
           ref={calendarRef}
           eventClick={(arg) => handleClick(arg)}
-          // now={new Date().toISOString()}
         />
       </div>
 
@@ -510,13 +498,12 @@ const NewCalendar: React.FC = () => {
               </Offcanvas.Header>
               <Offcanvas.Body>
                 <div className="d-flex" style={{ position: "relative" }}>
-                  {unitData?.picture?.filter((item: any) => item?.isCurrent)[0]
+                  {unitData?.picture?.filter((item) => item?.isCurrent)[0]
                     ?.original ? (
                     <img
                       src={
-                        unitData?.picture?.filter(
-                          (item: any) => item?.isCurrent
-                        )[0]?.original
+                        unitData?.picture?.filter((item) => item?.isCurrent)[0]
+                          ?.original
                       }
                       alt="property"
                       className="property-image-calendar"
@@ -677,18 +664,18 @@ const NewCalendar: React.FC = () => {
                 <hr />
               </>
             )}
-            {reservationDetail?.check_in_time && (
+            {reservationDetail?.check_in_date && (
               <>
                 <p style={{ fontFamily: "monospace" }}>
-                  Check In : {reservationDetail?.check_in_time}
+                  Check In : {reservationDetail?.check_in_date}
                 </p>
                 <hr />
               </>
             )}
-            {reservationDetail?.check_out_time && (
+            {reservationDetail?.check_out_date && (
               <>
                 <p style={{ fontFamily: "monospace" }}>
-                  Check Out : {reservationDetail?.check_out_time}
+                  Check Out : {reservationDetail?.check_out_date}
                 </p>
                 <hr />
               </>

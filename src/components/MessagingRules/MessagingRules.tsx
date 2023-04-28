@@ -40,7 +40,7 @@ const MessagingRules: React.FC = () => {
     getMessagingRules();
   }, []);
 
-  const eventActive = async (e: any, id: string) => {
+  const eventActive = async (e, id) => {
     setRulesList((prevState) =>
       prevState.map((item) => ({
         ...item,
@@ -53,7 +53,7 @@ const MessagingRules: React.FC = () => {
       .set({ active: e.target.checked }, { merge: true });
   };
 
-  const nameDisplayFunction = (item: any) => {
+  const nameDisplayFunction = (item) => {
     let displayName = "";
     switch (item?.type) {
       case "after_a_new_reservation":
@@ -115,7 +115,7 @@ const MessagingRules: React.FC = () => {
                       key={index + item?.id}
                       className="rules-list-tr"
                       onClick={() => {
-                        navigate(`/rules/${item.id}`);
+                        // navigate(`/rules/${item.id}`);
                       }}
                     >
                       <td>
@@ -164,7 +164,7 @@ const MessagingRules: React.FC = () => {
                           </span>
                         ) : (
                           <div className="properties-list-wrapper">
-                            {item?.units?.map((ele: any, i: any) => {
+                            {item?.units?.map((ele, i) => {
                               if (i <= 2) {
                                 return (
                                   <img

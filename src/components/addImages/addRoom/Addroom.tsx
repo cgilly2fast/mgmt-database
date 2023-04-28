@@ -46,7 +46,7 @@ const Addroom: React.FC = () => {
               });
               setData(changeData);
               setDataCount(changeData);
-              const map = withOutCoverImage?.reduce((obj: any, b: any) => {
+              const map = withOutCoverImage?.reduce((obj, b: any) => {
                 obj[b[1]?.list_name] = ++obj[b[1]?.list_name] || 1;
                 return obj;
               }, {});
@@ -92,11 +92,11 @@ const Addroom: React.FC = () => {
 
   const updateFieldChanged = (ele: dataCounttype) => {
     if (ele?.count === 0) {
-      setNewChange((list: any) => {
+      setNewChange((list) => {
         return [...list, ele];
       });
     } else {
-      setNewChange((list: any) => {
+      setNewChange((list) => {
         return [
           ...list,
           {
@@ -117,7 +117,7 @@ const Addroom: React.FC = () => {
     isbedroom?: boolean;
     type?: string;
   }) => {
-    await dataCount.filter(async (item: { name: any; count: any }) => {
+    await dataCount.filter(async (item) => {
       if (element?.name === item.name && element?.count !== item.count) {
         setData((list) =>
           list.map((obj) => {
@@ -131,7 +131,7 @@ const Addroom: React.FC = () => {
         );
       }
     });
-    const filterData = await newChange?.filter((ele: { count: any }) => {
+    const filterData = await newChange?.filter((ele) => {
       return ele.count !== (element.count === 1 ? 0 : element.count);
     });
     setNewChange(filterData);

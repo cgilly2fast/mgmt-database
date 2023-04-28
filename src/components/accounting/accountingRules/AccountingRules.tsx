@@ -11,13 +11,13 @@ interface AccountingRulesrProps {
 const AccountingRules: React.FC<AccountingRulesrProps> = ({
   item,
 }: AccountingRulesrProps) => {
-  const [executeLoading, setExecuteLoading] = useState(false);
+  const [executeLoading, setExecuteLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<messagetype | null>(null);
   const callablExecuteAccountingRulep = functions.httpsCallable(
     "accounting-executeAccountingRule"
   );
 
-  const handleExecuteAccountingRule = (id: string | undefined) => {
+  const handleExecuteAccountingRule = (id) => {
     setExecuteLoading(true);
     callablExecuteAccountingRulep({ rule_id: id })
       .then((response) => {
