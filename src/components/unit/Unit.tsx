@@ -18,7 +18,7 @@ const Unit: React.FC = () => {
 
   useEffect(() => {
     const unitdata = async () => {
-      const unitById = await getUnitById(unitId);
+      const unitById = (await getUnitById(unitId)) as UnitsType;
       setUnit(unitById);
     };
     unitdata();

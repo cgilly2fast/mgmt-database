@@ -20,7 +20,9 @@ const UpdateAmenitiesModal: React.FC<UpdateAmenitiesModalProps> = ({
   useEffect(() => {
     const getAmenitiesData = async () => {
       if (unitId) {
-        const amenitiesData = await getAmenities(unitId);
+        const amenitiesData = (await getAmenities(
+          unitId
+        )) as updateamenitiestype;
         setAmenities(Object.values(amenitiesData?.amenities));
       }
     };

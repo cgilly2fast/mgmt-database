@@ -41,7 +41,7 @@ const RuleHistory: React.FC = () => {
     getSyncDataOnSnapShot();
   }, []);
 
-  const handleRollBackAccountingRule = (id: any) => {
+  const handleRollBackAccountingRule = (id) => {
     setExecuteLoading(true);
     callablRollBackAccountingRulep({ sync_id: id })
       .then((response) => {

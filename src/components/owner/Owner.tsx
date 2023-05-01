@@ -14,7 +14,7 @@ export const Owner: React.FC = () => {
 
   useEffect(() => {
     const ownerdata = async () => {
-      const ownerDataById = await getOwnerById(ownerId);
+      const ownerDataById = await getOwnerById(ownerId) as OwnerType;
       setOwner(ownerDataById);
     };
     ownerdata();

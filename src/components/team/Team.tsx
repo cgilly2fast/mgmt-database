@@ -4,15 +4,16 @@ import TeamRow from "../teamRow/TeamRow";
 import { Link } from "react-router-dom";
 import { getTeam } from "../../API";
 import Loader from "../loader/Loader";
+import { teamtype } from "../../API/Types";
 
 export const Team: React.FC = () => {
-  const [team, setTeam] = useState([]);
+  const [team, setTeam] = useState<teamtype[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const teamdata = async () => {
       setLoading(true);
-      const team = await getTeam();
+      const team = (await getTeam()) as teamtype[];
       setTeam(team);
       setLoading(false);
     };

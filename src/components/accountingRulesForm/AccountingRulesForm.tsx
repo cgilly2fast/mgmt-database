@@ -74,42 +74,50 @@ const AccountingRulesForm: React.FC = () => {
   >([]);
   const [units, setUnits] = useState<UnitsType[]>([]);
   const [connections, setConnections] = useState<tempDatatype[]>([]);
+  const [unitlistdata, setUnitlistdata] = useState<any>([]);
+  const [filterUnitListdata, setFilterUnitListdata] = useState<any>([]);
+  const [connectionlistdata, setConnectionlistdata] = useState<any>([]);
 
-  console.log("connections", connections);
   useEffect(() => {
     const accountingRules = async () => {
-      const activeUnits = await getActiveUnits();
-      const connectionData = await getConnections();
+      const activeUnits = (await getActiveUnits()) as UnitsType[];
+      const connectionData = (await getConnections()) as tempDatatype[];
       setUnits(activeUnits);
       setConnections(connectionData);
     };
     accountingRules();
   }, []);
-
-  const unitlist = units.map((item) => {
-    return {
-      unit_name: item?.name,
-      unit_id: item?.id,
-      account_code: "",
-      bill_to: "",
-    };
-  });
-
-  const filterUnitList = units.map((item) => {
-    return {
-      unit_name: item?.name,
-      unit_id: item?.id,
-    };
-  });
-
-  const connectionlist = connections.map((item) => {
-    return {
-      account: item?.account,
-      account_id: item?.account_id,
-      connection_id: item?.id,
-      platfrom: item?.platform,
-    };
-  });
+  useEffect(() => {
+    const unitlist = units.map((item) => {
+      return {
+        unit_name: item?.name,
+        unit_id: item?.id,
+        account_code: "",
+        bill_to: "",
+      };
+    });
+    setUnitlistdata(unitlist);
+  }, []);
+  useEffect(() => {
+    const filterUnitList = units.map((item) => {
+      return {
+        unit_name: item?.name,
+        unit_id: item?.id,
+      };
+    });
+    setFilterUnitListdata(filterUnitList);
+  }, []);
+  useEffect(() => {
+    const connectionlist = connections.map((item) => {
+      return {
+        account: item?.account,
+        account_id: item?.account_id,
+        connection_id: item?.id,
+        platfrom: item?.platform,
+      };
+    });
+    setConnectionlistdata(connectionlist);
+  }, []);
 
   const handleTypeMultiSelectChange = (
     selectedList: React.SetStateAction<typeValue[]>
@@ -361,7 +369,7 @@ const AccountingRulesForm: React.FC = () => {
                   <Form.Label>Units billable</Form.Label>
                   <Multiselect
                     placeholder="Select Unit..."
-                    options={unitlist}
+                    options={unitlistdata}
                     displayValue="unit_name"
                     onRemove={handleUnitMultiSelectChange}
                     onSelect={handleUnitMultiSelectChange}
@@ -402,7 +410,7 @@ const AccountingRulesForm: React.FC = () => {
                   <Form.Label>Filter units</Form.Label>
                   <Multiselect
                     placeholder="Select Filter Unit..."
-                    options={filterUnitList}
+                    options={filterUnitListdata}
                     displayValue="unit_name"
                     onRemove={handleFilterMultiSelectChange}
                     onSelect={handleFilterMultiSelectChange}
@@ -620,7 +628,7 @@ const AccountingRulesForm: React.FC = () => {
               <Form.Label>Connections</Form.Label>
               <Multiselect
                 placeholder="Select Connection..."
-                options={connectionlist}
+                options={connectionlistdata}
                 singleSelect={true}
                 displayValue="account"
                 onRemove={handleConnectionMultiSelectChange}

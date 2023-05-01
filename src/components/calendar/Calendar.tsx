@@ -130,7 +130,7 @@ const Calendar: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     const activeUnitsGet = async () => {
-      const activeUnits = await getActiveUnits();
+      const activeUnits = (await getActiveUnits()) as UnitsType[];
       setUnits(activeUnits);
     };
     activeUnitsGet();
@@ -142,7 +142,7 @@ const Calendar: React.FC = () => {
   }, [id]);
 
   const getCalendarlist = async () => {
-    const calendarList = await getCalendar(id, setLoading);
+    const calendarList = (await getCalendar(id, setLoading)) as calendertype;
     setCalendar(calendarList);
   };
 
@@ -236,7 +236,9 @@ const Calendar: React.FC = () => {
     const reservationDetailGet = async () => {
       if (reservationId) {
         setReservationLoading(true);
-        const reservationDetail = await getReservationsDetail(reservationId);
+        const reservationDetail = (await getReservationsDetail(
+          reservationId
+        )) as reservationDetailtype;
         setReservationDetail(reservationDetail);
         setReservationLoading(false);
       }

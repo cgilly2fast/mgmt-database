@@ -4,15 +4,16 @@ import UnitRow from "../unitsRow/UnitsRow";
 import { Link } from "react-router-dom";
 import { getActiveUnits } from "../../API";
 import Loader from "../loader/Loader";
+import { UnitsType } from "../../API/Types";
 
 export const Units: React.FC = () => {
-  const [units, setUnits] = useState([]);
+  const [units, setUnits] = useState<UnitsType[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const unitsdata = async () => {
       setLoading(true);
-      const activeUnits = await getActiveUnits();
+      const activeUnits = await getActiveUnits() as UnitsType[];
       setUnits(activeUnits);
       setLoading(false);
     };

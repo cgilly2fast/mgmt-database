@@ -48,7 +48,7 @@ const AddNewUnitForm: React.FC = () => {
     const getUnitByIdData = async () => {
       setLoading(true);
       if (unitId) {
-        const unitDataById = await getUnitById(unitId);
+        const unitDataById: any = await getUnitById(unitId);
         setUnit(unitDataById);
         setAddressObject(unitDataById?.address);
       }
@@ -58,7 +58,7 @@ const AddNewUnitForm: React.FC = () => {
   }, []);
   useEffect(() => {
     const getOwnersList = async () => {
-      const ownersList = await getOwners();
+      const ownersList = (await getOwners()) as addownerstype[];
       setOwners(ownersList);
     };
     getOwnersList();

@@ -4,14 +4,15 @@ import OwnersRow from "../ownersRow/OwnersRow";
 import { Link } from "react-router-dom";
 import { getOwners } from "../../API";
 import Loader from "../loader/Loader";
+import { OwnerType } from "../../API/Types";
 
 export const Owners: React.FC = () => {
-  const [owners, setOwners] = useState([]);
+  const [owners, setOwners] = useState<OwnerType[]>([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     const ownerdata = async () => {
       setLoading(true);
-      const owner = await getOwners();
+      const owner = (await getOwners()) as OwnerType[];
       setOwners(owner);
       setLoading(false);
     };

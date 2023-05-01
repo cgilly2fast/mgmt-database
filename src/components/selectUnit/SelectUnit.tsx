@@ -16,7 +16,7 @@ const SelectUnit: React.FC = () => {
   useEffect(() => {
     const activeUnitsGet = async () => {
       setLoading(true);
-      const activeUnits = await getActiveUnits();
+      const activeUnits = (await getActiveUnits()) as UnitsType[];
       setLoading(false);
       setUnits(activeUnits);
     };

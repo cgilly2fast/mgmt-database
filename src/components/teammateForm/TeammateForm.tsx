@@ -40,7 +40,7 @@ export const TeammateForm: React.FC = () => {
     setLoding(true);
     setError("");
     try {
-      const res = await updateTeammate(form);
+      const res: any = await updateTeammate(form);
       setLoding(false);
       navigate("/teammate/" + res.uuid);
     } catch (err) {
@@ -64,7 +64,7 @@ export const TeammateForm: React.FC = () => {
       if (location && location.state && location.state.teammate) {
         setForm(location.state.teammate);
       } else if (teammateId !== undefined) {
-        const teammateById = await getTeammateById(teammateId);
+        const teammateById = await getTeammateById(teammateId) as Teammateformtype;
         setForm(teammateById);
       }
     };

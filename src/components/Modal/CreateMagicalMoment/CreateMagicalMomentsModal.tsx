@@ -125,12 +125,13 @@ const CreateMagicalMomentsModal: React.FC<CreateMagicalMomentsModalProps> = ({
   const navigate = useNavigate();
   const [listMessage, setListMessage] = useState<listMessagetype[]>([]);
   const [unitList, setUnitList] = useState([]);
-  
+
   useEffect(() => {
     const functioGetMessagRulesList = async () => {
       if (showModel) {
-        const getMessageRulesList = await getMessageRules();
-        const rules = getMessageRulesList.reduce(
+        const getMessageRulesList =
+          (await getMessageRules()) as listMessagetype[];
+        const rules: any = getMessageRulesList.reduce(
           (
             typeList: { [x: string]: any[] },
             item: { short_type: string | number }
@@ -160,9 +161,7 @@ const CreateMagicalMomentsModal: React.FC<CreateMagicalMomentsModalProps> = ({
           unit_name: item?.data()?.name,
           unit_picture: item
             ?.data()
-            ?.picture?.filter(
-              (itemPic) => itemPic?.isCurrent
-            )[0]?.original,
+            ?.picture?.filter((itemPic) => itemPic?.isCurrent)[0]?.original,
         });
       });
       setUnitList(tempUnits);

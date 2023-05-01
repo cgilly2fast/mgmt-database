@@ -47,7 +47,7 @@ const Chat: React.FC = () => {
   useEffect(() => {
     const getThreadDataById = async () => {
       setLoading(true);
-      const threadRef = await getThreadById(id);
+      const threadRef = (await getThreadById(id)) as threadByIdtype;
       setThreadById(threadRef);
       setLoading(false);
     };

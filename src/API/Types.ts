@@ -1,4 +1,5 @@
 export type UnitsType = {
+  uuid: string;
   guest_info_type: string;
   active: any;
   address?: {
@@ -102,6 +103,7 @@ export type amenitiesType = {
 };
 
 export type OwnerType = {
+  length: number;
   last_name: string;
   first_name: string;
   uuid: string;
@@ -433,23 +435,23 @@ export type listOfCitytype = {
 };
 
 export type eventsListtype = {
-  date: string;
-  day: number;
-  min_stay: number;
+  date?: string;
+  day?: number;
+  min_stay?: number;
   price?: {
-    amount: number;
-    currency: string;
+    amount?: number;
+    currency?: string;
   };
   reservation?: {
-    first_name: string;
-    last_name: string;
-    picture: string;
-    reservation_id: string;
+    first_name?: string;
+    last_name?: string;
+    picture?: string;
+    reservation_id?: string;
   };
   status?: {
-    available: boolean;
-    note: string;
-    reason: string;
+    available?: boolean;
+    note?: string;
+    reason?: string;
   };
 };
 
@@ -594,6 +596,7 @@ export type addownerstype = {
 }
 
 export type ListingFormtype = {
+  listing: any;
   active: any
   id: string
   picture: string
@@ -635,6 +638,7 @@ export type Teammateformtype = {
 }
 
 export type calendertype = {
+  reservation: any;
   unit: any;
   id: string;
   length: number;
@@ -798,6 +802,7 @@ export type calenderdatatype = {
 }
 
 export type updateamenitiestype = {
+  amenities(amenities: any): import("react").SetStateAction<updateamenitiestype[]>;
   available: boolean
   name: string
   notes: string

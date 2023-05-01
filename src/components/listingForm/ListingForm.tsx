@@ -12,7 +12,7 @@ export const ListingForm: React.FC = () => {
   const [error, setError] = useState<any>("");
   const [lodaing, setLoding] = useState(false);
   const [unit, setUnit] = useState({ listings: {} });
-  const [form, setForm] = useState<ListingFormtype>({
+  const [form, setForm] = useState<any>({
     id: "",
     url: "",
     active: true,
@@ -27,7 +27,6 @@ export const ListingForm: React.FC = () => {
     setLoding(true);
     setError("");
     const currantProvider: any = params;
-    console.log("currantProvider", currantProvider);
     if (
       currantProvider === undefined ||
       currantProvider === form?.provider ||
@@ -40,7 +39,7 @@ export const ListingForm: React.FC = () => {
         } else {
           unit.listings[form.provider] = form;
           try {
-            const res = await updateUnit(unit);
+            const res: any = await updateUnit(unit);
             setLoding(false);
             navigate("/unit/" + res?.data?.id);
           } catch (err) {
@@ -55,7 +54,7 @@ export const ListingForm: React.FC = () => {
           unit.listings[form.provider] = form;
           delete unit.listings[currantProvider];
           try {
-            const res = await updateUnit(unit);
+            const res: any = await updateUnit(unit);
             setLoding(false);
             navigate("/unit/" + res?.data?.id);
           } catch (err) {
@@ -64,7 +63,7 @@ export const ListingForm: React.FC = () => {
         } else {
           unit.listings[form.provider] = form;
           try {
-            const res = await updateUnit(unit);
+            const res: any = await updateUnit(unit);
             setLoding(false);
             navigate("/unit/" + res?.data?.id);
           } catch (err) {
@@ -111,7 +110,7 @@ export const ListingForm: React.FC = () => {
       } else if (location && location.state && location.state.listing) {
         setForm(location.state.listings);
       } else if (unitId !== undefined) {
-        const unitDataById = await getUnitById(unitId);
+        const unitDataById: any = await getUnitById(unitId);
         setForm(unitDataById.listing[provider]);
         setUnit(unitDataById);
       }

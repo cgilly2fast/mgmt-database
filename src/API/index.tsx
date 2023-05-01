@@ -5,6 +5,16 @@ import moment from "moment";
 import messageRules from "../MessageRules/messageRules.json";
 import { db } from "../config/firebase";
 import { v4 } from "uuid";
+import {
+  OwnerType,
+  UnitsType,
+  addownerstype,
+  calendertype,
+  eventsListtype,
+  teamtype,
+  tempDatatype,
+  threadByIdtype,
+} from "./Types";
 
 export const getOwners = async () => {
   return new Promise(async function (resolve, reject) {
@@ -13,9 +23,10 @@ export const getOwners = async () => {
         .collection("owners")
         .where("active", "==", true)
         .get();
-      let data = [];
+      let data: addownerstype[] = [];
       snapshot.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
+        const values = doc.data() as addownerstype;
+        return data.push({ ...values, id: doc.id });
       });
       resolve(data);
     } catch (error) {
@@ -31,9 +42,10 @@ export const getActiveUnits = async () => {
         .collection("units")
         .where("active", "==", true)
         .get();
-      let data = [];
+      let data: UnitsType[] = [];
       snapshot.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
+        const values = doc.data() as UnitsType;
+        return data.push({ ...values, id: doc.id });
       });
       resolve(data);
     } catch (error) {
@@ -77,9 +89,10 @@ export const getTeam = async () => {
         .collection("team")
         .where("active", "==", true)
         .get();
-      let data = [];
+      let data: teamtype[] = [];
       snapshot.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
+        const values = doc.data() as teamtype;
+        return data.push({ ...values });
       });
       resolve(data);
     } catch (error) {
@@ -95,9 +108,10 @@ export const getUnits = async () => {
         .collection("units")
         .where("active", "==", true)
         .get();
-      let data = [];
+      let data: OwnerType[] = [];
       snapshot.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
+        const values = doc.data() as OwnerType;
+        return data.push({ ...values });
       });
       resolve(data);
     } catch (error) {
@@ -136,10 +150,10 @@ export const getCalendar = async (unit_id, setLoading) => {
         } else {
           const dateRef = Object.values(calendarDoc?.days);
 
-          let data = [];
-          let arrayDate = [];
+          let data: calendertype[] = [];
+          let arrayDate: calendertype[] = [];
 
-          dateRef?.find((value) => {
+          dateRef?.find((value: any) => {
             if (value.reservation.reservation_id) {
               arrayDate.push(value);
             }
@@ -152,7 +166,7 @@ export const getCalendar = async (unit_id, setLoading) => {
             return res;
           }, {});
           // Use better variable names
-          const response = Object.values(reservationDates).map((res) => {
+          const response = Object.values(reservationDates).map((res: any) => {
             const sortedData = res.sort((a, b) =>
               new Date(a.date).getTime() > new Date(b.date).getTime() ? 1 : -1
             );
@@ -167,12 +181,9 @@ export const getCalendar = async (unit_id, setLoading) => {
             }
           });
 
-          data.push({
-            ...calendarDoc,
-            id: calendarRef?.id,
-            response: response,
-            unit: unitRef?.data(),
-          });
+          const values = calendarDoc as calendertype;
+          data.push({ ...values, id: calendarRef?.id });
+
           if (calendarRef?.exists) {
             setLoading(false);
             resolve(data[0]);
@@ -192,12 +203,12 @@ export const getAllCalendar = async () => {
     try {
       let snapshot;
       snapshot = await db.collection("calendar").get();
-      let data = [];
+      let data: calendertype[] = [];
       snapshot?.docs?.forEach(async (item) => {
-        let arrayDate = [];
-        const dateRef = Object.values(item.data().days);
-        dateRef.find((value) => {
-          if (value.reservation.reservation_id) {
+        let arrayDate: calendertype[] = [];
+        const dateRef = Object.values(item.data()?.days);
+        dateRef.find((value: any) => {
+          if (value?.reservation?.reservation_id) {
             arrayDate.push(value);
           }
         });
@@ -209,9 +220,9 @@ export const getAllCalendar = async () => {
           return res;
         }, {});
 
-        const sortReservationStartandEndDate = Object.values(
+        const sortReservationStartandEndDate: any = Object.values(
           reservationDatesBooked
-        ).map((res) => {
+        ).map((res: any) => {
           const sortedData = res.sort((a, b) =>
             new Date(a.date).getTime() > new Date(b.date).getTime() ? 1 : -1
           );
@@ -244,11 +255,11 @@ export const getAllCalendarWithPrice = async () => {
     try {
       let snapshot;
       snapshot = await db.collection("calendar").get();
-      let data = [];
+      let data: calendertype[] = [];
       snapshot?.docs?.forEach(async (item) => {
-        let arrayDate = [];
+        let arrayDate: calendertype[] = [];
         const dateRef = Object.values(item.data().days);
-        dateRef.find((value) => {
+        dateRef.find((value: any) => {
           if (value.reservation.reservation_id) {
             arrayDate.push(value);
           }
@@ -263,7 +274,7 @@ export const getAllCalendarWithPrice = async () => {
 
         const sortReservationStartandEndDate = Object.values(
           reservationDatesBooked
-        ).map((res) => {
+        ).map((res: any) => {
           const sortedData = res.sort((a, b) =>
             new Date(a.date).getTime() > new Date(b.date).getTime() ? 1 : -1
           );
@@ -279,8 +290,9 @@ export const getAllCalendarWithPrice = async () => {
           }
         });
 
+        const values = item.data() as calendertype;
         data.push({
-          ...item.data(),
+          ...values,
           unit_id: item?.data()?.unit_id,
           response: sortReservationStartandEndDate,
         });
@@ -329,9 +341,10 @@ export const getConnections = async () => {
   return new Promise(async function (resolve, reject) {
     try {
       const snapshot = await db.collection("accounts").get();
-      let data = [];
+      let data: tempDatatype[] = [];
       snapshot.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
+        const values = doc.data() as tempDatatype;
+        return data.push({ ...values });
       });
       resolve(data);
     } catch (error) {
@@ -535,7 +548,7 @@ export const removeRoom = async (id, removeDataId, reloadPage, data) => {
         const storageBucket = await firebase.storage().ref();
         await data?.photos.map(async (obj) => {
           await Promise.all(
-            await Object.entries(obj).map(async (item) => {
+            await Object.entries(obj).map(async (item: any) => {
               if (item[0] !== "location") {
                 const location = await item[1]
                   .split("%2F")
@@ -604,7 +617,7 @@ export const uploadImages = async (id, images, roomId, reloadPage) => {
     try {
       if (id) {
         const unitRef = await db.collection("units").doc(id).get();
-        const metadata = {
+        const metadata: any = {
           name: "Image-1",
         };
         const storageBucket = await firebase.storage().ref();
@@ -692,7 +705,7 @@ export const uploadCoverImages = async (
     try {
       if (id) {
         const unitRef = await db.collection("units").doc(id).get();
-        const metadata = {
+        const metadata: any = {
           name: "Image-1",
         };
         const storageBucket = await firebase.storage().ref();
@@ -772,7 +785,7 @@ export const uploadCoverImages = async (
 };
 
 export const editPhoto = async (id, data, reloadPhotos) => {
-  return new Promise(async function (resolve, reject) {
+  return new Promise<void>(async function (resolve, reject) {
     try {
       await db
         .collection("photos")
@@ -848,7 +861,7 @@ export const removePhoto = async (id, roomId, reloadPhotos, ele) => {
     try {
       const storageBucket = await firebase.storage().ref();
       const response = await Promise.all(
-        await Object.entries(ele).map(async (item) => {
+        await Object.entries(ele).map(async (item: any) => {
           if (item[0] !== "location") {
             const location = await item[1]
               .split("%2F")
@@ -885,7 +898,7 @@ export const removeCoverPhoto = async (id, reloadPhotos, ele) => {
     try {
       const storageBucket = await firebase.storage().ref();
       const response = await Promise.all(
-        await Object.entries(ele).map(async (item) => {
+        await Object.entries(ele).map(async (item: any) => {
           if (item[0] !== "location" && item[0] !== "isCurrent") {
             console.log("item", item[1].split("%2F"));
             const location = await item[1]
@@ -983,9 +996,10 @@ export const getThread = async () => {
   return new Promise(async function (resolve, reject) {
     try {
       const snapshot = await db.collection("threads").get();
-      let data = [];
+      let data: threadByIdtype[] = [];
       snapshot.forEach((doc) => {
-        data.push({ ...doc.data(), id: doc.id });
+        const values = doc.data() as threadByIdtype;
+        return data.push({ ...values });
       });
       resolve(data);
     } catch (error) {
@@ -1008,7 +1022,7 @@ export const getThreadById = async (id) => {
   });
 };
 
-export const getMessageRules = async (id) => {
+export const getMessageRules = async () => {
   return new Promise(async function (resolve, reject) {
     try {
       resolve(messageRules);
@@ -1026,7 +1040,7 @@ export const getSyncObject = async (id) => {
         .where("rule_id", "==", id)
         .orderBy("created_at", "desc")
         .get();
-      let data = [];
+      let data: any = [];
       snapshot.forEach((doc) => {
         data.push({ ...doc.data(), id: doc.id });
       });

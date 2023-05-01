@@ -17,7 +17,7 @@ export const Teammate: React.FC = () => {
       if (location && location.state && location.state.teammate) {
         setTeammate(location.state.teammate);
       } else {
-        const teammatedata = await getTeammateById(teammateId);
+        const teammatedata = (await getTeammateById(teammateId)) as teamtype;
         setTeammate(teammatedata);
       }
     };

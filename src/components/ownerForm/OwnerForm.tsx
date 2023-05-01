@@ -4,6 +4,7 @@ import { Multiselect } from "multiselect-react-dropdown";
 import BackButton from "../../img/BackButton.svg";
 import { getTeammateById, getUnits, updateOwner } from "../../API";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { OwnerType } from "../../API/Types";
 
 export const OwnerForm: React.FC = () => {
   const params = useParams();
@@ -51,7 +52,7 @@ export const OwnerForm: React.FC = () => {
     setLoding(true);
     setError("");
     try {
-      const res = await updateOwner(form);
+      const res: any = await updateOwner(form);
       setLoding(false);
       navigate("/owner/" + res.data.uuid);
     } catch (err) {
@@ -78,7 +79,7 @@ export const OwnerForm: React.FC = () => {
     const addownerdata = async () => {
       const { ownerId } = params;
       let options: any = [];
-      const units = await getUnits();
+      const units = (await getUnits()) as OwnerType;
       for (let i = 0; i < units.length; i++) {
         options.push({
           id: units[i].id,

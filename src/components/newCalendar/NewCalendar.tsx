@@ -83,7 +83,7 @@ const NewCalendar: React.FC = () => {
   useEffect(() => {
     const activeUnitsGet = async () => {
       setLoading(true);
-      const activeUnits = await getActiveUnits();
+      const activeUnits = (await getActiveUnits()) as UnitsType[];
       setUnits(activeUnits);
       setLoading(false);
     };
@@ -91,7 +91,7 @@ const NewCalendar: React.FC = () => {
   }, []);
 
   const getCalendarlist = async () => {
-    const calendarList = await getAllCalendarWithPrice();
+    const calendarList = (await getAllCalendarWithPrice()) as calendertype[];
     setCalendar(calendarList);
   };
 
@@ -187,7 +187,9 @@ const NewCalendar: React.FC = () => {
     const reservationDetailGet = async () => {
       if (reservationId) {
         setReservationLoading(true);
-        const reservationDetail = await getReservationsDetail(reservationId);
+        const reservationDetail = (await getReservationsDetail(
+          reservationId
+        )) as reservationDetailtype;
         if (reservationDetail) {
           const unitRef: any = await db
             .collection("units")
@@ -261,7 +263,7 @@ const NewCalendar: React.FC = () => {
           resources={units}
           resourceLabelDidMount={function (arg) {
             arg.el.onclick = function () {
-              navigate(`calendar/${arg?.resource?._resource?.id}`);
+              navigate(`/calendar/${arg?.resource?._resource?.id}`);
             };
           }}
           resourceLabelClassNames="resource-label-calendar"
